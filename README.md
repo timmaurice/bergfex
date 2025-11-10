@@ -18,15 +18,11 @@ This custom integration for Home Assistant fetches snow reports and ski resort d
 
 ## Installation
 
-### Recommended: HACS (Home Assistant Community Store)
+### HACS (Recommended)
 
-1.  Ensure you have [HACS](https://hacs.xyz/) installed.
-2.  Go to HACS > Integrations > and click the three dots in the top right.
-3.  Select "Custom repositories".
-4.  Enter the URL of this repository in the "Repository" field.
-5.  Select "Integration" as the category and click "Add".
-6.  The "Bergfex Snow Report" integration will now appear. Click "Install".
-7.  Restart Home Assistant.
+This card is available in the [Home Assistant Community Store (HACS)](https://hacs.xyz/).
+
+<a href="https://my.home-assistant.io/redirect/hacs_repository/?owner=timmaurice&repository=bergfex&category=integration" target="_blank" rel="noreferrer noopener"><img src="https://my.home-assistant.io/badges/hacs_repository.svg" alt="Open your Home Assistant instance and open a repository inside the Home Assistant Community Store." /></a>
 
 <details>
 <summary>Manual Installation</summary>
@@ -34,6 +30,9 @@ This custom integration for Home Assistant fetches snow reports and ski resort d
 1.  Using the tool of your choice, copy the `bergfex` folder from `custom_components` in this repository into your Home Assistant's `custom_components` directory.
 2.  Restart Home Assistant.
 </details>
+
+### Related lovelace card:
+https://github.com/timmaurice/lovelace-bergfex-card
 
 ## Configuration
 
