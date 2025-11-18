@@ -89,7 +89,7 @@ class BergfexConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     if not ski_area_path.startswith("/"):
                         ski_area_path = f"/{ski_area_path}"
                     if not ski_area_path.endswith("/schneebericht/"):
-                        ski_area_path = f"{ski_area_path.strip('/')}/schneebericht/"
+                        ski_area_path = f"/{ski_area_path.strip('/')}/schneebericht/"
 
                 # Keep ski_area_path as the unique ID
                 ski_area_name = ski_areas.get(

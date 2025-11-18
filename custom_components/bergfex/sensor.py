@@ -1,6 +1,7 @@
 import logging
 from datetime import timedelta
 from typing import Any, cast
+from urllib.parse import urljoin
 
 from bs4 import BeautifulSoup
 from homeassistant.components.sensor import (
@@ -115,7 +116,7 @@ class BergfexSensor(SensorEntity):
         self._initial_area_name = entry.data["name"]  # Store initial name as fallback
         self._area_name = self._initial_area_name  # Current name, can be updated
         self._area_path = entry.data[CONF_SKI_AREA]
-        self._config_url = f"{BASE_URL}{self._area_path}"
+        self._config_url = urljoin(BASE_URL, self._area_path)
         self._sensor_name = sensor_name
         self._data_key = data_key
         self._attr_icon = icon
