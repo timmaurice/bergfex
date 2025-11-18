@@ -131,7 +131,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
             hass.data[DOMAIN][COORDINATORS][resort_coordinator_name] = coordinator
 
-    _LOGGER.debug("Entry runtime data before forwarding setups: %s", entry.runtime_data)
     entry.runtime_data = coordinator
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)

@@ -22,6 +22,7 @@ from .const import (
     COUNTRIES,
     DOMAIN,
 )
+from .parser import parse_overview_data, parse_resort_page
 
 _LOGGER = logging.getLogger(__name__)
 SCAN_INTERVAL = timedelta(minutes=30)
@@ -143,7 +144,7 @@ class BergfexSensor(SensorEntity):
             self._area_name = self._initial_area_name
 
         # Always update unique_id and name after _area_name might have changed
-        self._attr_unique_id = f"bergfex_{self._area_name.lower().replace(' ', '_')}_{self._sensor_name.lower().replace(' ', '_')}"
+        self._attr_unique_id = f"bergfex_{self._area_path.replace('/', '_')}_{self._sensor_name.lower().replace(' ', '_')}"
         self._attr_name = f"{self._area_name} {self._sensor_name}"
 
         _LOGGER.debug(
@@ -202,7 +203,7 @@ class BergfexSensor(SensorEntity):
     def device_info(self):
         """Return device information."""
         return {
-            "identifiers": {(DOMAIN, self._area_name)},
+            "identifiers": {(DOMAIN, self._area_path)},
             "name": self._area_name,
             "manufacturer": "Bergfex",
             "model": "Ski Resort",
