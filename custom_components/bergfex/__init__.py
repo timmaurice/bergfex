@@ -38,98 +38,51 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     area_name = entry.data["name"]
     area_path = entry.data[CONF_SKI_AREA]
 
-    coordinator = hass.data[DOMAIN][COORDINATORS].get(country_name)
+    # Always create a resort-specific coordinator to get detail page data
+    resort_coordinator_name = f"bergfex_{area_name}"
+    coordinator = hass.data[DOMAIN][COORDINATORS].get(resort_coordinator_name)
 
     if coordinator is None:
-        _LOGGER.debug("Creating new coordinator for country: %s", country_name)
+        _LOGGER.debug(
+            "Creating resort coordinator for %s to fetch detail page", area_name
+        )
         session = async_get_clientsession(hass)
 
-        async def async_update_data_country():
-            """Fetch and parse data for all ski areas in a country."""
+        async def async_update_data_resort():
+            """Fetch and parse data for a single ski area from detail page."""
             try:
-                url = urljoin(BASE_URL, country_path)
-                _LOGGER.debug("Fetching overview data from: %s", url)
+                url = urljoin(BASE_URL, area_path)
+                _LOGGER.debug("Fetching resort data from: %s", url)
                 async with session.get(url, allow_redirects=True) as response:
                     response.raise_for_status()
                     html = await response.text()
-                parsed_data = parse_overview_data(html)
-                _LOGGER.debug("Parsed overview data: %s", parsed_data)
-                return parsed_data
+                parsed_data = parse_resort_page(html)
+                _LOGGER.debug("Parsed resort data for %s: %s", area_path, parsed_data)
+                return {area_path: parsed_data}
             except Exception as err:
-                _LOGGER.error("Error fetching or parsing overview data: %s", err)
+                _LOGGER.error(
+                    "Error fetching or parsing resort data for %s: %s",
+                    area_path,
+                    err,
+                )
                 raise UpdateFailed(f"Error communicating with Bergfex: {err}") from err
 
         coordinator = DataUpdateCoordinator(
             hass,
             _LOGGER,
-            name=f"bergfex_{country_name}",
-            update_method=async_update_data_country,
+            name=resort_coordinator_name,
+            update_method=async_update_data_resort,
             update_interval=SCAN_INTERVAL,
         )
         try:
             await coordinator.async_config_entry_first_refresh()
         except Exception as err:
             _LOGGER.error(
-                "Failed to refresh country coordinator for %s: %s", country_name, err
+                "Failed to refresh resort coordinator for %s: %s", area_name, err
             )
             raise ConfigEntryNotReady from err
-        _LOGGER.debug(
-            "Coordinator data after first refresh for %s: %s",
-            country_name,
-            coordinator.data,
-        )
-        hass.data[DOMAIN][COORDINATORS][country_name] = coordinator
 
-    if coordinator.data is None or area_path not in coordinator.data:
-        resort_coordinator_name = f"bergfex_{area_name}"
-        coordinator = hass.data[DOMAIN][COORDINATORS].get(resort_coordinator_name)
-
-        if coordinator is None:
-            _LOGGER.debug(
-                "Ski area %s not in country data, creating separate coordinator",
-                area_name,
-            )
-            session = async_get_clientsession(hass)
-
-            async def async_update_data_resort():
-                """Fetch and parse data for a single ski area."""
-                try:
-                    url = urljoin(BASE_URL, area_path)
-                    _LOGGER.debug("Fetching resort data from: %s", url)
-                    async with session.get(url, allow_redirects=True) as response:
-                        response.raise_for_status()
-                        html = await response.text()
-                    parsed_data = parse_resort_page(html)
-                    _LOGGER.debug(
-                        "Parsed resort data for %s: %s", area_path, parsed_data
-                    )
-                    return {area_path: parsed_data}
-                except Exception as err:
-                    _LOGGER.error(
-                        "Error fetching or parsing resort data for %s: %s",
-                        area_path,
-                        err,
-                    )
-                    raise UpdateFailed(
-                        f"Error communicating with Bergfex: {err}"
-                    ) from err
-
-            coordinator = DataUpdateCoordinator(
-                hass,
-                _LOGGER,
-                name=resort_coordinator_name,
-                update_method=async_update_data_resort,
-                update_interval=SCAN_INTERVAL,
-            )
-            try:
-                await coordinator.async_config_entry_first_refresh()
-            except Exception as err:
-                _LOGGER.error(
-                    "Failed to refresh resort coordinator for %s: %s", area_name, err
-                )
-                raise ConfigEntryNotReady from err
-
-            hass.data[DOMAIN][COORDINATORS][resort_coordinator_name] = coordinator
+        hass.data[DOMAIN][COORDINATORS][resort_coordinator_name] = coordinator
 
     entry.runtime_data = coordinator
 

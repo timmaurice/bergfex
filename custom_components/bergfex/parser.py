@@ -111,20 +111,65 @@ def parse_resort_page(html: str) -> dict[str, Any]:
         if len(spans) > 1:
             area_data["resort_name"] = spans[1].text.strip()
 
-    # Snow depths
+    # Snow depths and elevations
     all_big_dts = soup.find_all("dt", class_="big")
     for dt in all_big_dts:
-        if "Berg" in dt.text:
+        dt_text = dt.text.strip()
+        if "Berg" in dt_text:
             if dd := dt.find_next_sibling("dd", class_="big"):
                 area_data["snow_mountain"] = dd.text.strip().replace("cm", "").strip()
-        elif "Tal" in dt.text:
+            # Extract mountain elevation from the text like "(Piste, 3.250m)"
+            if "(" in dt_text and "m)" in dt_text:
+                elevation_text = (
+                    dt_text.split("(")[1].split("m)")[0].split(",")[-1].strip()
+                )
+                # Remove dots from elevation (3.250 -> 3250)
+                elevation_clean = elevation_text.replace(".", "")
+                try:
+                    area_data["elevation_mountain"] = int(elevation_clean)
+                except ValueError:
+                    _LOGGER.debug(
+                        "Could not parse mountain elevation: %s", elevation_text
+                    )
+        elif "Tal" in dt_text:
             if dd := dt.find_next_sibling("dd", class_="big"):
                 area_data["snow_valley"] = dd.text.strip().replace("cm", "").strip()
+            # Extract valley elevation from the text like "(Piste, 1.500m)"
+            if "(" in dt_text and "m)" in dt_text:
+                elevation_text = (
+                    dt_text.split("(")[1].split("m)")[0].split(",")[-1].strip()
+                )
+                # Remove dots from elevation (1.500 -> 1500)
+                elevation_clean = elevation_text.replace(".", "")
+                try:
+                    area_data["elevation_valley"] = int(elevation_clean)
+                except ValueError:
+                    _LOGGER.debug(
+                        "Could not parse valley elevation: %s", elevation_text
+                    )
 
     # Last update
     h2_sub = soup.find("div", class_="h2-sub")
     if h2_sub:
         area_data["last_update"] = h2_sub.text.strip()
+
+    # Snow condition (Schneezustand)
+    snow_condition = get_text_from_dd(soup, "Schneezustand")
+    if snow_condition:
+        area_data["snow_condition"] = snow_condition
+
+    # Last snowfall (Letzter Schneefall Region)
+    last_snowfall = get_text_from_dd(soup, "Letzter Schneefall")
+    if last_snowfall:
+        area_data["last_snowfall"] = last_snowfall
+
+    # Avalanche warning (Lawinenwarnstufe)
+    avalanche_warning = get_text_from_dd(soup, "Lawinenwarnstufe")
+    if avalanche_warning:
+        # Remove the link text if present
+        area_data["avalanche_warning"] = avalanche_warning.replace(
+            "Lawinenwarndienst", ""
+        ).strip()
 
     # Lifts
     lifts_text = get_text_from_dd(soup, "Offene Lifte")
@@ -138,6 +183,43 @@ def parse_resort_page(html: str) -> dict[str, Any]:
                 )
             except ValueError:
                 _LOGGER.debug("Could not parse lifts: %s", lifts_text)
+
+    # Slopes - find all dd elements after "Offene Pisten" dt
+    slopes_dt = soup.find("dt", string=lambda t: t and "Offene Pisten" in t)
+    if slopes_dt:
+        # The first dd after "Offene Pisten" contains km info
+        dd_km = slopes_dt.find_next_sibling("dd", class_="big")
+        if dd_km:
+            km_text = dd_km.text.strip()
+            # Extract numbers like "46 km von 64 km"
+            if "von" in km_text:
+                parts = km_text.replace("km", "").split("von")
+                if len(parts) == 2:
+                    try:
+                        area_data["slopes_open_km"] = int(parts[0].strip())
+                        area_data["slopes_total_km"] = int(parts[1].strip())
+                    except ValueError:
+                        _LOGGER.debug("Could not parse slope km: %s", km_text)
+
+        # The next dd contains count info
+        if dd_km:
+            dd_count = dd_km.find_next_sibling("dd", class_="big")
+            if dd_count:
+                count_text = dd_count.text.strip()
+                # Extract numbers like "19 von 29"
+                if "von" in count_text:
+                    parts = count_text.split("von")
+                    if len(parts) == 2:
+                        try:
+                            area_data["slopes_open_count"] = int(parts[0].strip())
+                            area_data["slopes_total_count"] = int(parts[1].strip())
+                        except ValueError:
+                            _LOGGER.debug("Could not parse slope count: %s", count_text)
+
+    # Slope condition (Pistenzustand)
+    slope_condition = get_text_from_dd(soup, "Pistenzustand")
+    if slope_condition:
+        area_data["slope_condition"] = slope_condition
 
     # New snow
     new_snow_div = soup.find("div", class_="heading heading-ne desktop-only")
