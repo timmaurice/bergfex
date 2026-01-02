@@ -9,8 +9,13 @@
 
 This custom integration for Home Assistant fetches snow reports and ski resort data directly from [Bergfex](https://www.bergfex.com). Since Bergfex does not provide a public API, this component scrapes the data from their website.
 
-*   **Multi-language Support**: Use Bergfex in your preferred language (German, English, French, Italian, Spanish, Dutch, and more).
+*   **Multi-language Support**: Use Bergfex in your preferred language. Now supporting **18 languages** with full keyword parsing and translation:
+    *   **Major**: German, English, French, Italian, Spanish, Dutch
+    *   **Scandinavian**: Swedish, Norwegian, Danish, Finnish
+    *   **Slavic/Central**: Czech, Slovak, Polish, Slovenian, Croatian
+    *   **Others**: Hungarian, Romanian, Russian
 *   **Dynamic Domain Mapping**: Automatically uses the correct Bergfex domain (e.g., .at, .com, .fr, .it) based on your language selection.
+*   **Enhanced Localization**: data values (like "Powder", "Open", "Moderate") are automatically translated into your selected language.
 *   **Multi-Country Support**: Select ski areas from various European countries including Austria, Germany, Switzerland, Italy, France, and others.
 *   **Efficient Polling**: Fetches data for an entire region/country efficiently, shared across all sensors.
 *   **Device per Ski Area**: Creates a dedicated device in Home Assistant for each monitored ski area.

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 from typing import Any
 
@@ -16,6 +18,7 @@ from .const import (
     CONF_SKI_AREA,
     COUNTRIES,
     DOMAIN,
+    KEYWORDS,
     SUPPORTED_LANGUAGES,
 )
 
@@ -88,15 +91,26 @@ class BergfexConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         """Handle the country selection step."""
+        lang = self._data.get(CONF_LANGUAGE, "at")
+        keywords = KEYWORDS.get(lang, KEYWORDS["at"])
+        translated_countries = keywords.get("countries", {})
+
+        # Create localized mapping: { "Translated Name": "Original Key" }
+        country_options = {
+            translated_countries.get(name, name): name for name in COUNTRIES.keys()
+        }
+
         if user_input is not None:
-            self._data[CONF_COUNTRY] = user_input[CONF_COUNTRY]
-            return await self.async_step_ski_area()
+            # Map back to original country name
+            self._data[CONF_COUNTRY] = country_options[user_input[CONF_COUNTRY]]
+            return await self.async_step_ski_area_list()
 
         country_schema = vol.Schema(
             {
-                vol.Required(CONF_COUNTRY, default="Österreich"): vol.In(
-                    list(COUNTRIES.keys())
-                )
+                vol.Required(
+                    CONF_COUNTRY,
+                    default=translated_countries.get("Österreich", "Österreich"),
+                ): vol.In(list(country_options.keys()))
             }
         )
 
@@ -105,10 +119,10 @@ class BergfexConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             data_schema=country_schema,
         )
 
-    async def async_step_ski_area(
+    async def async_step_ski_area_list(
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
-        """Handle the ski area selection step."""
+        """Handle the ski area selection step (list)."""
         errors = {}
         country_name = self._data[CONF_COUNTRY]
         country_path = COUNTRIES[country_name]
@@ -149,7 +163,7 @@ class BergfexConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if not ski_areas:
             errors["base"] = "config.error.no_areas_found"
             return self.async_show_form(
-                step_id="ski_area",
+                step_id="ski_area_list",
                 errors=errors,
             )
 
@@ -161,7 +175,7 @@ class BergfexConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         )
 
         return self.async_show_form(
-            step_id="ski_area",
+            step_id="ski_area_list",
             data_schema=data_schema,
             errors=errors,
             description_placeholders={"country": country_name},

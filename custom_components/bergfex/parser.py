@@ -14,6 +14,22 @@ from .const import KEYWORDS
 _LOGGER = logging.getLogger(__name__)
 
 
+def _translate_value(value: str, lang: str) -> str:
+    """Translate common Bergfex strings from German to the target language."""
+    if not value or lang == "at":
+        return value
+
+    keywords = KEYWORDS.get(lang, KEYWORDS["at"])
+    translations = keywords.get("values", {})
+
+    translated_value = value
+    for de_val, target_val in translations.items():
+        if de_val in translated_value:
+            translated_value = translated_value.replace(de_val, target_val)
+
+    return translated_value
+
+
 def parse_bergfex_datetime(date_str: str, lang: str = "at") -> datetime | None:
     """Parse Bergfex date/time strings to datetime objects.
 
@@ -126,9 +142,9 @@ def parse_overview_data(html: str, lang: str = "at") -> dict[str, dict[str, Any]
                 return cell["data-value"]
             return cell.text.strip().replace("cm", "").strip()
 
-        area_data["snow_valley"] = get_val(cols[1])
-        area_data["snow_mountain"] = get_val(cols[2])
-        area_data["new_snow"] = get_val(cols[3])
+        area_data["snow_valley"] = _translate_value(get_val(cols[1]), lang)
+        area_data["snow_mountain"] = _translate_value(get_val(cols[2]), lang)
+        area_data["new_snow"] = _translate_value(get_val(cols[3]), lang)
 
         # Lifts and Status (from column 4)
         lifts_cell = cols[4]
@@ -343,7 +359,7 @@ def parse_resort_page(
     # Snow condition (Schneezustand)
     snow_condition = get_text_from_dd(soup, keywords["snow_condition"])
     if snow_condition:
-        area_data["snow_condition"] = snow_condition
+        area_data["snow_condition"] = _translate_value(snow_condition, lang)
 
     # Last snowfall (Letzter Schneefall Region)
     last_snowfall = get_text_from_dd(soup, keywords["last_snowfall"])
@@ -354,11 +370,12 @@ def parse_resort_page(
     avalanche_warning = get_text_from_dd(soup, keywords["avalanche"])
     if avalanche_warning:
         # Remove common service names if present
-        area_data["avalanche_warning"] = (
+        cleaned = (
             avalanche_warning.replace("Lawinenwarndienst", "")
             .replace("Avalanche Warning Service", "")
             .strip()
         )
+        area_data["avalanche_warning"] = _translate_value(cleaned, lang)
     # Lifts & Slopes parsing
     from_kw = keywords.get("from", "von")
 
@@ -442,7 +459,7 @@ def parse_resort_page(
     # Slope condition (Pistenzustand)
     slope_condition = get_text_from_dd(soup, keywords["slope_condition"])
     if slope_condition:
-        area_data["slope_condition"] = slope_condition
+        area_data["slope_condition"] = _translate_value(slope_condition, lang)
 
     # Status
     if area_data.get("lifts_open_count", 0) > 0:
