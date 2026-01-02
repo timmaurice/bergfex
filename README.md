@@ -9,12 +9,12 @@
 
 This custom integration for Home Assistant fetches snow reports and ski resort data directly from [Bergfex](https://www.bergfex.com). Since Bergfex does not provide a public API, this component scrapes the data from their website.
 
-## Features
-
-*   **Multi-Country Support**: Select ski areas from Austria, Germany, Switzerland, and more.
-*   **Efficient Polling**: Fetches data for an entire country in a single request to minimize traffic, shared across all sensors for that country.
+*   **Multi-language Support**: Use Bergfex in your preferred language (German, English, French, Italian, Spanish, Dutch, and more).
+*   **Dynamic Domain Mapping**: Automatically uses the correct Bergfex domain (e.g., .at, .com, .fr, .it) based on your language selection.
+*   **Multi-Country Support**: Select ski areas from various European countries including Austria, Germany, Switzerland, Italy, France, and others.
+*   **Efficient Polling**: Fetches data for an entire region/country efficiently, shared across all sensors.
 *   **Device per Ski Area**: Creates a dedicated device in Home Assistant for each monitored ski area.
-*   **Detailed Sensors**: Provides sensors for key snow and lift data.
+*   **Detailed Sensors**: Provides comprehensive sensors for snow depths, lift status, slope conditions, and avalanche warnings.
 
 ## Installation
 
@@ -40,10 +40,11 @@ Configuration is done entirely through the Home Assistant UI.
 
 1.  Go to **Settings** -> **Devices & Services**.
 2.  Click **Add Integration** and search for "Bergfex Snow Report".
-3.  **Step 1: Select Country**: A dialog will appear asking you to select the country where your desired ski area is located.
-4.  **Step 2: Select Ski Area**: A second dialog will show a list of all ski areas in the selected country. Choose the one you want to monitor.
-    *   **Manual Entry**: If your desired ski area is not in the dropdown list, you can manually enter its URL path (e.g., `nebelhorn-oberstdorf` or `lelex-crozet`) in the "Manual URL Path" field.
-5.  Click **Submit**.
+3.  **Step 1: Select Language**: Choose your preferred language. This will determine the Bergfex domain used (e.g., English -> bergfex.com, French -> bergfex.fr).
+4.  **Step 2: Select Country**: Select the country where your desired ski area is located.
+5.  **Step 3: Select Ski Area**: Choose a ski area from the list.
+    *   **Manual Entry**: If your desired ski area is not in the list, you can manually enter its URL path (e.g., `nebelhorn-oberstdorf` or `lelex-crozet`) in the "Manual URL Path" field.
+6.  Click **Submit**.
 
 A new device will be created for the ski area, containing all the sensors listed below. You can repeat this process to add multiple ski areas.
 

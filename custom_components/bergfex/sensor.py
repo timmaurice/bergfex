@@ -18,6 +18,8 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 from .const import (
     BASE_URL,
     CONF_COUNTRY,
+    CONF_DOMAIN,
+    CONF_LANGUAGE,
     CONF_SKI_AREA,
     COORDINATORS,
     COUNTRIES,
@@ -182,7 +184,8 @@ class BergfexSensor(SensorEntity):
         self._initial_area_name = entry.data["name"]  # Store initial name as fallback
         self._area_name = self._initial_area_name  # Current name, can be updated
         self._area_path = entry.data[CONF_SKI_AREA]
-        self._config_url = urljoin(BASE_URL, self._area_path)
+        self._domain = entry.data.get(CONF_DOMAIN, BASE_URL)
+        self._config_url = urljoin(self._domain, self._area_path)
         self._sensor_name = sensor_name
         self._data_key = data_key
         self._attr_icon = icon

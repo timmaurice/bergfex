@@ -16,6 +16,8 @@ from homeassistant.exceptions import ConfigEntryNotReady
 from .const import (
     BASE_URL,
     CONF_COUNTRY,
+    CONF_DOMAIN,
+    CONF_LANGUAGE,
     CONF_SKI_AREA,
     COORDINATORS,
     COUNTRIES,
@@ -37,6 +39,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     country_path = COUNTRIES.get(country_name)
     area_name = entry.data["name"]
     area_path = entry.data[CONF_SKI_AREA]
+    domain = entry.data.get(CONF_DOMAIN, BASE_URL)
+    lang = entry.data.get(CONF_LANGUAGE, "at")
 
     # Always create a resort-specific coordinator to get detail page data
     resort_coordinator_name = f"bergfex_{area_name}"
@@ -51,12 +55,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         async def async_update_data_resort():
             """Fetch and parse data for a single ski area from detail page."""
             try:
-                url = urljoin(BASE_URL, area_path)
+                url = urljoin(domain, area_path)
                 _LOGGER.debug("Fetching resort data from: %s", url)
                 async with session.get(url, allow_redirects=True) as response:
                     response.raise_for_status()
                     html = await response.text()
-                parsed_data = parse_resort_page(html, area_path)
+                parsed_data = parse_resort_page(html, area_path, lang)
 
                 # Fetch "New Snow" from region overview (more accurate than detail page)
                 region_path_from_data = parsed_data.get("region_path", "").strip("/")
@@ -64,7 +68,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                     try:
                         # Construct URL for region snow report (e.g. /tirol/schneewerte/)
                         snow_report_url = urljoin(
-                            BASE_URL, f"/{region_path_from_data}/schneewerte/"
+                            domain, f"/{region_path_from_data}/schneewerte/"
                         )
                         _LOGGER.debug(
                             "Fetching region snow report from: %s", snow_report_url
@@ -74,7 +78,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                         ) as response:
                             if response.status == 200:
                                 overview_html = await response.text()
-                                overview_data = parse_overview_data(overview_html)
+                                overview_data = parse_overview_data(overview_html, lang)
                                 # The keys in overview_data are full paths e.g. /skimountaineering/tirol/hintertux/
                                 # area_path is e.g. /hintertux/
                                 # We need to find the matching entry
@@ -104,7 +108,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                         ).strip("/")
                         if region_path_from_data:
                             forecast_url = urljoin(
-                                BASE_URL,
+                                domain,
                                 f"/{region_path_from_data}/wetter/schneevorhersage/{i}/",
                             )
                         else:
