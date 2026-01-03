@@ -1,93 +1,143 @@
-# Bergfex Snow Report Integration for Home Assistant
+# Bergfex Snow Report ETL Pipeline
 
-[![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg?style=flat-square)](https://github.com/hacs/integration)
-![GitHub release (latest by date)](https://img.shields.io/github/v/release/timmaurice/bergfex?style=flat-square)
-[![GH-downloads](https://img.shields.io/github/downloads/timmaurice/bergfex/total?style=flat-square)](https://github.com/timmaurice/bergfex/releases)
-[![GH-last-commit](https://img.shields.io/github/last-commit/timmaurice/bergfex.svg?style=flat-square)](https://github.com/timmaurice/bergfex/commits/master)
-[![GH-code-size](https://img.shields.io/github/languages/code-size/timmaurice/bergfex.svg?style=flat-square)](https://github.com/timmaurice/bergfex)
-![GitHub](https://img.shields.io/github/license/timmaurice/bergfex?style=flat-square)
+[![Deploy](https://github.com/Alexander-Heinz/bergfex-scraper/actions/workflows/deploy.yml/badge.svg)](https://github.com/Alexander-Heinz/bergfex-scraper/actions/workflows/deploy.yml)
+![Python](https://img.shields.io/badge/python-3.12-blue?style=flat-square)
+![Terraform](https://img.shields.io/badge/terraform-1.6+-purple?style=flat-square)
+![License](https://img.shields.io/github/license/Alexander-Heinz/bergfex-scraper?style=flat-square)
 
-This custom integration for Home Assistant fetches snow reports and ski resort data directly from [Bergfex](https://www.bergfex.com). Since Bergfex does not provide a public API, this component scrapes the data from their website.
+An automated ETL pipeline that scrapes snow reports from [Bergfex](https://www.bergfex.com) ski resorts across multiple countries and loads them into Google BigQuery for analytics and dashboards.
+
+## Architecture
+
+```
+┌─────────────────┐     ┌──────────────────┐     ┌─────────────────┐
+│  Cloud Scheduler │────▶│  Cloud Function  │────▶│    BigQuery     │
+│   (Daily 7am)   │     │   (Python ETL)   │     │  (Data Warehouse)│
+└─────────────────┘     └──────────────────┘     └─────────────────┘
+                               │
+                               ▼
+                        ┌──────────────────┐
+                        │   bergfex.com    │
+                        │   (Web Scraping) │
+                        └──────────────────┘
+```
 
 ## Features
 
-*   **Multi-Country Support**: Select ski areas from Austria, Germany, Switzerland, and more.
-*   **Efficient Polling**: Fetches data for an entire country in a single request to minimize traffic, shared across all sensors for that country.
-*   **Device per Ski Area**: Creates a dedicated device in Home Assistant for each monitored ski area.
-*   **Detailed Sensors**: Provides sensors for key snow and lift data.
+- **Multi-Country Support**: Austria, Germany, Switzerland, Italy, and more
+- **Automated Daily Runs**: Cloud Scheduler triggers the scraper at 7am CET
+- **Dimensional Model**: Normalized into `dim_resorts` and `fct_snow_measurements` tables
+- **CI/CD Pipeline**: GitHub Actions with Workload Identity Federation (keyless auth)
+- **Infrastructure as Code**: Full GCP infrastructure managed via Terraform
 
-## Installation
+## Data Schema
 
-### HACS (Recommended)
+### `dim_resorts` (Dimension Table)
+| Column | Type | Description |
+|--------|------|-------------|
+| resort_id | STRING | MD5 hash of area_url |
+| resort_name | STRING | Name of the ski resort |
+| country | STRING | Country name |
+| region | STRING | Region (e.g., Tirol) |
+| area_url | STRING | URL path on bergfex.com |
+| elevation_valley | INTEGER | Valley elevation (m) |
+| elevation_mountain | INTEGER | Mountain elevation (m) |
 
-This card is available in the [Home Assistant Community Store (HACS)](https://hacs.xyz/).
+### `fct_snow_measurements` (Fact Table)
+| Column | Type | Description |
+|--------|------|-------------|
+| measurement_id | STRING | Unique ID (resort_id + date) |
+| resort_id | STRING | FK to dim_resorts |
+| date | DATE | Measurement date |
+| timestamp | TIMESTAMP | Exact scrape time |
+| snow_valley | STRING | Snow depth in valley (cm) |
+| snow_mountain | STRING | Snow depth on mountain (cm) |
+| new_snow | STRING | Fresh snow last 24h (cm) |
+| slopes_open_km | FLOAT | Open slopes (km) |
+| slopes_total_km | FLOAT | Total slopes (km) |
+| slope_condition | STRING | Piste condition (e.g., "gut") |
+| last_snowfall | STRING | Last snowfall info |
+| last_update | TIMESTAMP | Resort's last update time |
+| avalanche_warning | STRING | Avalanche warning level |
 
-<a href="https://my.home-assistant.io/redirect/hacs_repository/?owner=timmaurice&repository=bergfex&category=integration" target="_blank" rel="noreferrer noopener"><img src="https://my.home-assistant.io/badges/hacs_repository.svg" alt="Open your Home Assistant instance and open a repository inside the Home Assistant Community Store." /></a>
+## Quick Start
 
-<details>
-<summary>Manual Installation</summary>
+### Prerequisites
 
-1.  Using the tool of your choice, copy the `bergfex` folder from `custom_components` in this repository into your Home Assistant's `custom_components` directory.
-2.  Restart Home Assistant.
-</details>
+- Python 3.12+
+- Google Cloud SDK (`gcloud`)
+- Terraform 1.6+
 
-### Related lovelace card:
-https://github.com/timmaurice/lovelace-bergfex-card
+### Local Development
 
-## Configuration
+```bash
+# Clone and setup
+git clone https://github.com/Alexander-Heinz/bergfex-scraper.git
+cd bergfex-scraper
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
 
-Configuration is done entirely through the Home Assistant UI.
+# Run tests
+pytest tests/ -v
 
-1.  Go to **Settings** -> **Devices & Services**.
-2.  Click **Add Integration** and search for "Bergfex Snow Report".
-3.  **Step 1: Select Country**: A dialog will appear asking you to select the country where your desired ski area is located.
-4.  **Step 2: Select Ski Area**: A second dialog will show a list of all ski areas in the selected country. Choose the one you want to monitor.
-    *   **Manual Entry**: If your desired ski area is not in the dropdown list, you can manually enter its URL path (e.g., `nebelhorn-oberstdorf` or `lelex-crozet`) in the "Manual URL Path" field.
-5.  Click **Submit**.
+# Run scraper locally (smoke test)
+python main.py --smoke-test
 
-A new device will be created for the ski area, containing all the sensors listed below. You can repeat this process to add multiple ski areas.
+# Run full scrape
+python main.py --force
+```
 
-## Created Sensors
+### Deploy Infrastructure
 
-For each configured ski area, the following sensors will be created:
+```bash
+cd terraform
+terraform init
+terraform apply
+```
 
-| Sensor            | Description                                   | Example Value         |
-| ----------------- | --------------------------------------------- | --------------------- |
-| **Status**            | The current operational status of the resort. | `Open`                |
-| **Snow Valley**       | Snow depth in the valley, in cm.              | `35`                  |
-| **Snow Mountain**     | Snow depth on the mountain, in cm.            | `110`                 |
-| **New Snow**          | Fresh snow in the last 24h, in cm.            | `15`                  |
-| **Snow Condition**    | Condition of the snow.                        | `Pulver`              |
-| **Last Snowfall**     | Date of the last snowfall.                    | `28.11.`              |
-| **Avalanche Warning** | Current avalanche warning level.              | `2 - mäßig`           |
-| **Lifts Open**        | The number of currently open lifts.           | `14`                  |
-| **Lifts Total**       | The total number of lifts in the resort.      | `26`                  |
-| **Slopes Open (km)**  | Kilometers of open slopes.                    | `45`                  |
-| **Slopes Total (km)** | Total kilometers of slopes.                   | `60`                  |
-| **Slopes Open**       | Number of open slopes.                        | `20`                  |
-| **Slopes Total**      | Total number of slopes.                       | `30`                  |
-| **Slope Condition**   | Condition of the slopes.                      | `gut`                 |
-| **Last Update**       | The timestamp of the last data report.        | `2024-10-28 21:54:24` |
+## CI/CD Pipeline
 
-## Image Entities
+The project uses GitHub Actions with Workload Identity Federation for secure, keyless authentication to GCP.
 
-In addition to sensors, the integration provides image entities for snow forecasts. These can be displayed in dashboards using the Picture Entity card or similar.
+### Workflow
 
-| Entity                        | Description                                      |
-| ----------------------------- | ------------------------------------------------ |
-| **Snow Forecast Day 0-5**     | Daily snow forecast maps for the next 6 days.    |
-| **Snow Forecast Summary Xh**  | Summary forecast maps (48h, 72h, 96h, 120h, 144h). |
+1. **On Push/PR**: Runs `pytest` tests
+2. **On Push to main**: Deploys via Terraform
 
-## Contributions
+### Required GitHub Secrets
 
-Contributions are welcome! If you find a bug or have a feature request, please open an issue on the GitHub repository.
+| Secret | Description |
+|--------|-------------|
+| `GCP_PROJECT_ID` | GCP Project ID |
+| `GCP_SERVICE_ACCOUNT` | Service Account email |
+| `GCP_WORKLOAD_IDENTITY_PROVIDER` | WIF Provider resource name |
 
----
+## Project Structure
 
-For further assistance or to [report issues](https://github.com/timmaurice/bergfex/issues), please visit the [GitHub repository](https://github.com/timmaurice/bergfex).
+```
+bergfex-scraper/
+├── main.py                 # ETL entry point
+├── etl_utils/
+│   ├── parser.py          # HTML parsing logic
+│   └── const.py           # Constants (countries, URLs)
+├── terraform/
+│   ├── main.tf            # Provider & backend config
+│   ├── bigquery.tf        # BQ tables & views
+│   ├── function.tf        # Cloud Function
+│   └── scheduler.tf       # Cloud Scheduler
+├── tests/
+│   ├── test_parser_etl.py # Parser unit tests
+│   └── fixtures/          # HTML test fixtures
+└── .github/workflows/
+    └── deploy.yml         # CI/CD pipeline
+```
 
-![Star History Chart](https://api.star-history.com/svg?repos=timmaurice/bergfex&type=Date)
+## Related Projects
 
-## ☕ Support My Work
+- **[bergfex-dashboard](https://github.com/Alexander-Heinz/bergfex-dashboard)**: React dashboard consuming this data
+- **Original Fork**: Based on [timmaurice/bergfex](https://github.com/timmaurice/bergfex) Home Assistant integration
 
-[<img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" height="30" />](https://www.buymeacoffee.com/timmaurice)
+## License
+
+MIT License - see [LICENSE](LICENSE)

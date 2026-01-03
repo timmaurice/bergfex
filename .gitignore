@@ -1,3 +1,29 @@
-GEMINI.md
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+.env
+*.egg-info/
+.pytest_cache/
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+tfplan
+.terraform.lock.hcl
+
+# IDE
+.vscode/
+.idea/
+
+# Local test files
 schneebericht*
 test_parser.py
+GEMINI.md
+
+# Data files (generated)
+*.csv
+!tests/fixtures/*.csv
