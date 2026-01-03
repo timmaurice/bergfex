@@ -66,7 +66,7 @@ resource "google_cloudfunctions2_function" "scraper" {
   description = "Scrapes Bergfex snow reports"
 
   build_config {
-    runtime     = "python311"
+    runtime     = "python312"
     entry_point = "scrape_job" 
     source {
       storage_source {
