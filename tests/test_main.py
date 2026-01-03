@@ -76,13 +76,16 @@ def test_main_execution(requests_mock, tmp_path):
     # but we should be careful about the output file.
     # Let's mock save_to_csv instead to verify it's called.
     
-    from unittest.mock import patch
-    import sys
+    from unittest.mock import patch, MagicMock
+    import argparse
     
-    # Patch sys.argv to avoid argparse conflicting with pytest args
+    # Mock parse_args directly to bypass sys.argv issues
     with patch("main.save_to_csv") as mock_save, \
-         patch.object(sys, 'argv', ['main.py']):
+         patch("argparse.ArgumentParser.parse_args") as mock_parse_args:
+             
+        mock_parse_args.return_value = argparse.Namespace(smoke_test=False, force=False)
         main()
+        
         assert mock_save.called
         # Check that it gathered data from all countries (even if empty)
         # In this mock, each country returns empty list, so passed data is empty list
