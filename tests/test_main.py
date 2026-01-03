@@ -77,8 +77,11 @@ def test_main_execution(requests_mock, tmp_path):
     # Let's mock save_to_csv instead to verify it's called.
     
     from unittest.mock import patch
+    import sys
     
-    with patch("main.save_to_csv") as mock_save:
+    # Patch sys.argv to avoid argparse conflicting with pytest args
+    with patch("main.save_to_csv") as mock_save, \
+         patch.object(sys, 'argv', ['main.py']):
         main()
         assert mock_save.called
         # Check that it gathered data from all countries (even if empty)

@@ -183,7 +183,7 @@ def load_csv_to_bq(
     try:
         bigquery_client = bigquery.Client(project=project_id)
 
-        dataset_ref = bigquery_client.dataset(dataset_id)
+        dataset_ref = bigquery.DatasetReference(project_id, dataset_id)
         table_ref = dataset_ref.table(table_id)
 
         job_config = bigquery.LoadJobConfig(
