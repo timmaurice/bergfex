@@ -12,8 +12,8 @@ COUNTRIES = {
     "Schweiz": "/schweiz/schneewerte/",
     "Italien": "/italien/schneewerte/",
     "Frankreich": "/frankreich/schneewerte/",
-    "Slowenien": "/slowenien/schneewerte/",
-    "Tschechien": "/tschechien/schneewerte/",
-    "Polen": "/polen/schneewerte/",
-    "Slowakei": "/slowakei/schneewerte/",
+    "Slowenien": "/slovenia/schneewerte/",
+    "Tschechien": "/czechia/schneewerte/",
+    "Polen": "/polska/schneewerte/",
+    "Slowakei": "/slovakia/schneewerte/",
 }

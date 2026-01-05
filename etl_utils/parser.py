@@ -12,6 +12,12 @@ from bs4 import BeautifulSoup
 _LOGGER = logging.getLogger(__name__)
 
 
+def clean_text(text: str | None) -> str | None:
+    """Clean text by removing newlines and extra whitespace."""
+    if not text:
+        return None
+    return " ".join(text.split())
+
 def parse_german_datetime(date_str: str) -> datetime | None:
     """Parse German date/time strings to datetime objects.
 
@@ -113,7 +119,7 @@ def parse_overview_data(html: str) -> dict[str, dict[str, Any]]:
 
         area_path = link["href"]
         area_data = {}
-        area_data["resort_name"] = link.text.strip()
+        area_data["resort_name"] = clean_text(link.text)
 
         # Snow Depths (Valley, Mountain) and New Snow from data-value
         area_data["snow_valley"] = cols[1].get("data-value")
@@ -188,7 +194,7 @@ def get_text_from_dd(soup: BeautifulSoup, text: str) -> str | None:
     for dt in soup.find_all("dt"):
         if text in dt.get_text():
             if dd := dt.find_next_sibling("dd"):
-                return dd.text.strip()
+                return clean_text(dd.text)
     return None
 
 
@@ -202,7 +208,7 @@ def parse_resort_page(html: str, area_path: str | None = None) -> dict[str, Any]
     if h1_tag:
         spans = h1_tag.find_all("span")
         if len(spans) > 1:
-            area_data["resort_name"] = spans[1].text.strip()
+            area_data["resort_name"] = clean_text(spans[1].text)
 
     # Region path from breadcrumbs
     # Try finding by aria-label "Breadcrumb" (newer design)

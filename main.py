@@ -190,6 +190,7 @@ def load_csv_to_bq(
             source_format=bigquery.SourceFormat.CSV,
             skip_leading_rows=1,
             write_disposition=write_disposition,
+            allow_quoted_newlines=True,
         )
 
         load_job = bigquery_client.load_table_from_uri(
