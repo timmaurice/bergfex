@@ -70,6 +70,12 @@ def les_saisies_fr_html():
     with open(fixture_path, "r") as f:
         return f.read()
 
+@pytest.fixture
+def les_saisies_pl_html():
+    fixture_path = Path(__file__).parent / "fixtures" / "les-saisies-pl.html"
+    with open(fixture_path, "r") as f:
+        return f.read()
+
 
 def test_parse_lelex_crozet_snow_data(lelex_crozet_html):
     data = parse_resort_page(lelex_crozet_html, lang="at")
@@ -97,6 +103,7 @@ def test_parse_les_saisies_at_snow_data(les_saisies_at_html):
     assert data["resort_name"] == "Les Saisies"
     assert "snow_mountain" in data
     assert "snow_valley" in data
+    assert "slope_condition" in data
     assert "lifts_open_count" in data
     assert "lifts_total_count" in data
     assert data["status"] in ["Open", "Closed"]
@@ -108,6 +115,7 @@ def test_parse_les_saisies_en_snow_data(les_saisies_en_html):
     assert data["resort_name"] == "Les Saisies"
     assert "snow_mountain" in data
     assert "snow_valley" in data
+    assert "slope_condition" in data
     assert "lifts_open_count" in data
     assert "lifts_total_count" in data
     assert data["status"] in ["Open", "Closed"]
@@ -119,10 +127,22 @@ def test_parse_les_saisies_fr_snow_data(les_saisies_fr_html):
     assert data["resort_name"] == "Les Saisies"
     assert "snow_mountain" in data
     assert "snow_valley" in data
+    assert "slope_condition" in data
     assert "lifts_open_count" in data
     assert "lifts_total_count" in data
     assert data["status"] in ["Open", "Closed"]
 
+
+def test_parse_les_saisies_pl_snow_data(les_saisies_pl_html):
+    """Test parsing of English Les Saisies page."""
+    data = parse_resort_page(les_saisies_pl_html, lang="pl")
+    assert data["resort_name"] == "Les Saisies"
+    assert "snow_mountain" in data
+    assert "snow_valley" in data
+    assert "slope_condition" in data
+    assert "lifts_open_count" in data
+    assert "lifts_total_count" in data
+    assert data["status"] in ["Open", "Closed"]
 
 def test_parse_overview_data_robust():
     """Test that overview data parsing is robust with and without data-value."""

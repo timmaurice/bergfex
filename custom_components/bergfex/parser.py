@@ -286,7 +286,7 @@ def parse_resort_page(
             # Extract mountain elevation from the text like "(Piste, 3.250m)"
             if "(" in dt_text and "m)" in dt_text:
                 elevation_text = (
-                    dt_text.split("(")[1].split("m)")[0].split(",")[-1].strip()
+                    dt_text.split("(")[1].split("m)")[0].split(",", 1)[-1].strip()
                 )
                 # Remove dots from elevation (3.250 -> 3250)
                 elevation_clean = elevation_text.replace(".", "").replace(",", "")
@@ -302,7 +302,7 @@ def parse_resort_page(
             # Extract valley elevation from the text like "(Piste, 1.500m)"
             if "(" in dt_text and "m)" in dt_text:
                 elevation_text = (
-                    dt_text.split("(")[1].split("m)")[0].split(",")[-1].strip()
+                    dt_text.split("(")[1].split("m)")[0].split(",", 1)[-1].strip()
                 )
                 # Remove dots/commas from elevation (1.500 or 1,500 -> 1500)
                 elevation_clean = elevation_text.replace(".", "").replace(",", "")
@@ -371,9 +371,7 @@ def parse_resort_page(
     if avalanche_warning:
         # Remove common service names if present
         cleaned = (
-            avalanche_warning.replace("Lawinenwarndienst", "")
-            .replace("Avalanche Warning Service", "")
-            .strip()
+            avalanche_warning.split("\n")[0].strip()
         )
         area_data["avalanche_warning"] = _translate_value(cleaned, lang)
     # Lifts & Slopes parsing
