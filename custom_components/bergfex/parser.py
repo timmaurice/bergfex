@@ -209,9 +209,11 @@ def parse_overview_data(html: str, lang: str = "at") -> dict[str, dict[str, Any]
 
 def get_text_from_dd(soup: BeautifulSoup, text: str) -> str | None:
     """Get the text from a dd element based on the text of the preceding dt element."""
-    dt = soup.find("dt", string=lambda t: t and text in t)
-    if dt and (dd := dt.find_next_sibling("dd")):
-        return dd.text.strip()
+    # Use a more robust search that handles nested tags in DT
+    for dt in soup.find_all("dt"):
+        if text.lower() in dt.get_text().lower():
+            if dd := dt.find_next_sibling("dd"):
+                return dd.text.strip()
     return None
 
 
@@ -282,7 +284,15 @@ def parse_resort_page(
         dt_text = dt.text.strip()
         if keywords["mountain"] in dt_text:
             if dd := dt.find_next_sibling("dd", class_="big"):
-                area_data["snow_mountain"] = dd.text.strip().replace("cm", "").strip()
+                # Use split() to get only the first part (the actual depth)
+                # and ignore children like <div class="default-size">nieuw: 20 cm</div>
+                area_data["snow_mountain"] = (
+                    dd.get_text(separator="|")
+                    .split("|")[0]
+                    .strip()
+                    .replace("cm", "")
+                    .strip()
+                )
             # Extract mountain elevation from the text like "(Piste, 3.250m)"
             if "(" in dt_text and "m)" in dt_text:
                 elevation_text = (
@@ -298,7 +308,14 @@ def parse_resort_page(
                     )
         elif keywords["valley"] in dt_text:
             if dd := dt.find_next_sibling("dd", class_="big"):
-                area_data["snow_valley"] = dd.text.strip().replace("cm", "").strip()
+                # Use split() to get only the first part (the actual depth)
+                area_data["snow_valley"] = (
+                    dd.get_text(separator="|")
+                    .split("|")[0]
+                    .strip()
+                    .replace("cm", "")
+                    .strip()
+                )
             # Extract valley elevation from the text like "(Piste, 1.500m)"
             if "(" in dt_text and "m)" in dt_text:
                 elevation_text = (
@@ -316,7 +333,13 @@ def parse_resort_page(
             # Fallback for resorts that don't satisfy "Tal" but have "Schneehöhe" (often higher altitude)
             if "snow_valley" not in area_data:
                 if dd := dt.find_next_sibling("dd", class_="big"):
-                    area_data["snow_valley"] = dd.text.strip().replace("cm", "").strip()
+                    area_data["snow_valley"] = (
+                        dd.get_text(separator="|")
+                        .split("|")[0]
+                        .strip()
+                        .replace("cm", "")
+                        .strip()
+                    )
                 # Extract elevation from text like "Schneehöhe 1.850m"
                 match = re.search(r"(\d+(?:[\.,]\d+)*)m", dt_text)
                 if match:
@@ -370,9 +393,7 @@ def parse_resort_page(
     avalanche_warning = get_text_from_dd(soup, keywords["avalanche"])
     if avalanche_warning:
         # Remove common service names if present
-        cleaned = (
-            avalanche_warning.split("\n")[0].strip()
-        )
+        cleaned = avalanche_warning.split("\n")[0].strip()
         area_data["avalanche_warning"] = _translate_value(cleaned, lang)
     # Lifts & Slopes parsing
     from_kw = keywords.get("from", "von")
@@ -398,9 +419,12 @@ def parse_resort_page(
             area_data["lifts_total_count"] = t
 
     # Try Slopes by keyword
-    slopes_dt = soup.find(
-        "dt", string=lambda t: t and keywords.get("pistes", "Offene Pisten") in t
-    )
+    slopes_dt = None
+    slopes_kw = keywords.get("pistes", "Offene Pisten")
+    for dt in soup.find_all("dt"):
+        if slopes_kw.lower() in dt.get_text().lower():
+            slopes_dt = dt
+            break
     if slopes_dt:
         curr = slopes_dt.next_sibling
         while curr:
