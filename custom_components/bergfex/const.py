@@ -5,6 +5,7 @@ CONF_LANGUAGE = "language"
 CONF_DOMAIN = "domain"
 COORDINATORS = "coordinators"
 BASE_URL = "https://www.bergfex.at"
+CONF_WEBHOOK_URL = "webhook_url"
 
 
 # Dictionary of countries and their corresponding snow report URL paths

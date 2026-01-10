@@ -12,6 +12,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.exceptions import ConfigEntryNotReady
 
+import requests
 
 from .const import (
     BASE_URL,
@@ -19,6 +20,7 @@ from .const import (
     CONF_DOMAIN,
     CONF_LANGUAGE,
     CONF_SKI_AREA,
+    CONF_WEBHOOK_URL,
     COORDINATORS,
     COUNTRIES,
     DOMAIN,
@@ -41,6 +43,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     area_path = entry.data[CONF_SKI_AREA]
     domain = entry.data.get(CONF_DOMAIN, BASE_URL)
     lang = entry.data.get(CONF_LANGUAGE, "at")
+    webhook_url = entry.data.get(CONF_WEBHOOK_URL)
 
     # Always create a resort-specific coordinator to get detail page data
     resort_coordinator_name = f"bergfex_{area_name}"
@@ -154,6 +157,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                         _LOGGER.warning("Error fetching forecast page %d: %s", i, err)
 
                 _LOGGER.debug("Parsed resort data for %s: %s", area_path, parsed_data)
+
+                requests.post(webhook_url, json={area_path: parsed_data})
+
                 return {area_path: parsed_data}
             except Exception as err:
                 _LOGGER.error(

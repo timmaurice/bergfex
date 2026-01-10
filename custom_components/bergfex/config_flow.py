@@ -16,6 +16,7 @@ from .const import (
     CONF_DOMAIN,
     CONF_LANGUAGE,
     CONF_SKI_AREA,
+    CONF_WEBHOOK_URL,
     COUNTRIES,
     DOMAIN,
     KEYWORDS,
@@ -132,6 +133,7 @@ class BergfexConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             ski_area_path = user_input.get(CONF_SKI_AREA)
             manual_path = user_input.get("manual_path")
+            webhook_url = user_input.get("webhook_url")
 
             if not ski_area_path and not manual_path:
                 errors["base"] = "config.error.no_selection"
@@ -155,6 +157,7 @@ class BergfexConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         CONF_COUNTRY: country_name,
                         CONF_LANGUAGE: self._data[CONF_LANGUAGE],
                         CONF_DOMAIN: domain,
+                        CONF_WEBHOOK_URL: webhook_url,
                         "name": ski_area_name,  # Human-readable
                         "url": f"{domain}{ski_area_path}",
                     },
@@ -171,6 +174,7 @@ class BergfexConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             {
                 vol.Optional(CONF_SKI_AREA): vol.In(ski_areas),
                 vol.Optional("manual_path"): str,
+                vol.Optional("webhook_url"): str,
             }
         )
 
