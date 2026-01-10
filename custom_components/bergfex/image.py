@@ -14,7 +14,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from urllib.parse import urljoin
 from homeassistant.util import dt as dt_util
 
-from .const import BASE_URL, CONF_SKI_AREA, DOMAIN
+from .const import BASE_URL, CONF_DOMAIN, CONF_SKI_AREA, DOMAIN
 
 # ... (rest of imports)
 
@@ -83,7 +83,8 @@ class BergfexImage(ImageEntity):
         self._initial_area_name = entry.data["name"]
         self._area_name = self._initial_area_name
         self._area_path = entry.data[CONF_SKI_AREA]
-        self._config_url = urljoin(BASE_URL, self._area_path)
+        self._domain = entry.data.get(CONF_DOMAIN, BASE_URL)
+        self._config_url = urljoin(self._domain, self._area_path)
         self._sensor_name = name
         self._data_key = data_key
 

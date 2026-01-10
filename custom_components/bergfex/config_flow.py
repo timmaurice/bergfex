@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 from typing import Any
 
@@ -8,18 +10,29 @@ from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
-from .const import BASE_URL, CONF_COUNTRY, CONF_SKI_AREA, COUNTRIES, DOMAIN
+from .const import (
+    BASE_URL,
+    CONF_COUNTRY,
+    CONF_DOMAIN,
+    CONF_LANGUAGE,
+    CONF_SKI_AREA,
+    COUNTRIES,
+    DOMAIN,
+    KEYWORDS,
+    SUPPORTED_LANGUAGES,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
 
-async def get_ski_areas(hass: HomeAssistant, country_path: str) -> dict[str, str]:
+async def get_ski_areas(
+    hass: HomeAssistant, country_path: str, domain: str = BASE_URL
+) -> dict[str, str]:
     """Fetch the list of ski areas from Bergfex."""
     try:
         session = async_get_clientsession(hass)
-        async with session.get(
-            f"{BASE_URL}{country_path}", allow_redirects=True
-        ) as response:
+        url = f"{domain}{country_path}"
+        async with session.get(url, allow_redirects=True) as response:
             response.raise_for_status()
             html = await response.text()
         soup = BeautifulSoup(html, "html.parser")
@@ -54,28 +67,67 @@ class BergfexConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
-        """Handle the initial step (country selection)."""
+        """Handle the initial step (language selection)."""
         if user_input is not None:
-            self._data[CONF_COUNTRY] = user_input[CONF_COUNTRY]
-            return await self.async_step_ski_area()
+            self._data[CONF_LANGUAGE] = user_input[CONF_LANGUAGE]
+            self._data[CONF_DOMAIN] = SUPPORTED_LANGUAGES[user_input[CONF_LANGUAGE]][
+                "domain"
+            ]
+            return await self.async_step_country()
 
-        country_schema = vol.Schema(
-            {vol.Required(CONF_COUNTRY): vol.In(list(COUNTRIES.keys()))}
+        language_options = {
+            code: lang["name"] for code, lang in SUPPORTED_LANGUAGES.items()
+        }
+        language_schema = vol.Schema(
+            {vol.Required(CONF_LANGUAGE, default="at"): vol.In(language_options)}
         )
 
         return self.async_show_form(
             step_id="user",
+            data_schema=language_schema,
+        )
+
+    async def async_step_country(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Handle the country selection step."""
+        lang = self._data.get(CONF_LANGUAGE, "at")
+        keywords = KEYWORDS.get(lang, KEYWORDS["at"])
+        translated_countries = keywords.get("countries", {})
+
+        # Create localized mapping: { "Translated Name": "Original Key" }
+        country_options = {
+            translated_countries.get(name, name): name for name in COUNTRIES.keys()
+        }
+
+        if user_input is not None:
+            # Map back to original country name
+            self._data[CONF_COUNTRY] = country_options[user_input[CONF_COUNTRY]]
+            return await self.async_step_ski_area_list()
+
+        country_schema = vol.Schema(
+            {
+                vol.Required(
+                    CONF_COUNTRY,
+                    default=translated_countries.get("Österreich", "Österreich"),
+                ): vol.In(list(country_options.keys()))
+            }
+        )
+
+        return self.async_show_form(
+            step_id="country",
             data_schema=country_schema,
         )
 
-    async def async_step_ski_area(
+    async def async_step_ski_area_list(
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
-        """Handle the ski area selection step."""
+        """Handle the ski area selection step (list)."""
         errors = {}
         country_name = self._data[CONF_COUNTRY]
         country_path = COUNTRIES[country_name]
-        ski_areas = await get_ski_areas(self.hass, country_path)
+        domain = self._data[CONF_DOMAIN]
+        ski_areas = await get_ski_areas(self.hass, country_path, domain)
 
         if user_input is not None:
             ski_area_path = user_input.get(CONF_SKI_AREA)
@@ -101,15 +153,17 @@ class BergfexConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     data={
                         CONF_SKI_AREA: ski_area_path,  # URL path as key
                         CONF_COUNTRY: country_name,
+                        CONF_LANGUAGE: self._data[CONF_LANGUAGE],
+                        CONF_DOMAIN: domain,
                         "name": ski_area_name,  # Human-readable
-                        "url": f"{BASE_URL}{ski_area_path}",
+                        "url": f"{domain}{ski_area_path}",
                     },
                 )
 
         if not ski_areas:
             errors["base"] = "config.error.no_areas_found"
             return self.async_show_form(
-                step_id="ski_area",
+                step_id="ski_area_list",
                 errors=errors,
             )
 
@@ -121,7 +175,7 @@ class BergfexConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         )
 
         return self.async_show_form(
-            step_id="ski_area",
+            step_id="ski_area_list",
             data_schema=data_schema,
             errors=errors,
             description_placeholders={"country": country_name},

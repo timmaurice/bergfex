@@ -2,6 +2,13 @@
   "config": {
     "step": {
       "user": {
+        "title": "Sprache auswählen",
+        "description": "Bitte wählen Sie Ihre bevorzugte Sprache aus. Dies bestimmt die verwendete Bergfex-Domain.",
+        "data": {
+          "language": "Sprache"
+        }
+      },
+      "country": {
         "title": "Land auswählen",
         "description": "Bitte wählen Sie das Land des Skigebiets aus.",
         "data": {
