@@ -359,6 +359,22 @@ def run_scraper(smoke_test: bool = False, force: bool = False):
         else:
             _LOGGER.info("GCP_BUCKET_NAME not set. Skipping cloud upload.")
 
+        # Refresh Shred Score Mart via Stored Procedure
+        if dataset_id and project_id:
+            try:
+                _LOGGER.info("Refreshing Shred Score Mart...")
+                bq_client = bigquery.Client(project=project_id)
+                # Ensure fully qualified name if not already provided in env vars, 
+                # but assuming dataset_id is just the name 'bergfex_data'
+                procedure_ref = f"{project_id}.{dataset_id}.sp_refresh_resort_shred_score_latest"
+                query = f"CALL `{procedure_ref}`();"
+                
+                job = bq_client.query(query)
+                job.result() # Wait for completion
+                _LOGGER.info(f"Shred Score Mart refreshed successfully via {procedure_ref}.")
+            except Exception as e:
+                _LOGGER.error(f"Error refreshing Shred Score Mart: {e}")
+
         _LOGGER.info("ETL job finished")
 
 
