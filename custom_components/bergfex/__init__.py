@@ -22,12 +22,15 @@ from .const import (
     CONF_TYPE,
     COORDINATORS,
     COUNTRIES,
+    COUNTRIES_CROSS_COUNTRY,
     DOMAIN,
+    KEYWORDS,
     TYPE_ALPINE,
     TYPE_CROSS_COUNTRY,
 )
 from .parser import (
     parse_cross_country_resort_page,
+    parse_cross_country_overview_data,
     parse_overview_data,
     parse_resort_page,
     parse_snow_forecast_images,
@@ -44,12 +47,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data[DOMAIN].setdefault(COORDINATORS, {})
 
     country_name = entry.data.get(CONF_COUNTRY, "Österreich")
-    country_path = COUNTRIES.get(country_name)
     area_name = entry.data["name"]
     area_path = entry.data[CONF_SKI_AREA]
     domain = entry.data.get(CONF_DOMAIN, BASE_URL)
     lang = entry.data.get(CONF_LANGUAGE, "at")
     resort_type = entry.data.get(CONF_TYPE, TYPE_ALPINE)
+
+    if resort_type == TYPE_CROSS_COUNTRY:
+        country_path = COUNTRIES_CROSS_COUNTRY.get(country_name)
+    else:
+        country_path = COUNTRIES.get(country_name)
 
     # Always create a resort-specific coordinator to get detail page data
     resort_coordinator_name = f"bergfex_{area_name}"
@@ -82,8 +89,100 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                     response.raise_for_status()
                     html = await response.text()
 
+                parsed_data = {}
                 if resort_type == TYPE_CROSS_COUNTRY:
-                    parsed_data = parse_cross_country_resort_page(html, lang)
+                    parsed_data.update(parse_cross_country_resort_page(html, lang))
+
+                    # Fetch total trail lengths from the overview page, as they are often not on the detail page.
+                    if country_path:
+                        try:
+                            overview_url = urljoin(domain, country_path)
+                            _LOGGER.debug(
+                                "Fetching cross-country overview from: %s",
+                                overview_url,
+                            )
+                            async with session.get(
+                                overview_url, allow_redirects=True
+                            ) as response:
+                                if response.status == 200:
+                                    overview_html = await response.text()
+                                    # This will parse totals for all resorts on the page
+                                    overview_data = parse_cross_country_overview_data(
+                                        overview_html, lang
+                                    )
+                                    # Find our specific resort in the overview data and update totals
+                                    # Find our specific resort in the overview data and update totals
+                                    resort_name_from_detail_page = parsed_data.get(
+                                        "resort_name"
+                                    )
+                                    found_match = False
+                                    if resort_name_from_detail_page:
+                                        try:
+                                            trail_report_kw = KEYWORDS.get(
+                                                lang, KEYWORDS["at"]
+                                            ).get("trail_report", "Loipenbericht")
+                                            resort_name_clean = (
+                                                resort_name_from_detail_page.replace(
+                                                    trail_report_kw, ""
+                                                ).strip()
+                                            )
+                                            # Normalize by taking the first part before any slash
+                                            if "/" in resort_name_clean:
+                                                resort_name_clean = (
+                                                    resort_name_clean.split("/")[
+                                                        0
+                                                    ].strip()
+                                                )
+
+                                            for key, data in overview_data.items():
+                                                overview_name = data.get("name", "")
+                                                if (
+                                                    overview_name
+                                                    and resort_name_clean
+                                                    in overview_name
+                                                ):
+                                                    parsed_data.update(data)
+                                                    _LOGGER.debug(
+                                                        f"Merged overview data for {resort_name_clean} using name matching."
+                                                    )
+                                                    found_match = True
+                                                    break
+                                        except Exception as e:
+                                            _LOGGER.debug(
+                                                f"Name matching for cross-country overview failed: {e}"
+                                            )
+
+                                    if not found_match:
+                                        _LOGGER.debug(
+                                            "Falling back to URL-based matching for cross-country overview."
+                                        )
+                                        for key, data in overview_data.items():
+                                            # Normalize keys and area_path to compare reliably
+                                            k_clean = key.strip("/")
+                                            ap_clean = area_path.strip("/")
+                                            # Match if overview key equals suffix of area_path or vice versa
+                                            if k_clean and (
+                                                ap_clean.endswith(k_clean)
+                                                or k_clean in ap_clean
+                                            ):
+                                                parsed_data.update(data)
+                                                _LOGGER.debug(
+                                                    "Merged overview data for %s using URL matching on key %s.",
+                                                    area_path,
+                                                    key,
+                                                )
+                                                found_match = True
+                                                break
+                                else:
+                                    _LOGGER.warning(
+                                        "Could not fetch cross-country overview page: %s",
+                                        response.status,
+                                    )
+                        except Exception as err:
+                            _LOGGER.warning(
+                                "Error fetching cross-country overview: %s", err
+                            )
+
                     _LOGGER.debug(
                         "Parsed cross country data for %s: %s", area_path, parsed_data
                     )

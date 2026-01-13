@@ -57,23 +57,25 @@ A new device will be created for the ski area, containing all the sensors listed
 
 For each configured ski area, the following sensors will be created:
 
-| Sensor            | Description                                   | Example Value         |
-| ----------------- | --------------------------------------------- | --------------------- |
-| **Status**            | The current operational status of the resort. | `Open`                |
-| **Snow Valley**       | Snow depth in the valley, in cm.              | `35`                  |
-| **Snow Mountain**     | Snow depth on the mountain, in cm.            | `110`                 |
-| **New Snow**          | Fresh snow in the last 24h, in cm.            | `15`                  |
-| **Snow Condition**    | Condition of the snow.                        | `Pulver`              |
-| **Last Snowfall**     | Date of the last snowfall.                    | `28.11.`              |
-| **Avalanche Warning** | Current avalanche warning level.              | `2 - mäßig`           |
-| **Lifts Open**        | The number of currently open lifts.           | `14`                  |
-| **Lifts Total**       | The total number of lifts in the resort.      | `26`                  |
-| **Slopes Open (km)**  | Kilometers of open slopes.                    | `45.5`                |
-| **Slopes Total (km)** | Total kilometers of slopes.                   | `60`                  |
-| **Slopes Open**       | Number of open slopes.                        | `20`                  |
-| **Slopes Total**      | Total number of slopes.                       | `30`                  |
-| **Slope Condition**   | Condition of the slopes.                      | `gut`                 |
-| **Last Update**       | The timestamp of the last data report.        | `2024-10-28 21:54:24` |
+| Sensor            | Description                                   | Attributes      | Example Value         |
+| :---------------- | :-------------------------------------------- | :-------------- | :-------------------- |
+| **Status**            | The current operational status of the resort. |                 | `Open`                |
+| **Snow Valley**       | Snow depth in the valley, in cm.              | `elevation`     | `35`                  |
+| **Snow Mountain**     | Snow depth on the mountain, in cm.            | `elevation`     | `110`                 |
+| **New Snow**          | Fresh snow in the last 24h, in cm.            |                 | `15`                  |
+| **Snow Condition**    | Condition of the snow.                        |                 | `Pulver`              |
+| **Last Snowfall**     | Date of the last snowfall.                    |                 | `28.11.`              |
+| **Avalanche Warning** | Current avalanche warning level.              |                 | `2 - mäßig`           |
+| **Lifts Open**        | The number of currently open lifts.           | `total`         | `14` (total: `26`)    |
+| **Slopes Open (km)**  | Kilometers of open slopes.                    | `total`         | `45.5` (total: `60`)  |
+| **Slopes Open**       | Number of open slopes.                        | `total`         | `20` (total: `30`)    |
+| **Slope Condition**   | Condition of the slopes.                      |                 | `gut`                 |
+| **Classical Trails Open** | Kilometers of open classical trails.          | `total`         | `30` (total: `50`)    |
+| **Classical Condition** | Condition of the classical trails.            |                 | `gespurt (sehr gut)`  |
+| **Skating Trails Open** | Kilometers of open skating trails.            | `total`         | `25` (total: `40`)    |
+| **Skating Condition** | Condition of the skating trails.              |                 | `gespurt (sehr gut)`  |
+| **Operation Status**  | The current operational status of the trails. |                 | `täglich`             |
+| **Last Update**       | The timestamp of the last data report.        |                 | `2024-10-28 21:54:24` |
 
 ## Image Entities
 

@@ -11,22 +11,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-          
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install homeassistant pytest-homeassistant-custom-component
-          pip install beautifulsoup4 lxml pytest pytest-asyncio
-          
-      - name: Run alpine tests
-        run: |
-          PYTHONPATH=. pytest custom_components/bergfex/tests/test_parser.py
+          pip install homeassistant pytest-homeassistant-custom-component beautifulsoup4 lxml pytest pytest-asyncio pytest-socket aiohttp
 
-      - name: Run cross country tests
+      - name: Run tests (offline)
         run: |
-          PYTHONPATH=. pytest custom_components/bergfex/tests/test_cross_country.py
+          # Run the full test suite offline. Network calls are blocked by pytest-socket
+          PYTHONPATH=. pytest custom_components/bergfex/tests

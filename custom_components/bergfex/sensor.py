@@ -65,8 +65,9 @@ async def async_setup_entry(
             BergfexSensor(
                 coordinator,
                 entry,
-                "Classical Trails",
-                "classical_distance_km",
+                "Classical Trails Open",
+                "classical_open_km",
+                total_key="classical_total_km",
                 icon="mdi:ski-cross-country",
                 unit="km",
                 state_class=SensorStateClass.MEASUREMENT,
@@ -81,8 +82,9 @@ async def async_setup_entry(
             BergfexSensor(
                 coordinator,
                 entry,
-                "Skating Trails",
-                "skating_distance_km",
+                "Skating Trails Open",
+                "skating_open_km",
+                total_key="skating_total_km",
                 icon="mdi:ski-cross-country",
                 unit="km",
                 state_class=SensorStateClass.MEASUREMENT,
@@ -159,47 +161,28 @@ async def async_setup_entry(
                 entry,
                 "Lifts Open",
                 "lifts_open_count",
+                total_key="lifts_total_count",
                 icon="mdi:gondola",
                 state_class=SensorStateClass.MEASUREMENT,
             ),
             BergfexSensor(
                 coordinator,
                 entry,
-                "Lifts Total",
-                "lifts_total_count",
-                icon="mdi:map-marker-distance",
-            ),
-            BergfexSensor(
-                coordinator,
-                entry,
                 "Slopes Open (km)",
                 "slopes_open_km",
+                total_key="slopes_total_km",
                 icon="mdi:ski",
                 unit="km",
                 state_class=SensorStateClass.MEASUREMENT,
-            ),
-            BergfexSensor(
-                coordinator,
-                entry,
-                "Slopes Total (km)",
-                "slopes_total_km",
-                icon="mdi:ski",
-                unit="km",
             ),
             BergfexSensor(
                 coordinator,
                 entry,
                 "Slopes Open",
                 "slopes_open_count",
+                total_key="slopes_total_count",
                 icon="mdi:ski",
                 state_class=SensorStateClass.MEASUREMENT,
-            ),
-            BergfexSensor(
-                coordinator,
-                entry,
-                "Slopes Total",
-                "slopes_total_count",
-                icon="mdi:ski",
             ),
             BergfexSensor(
                 coordinator,
@@ -233,6 +216,7 @@ class BergfexSensor(SensorEntity):
         entry: ConfigEntry,
         sensor_name: str,
         data_key: str,
+        total_key: str | None = None,
         icon: str | None = None,
         unit: str | None = None,
         state_class: SensorStateClass | None = None,
@@ -248,6 +232,7 @@ class BergfexSensor(SensorEntity):
         self._config_url = urljoin(self._domain, self._area_path)
         self._sensor_name = sensor_name
         self._data_key = data_key
+        self._total_key = total_key
         self._attr_icon = icon
         self._attr_native_unit_of_measurement = unit
         self._attr_state_class = state_class
@@ -329,26 +314,30 @@ class BergfexSensor(SensorEntity):
     @property
     def extra_state_attributes(self) -> dict[str, Any] | None:
         """Return the state attributes."""
-        if self._data_key == "status":
-            return {"link": self._config_url}
+        attrs = {}
 
-        # Add elevation as attribute for snow sensors
+        if self._data_key == "status":
+            attrs["link"] = self._config_url
+
         if self.coordinator.data and self._area_path in self.coordinator.data:
             area_data = self.coordinator.data[self._area_path]
 
             if self._data_key == "snow_mountain" and "elevation_mountain" in area_data:
-                return {"elevation": area_data["elevation_mountain"]}
+                attrs["elevation"] = area_data["elevation_mountain"]
 
             if self._data_key == "snow_valley" and "elevation_valley" in area_data:
-                return {"elevation": area_data["elevation_valley"]}
+                attrs["elevation"] = area_data["elevation_valley"]
+
+            if self._total_key and self._total_key in area_data:
+                attrs["total"] = area_data[self._total_key]
 
             # Add caption for image sensors
             if self._data_key.endswith("_url"):
                 caption_key = self._data_key.replace("_url", "_caption")
                 if caption_key in area_data:
-                    return {"caption": area_data[caption_key]}
+                    attrs["caption"] = area_data[caption_key]
 
-        return None
+        return attrs if attrs else None
 
     @property
     def available(self) -> bool:

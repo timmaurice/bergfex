@@ -116,7 +116,7 @@ def parse_bergfex_datetime(date_str: str, lang: str = "at") -> datetime | None:
 
 def parse_overview_data(html: str, lang: str = "at") -> dict[str, dict[str, Any]]:
     """Parse the HTML of the overview page and return a dict of all ski areas."""
-    soup = BeautifulSoup(html, "lxml")
+    soup = BeautifulSoup(html, "html.parser")
     results = {}
 
     table = soup.find("table", class_="snow")
@@ -129,7 +129,13 @@ def parse_overview_data(html: str, lang: str = "at") -> dict[str, dict[str, Any]
         if len(cols) < 6:
             continue
 
-        link = cols[0].find("a")
+        # Find the first link in the row (some tables include a status column before the link)
+        link = None
+        for td in cols:
+            a = td.find("a")
+            if a and a.get("href"):
+                link = a
+                break
         if not (link and link.get("href")):
             continue
 
@@ -552,7 +558,7 @@ def parse_cross_country_resort_page(html: str, lang: str = "at") -> dict[str, An
                     if "km" in text:
                         match = re.search(r"(\d+(?:[\.,]\d+)?)", text)
                         if match:
-                            area_data["classical_distance_km"] = float(
+                            area_data["classical_open_km"] = float(
                                 match.group(1).replace(",", ".")
                             )
 
@@ -576,7 +582,7 @@ def parse_cross_country_resort_page(html: str, lang: str = "at") -> dict[str, An
                         text = val_div.text.strip()
                         match = re.search(r"(\d+(?:[\.,]\d+)?)", text)
                         if match:
-                            area_data["classical_distance_km"] = float(
+                            area_data["classical_open_km"] = float(
                                 match.group(1).replace(",", ".")
                             )
 
@@ -590,7 +596,7 @@ def parse_cross_country_resort_page(html: str, lang: str = "at") -> dict[str, An
                     if "km" in text:
                         match = re.search(r"(\d+(?:[\.,]\d+)?)", text)
                         if match:
-                            area_data["skating_distance_km"] = float(
+                            area_data["skating_open_km"] = float(
                                 match.group(1).replace(",", ".")
                             )
 
@@ -614,20 +620,125 @@ def parse_cross_country_resort_page(html: str, lang: str = "at") -> dict[str, An
                         text = val_div.text.strip()
                         match = re.search(r"(\d+(?:[\.,]\d+)?)", text)
                         if match:
-                            area_data["skating_distance_km"] = float(
+                            area_data["skating_open_km"] = float(
                                 match.group(1).replace(",", ".")
                             )
 
     # Status
     if (
-        area_data.get("classical_distance_km", 0) > 0
-        or area_data.get("skating_distance_km", 0) > 0
+        area_data.get("classical_open_km", 0) > 0
+        or area_data.get("skating_open_km", 0) > 0
     ):
         area_data["status"] = "Open"
     else:
         area_data["status"] = "Closed"
 
     return {k: v for k, v in area_data.items() if v not in ("-", "")}
+
+
+def parse_cross_country_overview_data(
+    html: str, lang: str = "at"
+) -> dict[str, dict[str, Any]]:
+    """Parse the HTML of the cross-country overview page to get total trail lengths."""
+    soup = BeautifulSoup(html, "lxml")
+    results = {}
+
+    table = soup.find("table", class_="status-table touch-scroll-y")
+    if not table:
+        table = soup.find("table", class_="status-table")
+
+    # Fallback: if specific class not found, try to find any table that looks like an overview
+    if not table:
+        # Choose the table with the most occurrences of 'km' (likely the one with trail lengths)
+        candidate_tables = soup.find_all("table")
+        best = None
+        best_count = 0
+        for t in candidate_tables:
+            count = t.get_text().count("km")
+            if count > best_count:
+                best = t
+                best_count = count
+        if best and best_count > 0:
+            table = best
+        else:
+            _LOGGER.warning(
+                "Could not find overview data table with class 'status-table' or a fallback table containing 'km'"
+            )
+            return {}
+
+    # Find all rows, but skip header rows (containing <th>)
+    rows = table.find_all("tr")
+    data_rows = [row for row in rows if not row.find("th")]
+
+    for row in data_rows:
+        cols = row.find_all("td")
+        if len(cols) < 4:
+            continue
+
+        # Find the first link in the row (some tables include a status column before the link)
+        link = None
+        for td in cols:
+            a = td.find("a")
+            if a and a.get("href"):
+                link = a
+                break
+        if not (link and link.get("href")):
+            continue
+
+        area_path = link["href"]
+        area_data = {}
+
+        # cols[2] is classical, cols[3] is skating
+        def extract_total_from_td(td):
+            if not td:
+                return None
+
+            # Prefer explicit "von X km" spans or fragments (e.g. "118,5 <span> von 114 km</span>")
+            text = td.get_text(separator=" ").strip()
+
+            # look for localized "von <num> km" pattern
+            match = re.search(r"von\s*(\d+(?:[\.,]\d+)?)\s*km", text, re.I)
+            if match:
+                try:
+                    return float(match.group(1).replace(",", "."))
+                except ValueError:
+                    return None
+
+            # If format is "open / total" try to extract the number after '/'
+            if "/" in text:
+                match = re.search(r"/\s*(\d+(?:[\.,]\d+)?)", text)
+                if match:
+                    try:
+                        return float(match.group(1).replace(",", "."))
+                    except ValueError:
+                        return None
+
+            # Fallback: if a single "XX km" appears, treat that as the total
+            match = re.search(r"(\d+(?:[\.,]\d+)?)\s*km", text)
+            if match:
+                try:
+                    return float(match.group(1).replace(",", "."))
+                except ValueError:
+                    return None
+
+            return None
+
+        classical_td = cols[2] if len(cols) > 2 else None
+        skating_td = cols[3] if len(cols) > 3 else None
+
+        classical_total = extract_total_from_td(classical_td)
+        if classical_total is not None:
+            area_data["classical_total_km"] = classical_total
+
+        skating_total = extract_total_from_td(skating_td)
+        if skating_total is not None:
+            area_data["skating_total_km"] = skating_total
+
+        if area_data:
+            area_data["name"] = link.text.strip()
+            results[area_path] = area_data
+
+    return results
 
 
 def parse_snow_forecast_images(html: str, page_num: int) -> dict[str, str]:
