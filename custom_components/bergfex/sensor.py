@@ -40,12 +40,16 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the Bergfex sensor entry."""
-
-    coordinator = entry.runtime_data
+    # Get the coordinator stored in hass.data by the integration setup
+    resort_coordinator_name = f"bergfex_{entry.data.get('name')}"
+    coordinator = hass.data[DOMAIN][COORDINATORS].get(resort_coordinator_name)
+    if coordinator is None:
+        _LOGGER.error("Coordinator not found for %s", resort_coordinator_name)
+        return
     _LOGGER.debug(
-        "Sensor async_setup_entry - Coordinator: %s, Entry runtime data: %s",
+        "Sensor async_setup_entry - Coordinator: %s, Entry data: %s",
         coordinator,
-        entry.runtime_data,
+        entry.data,
     )
 
     resort_type = entry.data.get(CONF_TYPE, TYPE_ALPINE)
@@ -202,9 +206,6 @@ async def async_setup_entry(
         ]
 
     async_add_entities(sensors)
-
-
-from .parser import parse_overview_data, parse_resort_page
 
 
 class BergfexSensor(SensorEntity):

@@ -308,7 +308,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
         hass.data[DOMAIN][COORDINATORS][resort_coordinator_name] = coordinator
 
-    entry.runtime_data = coordinator
+    # `entry.runtime_data` is a non-public attribute. Coordinator is stored
+    # in `hass.data[DOMAIN][COORDINATORS]` and should be retrieved from there
+    # by platforms during setup. Do not set `entry.runtime_data`.
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 

@@ -37,7 +37,6 @@ COUNTRIES_CROSS_COUNTRY = {
 
 SUPPORTED_LANGUAGES = {
     "at": {"name": "Deutsch", "domain": "https://www.bergfex.at"},
-    "de": {"name": "Deutsch", "domain": "https://www.bergfex.de"},
     "en": {"name": "English", "domain": "https://www.bergfex.com"},
     "fr": {"name": "Français", "domain": "https://www.bergfex.fr"},
     "it": {"name": "Italiano", "domain": "https://it.bergfex.com"},

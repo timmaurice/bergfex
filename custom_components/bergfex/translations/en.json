@@ -17,7 +17,7 @@
       },
       "country": {
         "title": "Select Country",
-        "description": "Please select the country.",
+        "description": "Please select the country the area is located in.",
         "data": {
           "country": "Country"
         }

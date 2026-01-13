@@ -32,7 +32,12 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the Bergfex image platform."""
-    coordinator = entry.runtime_data
+    # Get the coordinator stored in hass.data by the integration setup
+    resort_coordinator_name = f"bergfex_{entry.data.get('name')}"
+    coordinator = hass.data[DOMAIN][COORDINATORS].get(resort_coordinator_name)
+    if coordinator is None:
+        _LOGGER.error("Coordinator not found for %s", resort_coordinator_name)
+        return
 
     entities = []
 
@@ -85,7 +90,7 @@ class BergfexImage(ImageEntity):
         data_key: str,
     ) -> None:
         """Initialize the image entity."""
-        super().__init__(coordinator.hass)
+        super().__init__()
         self.coordinator = coordinator
         self._resort_type = entry.data.get(CONF_TYPE)
         self._initial_area_name = entry.data["name"]
