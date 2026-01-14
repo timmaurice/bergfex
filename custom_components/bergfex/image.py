@@ -20,6 +20,7 @@ from .const import (
     CONF_SKI_AREA,
     CONF_TYPE,
     DOMAIN,
+    COORDINATORS,
     TYPE_CROSS_COUNTRY,
 )
 
@@ -90,7 +91,7 @@ class BergfexImage(ImageEntity):
         data_key: str,
     ) -> None:
         """Initialize the image entity."""
-        super().__init__()
+        super().__init__(coordinator.hass)
         self.coordinator = coordinator
         self._resort_type = entry.data.get(CONF_TYPE)
         self._initial_area_name = entry.data["name"]
