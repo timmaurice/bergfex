@@ -1,8 +1,14 @@
 name: Deploy Bergfex Scraper
 
 on:
+  # Runs tests on any push to feature branches
   push:
-    branches: [main]
+    branches:
+      - main
+      - 'feature/**'
+      - 'fix/**'
+      - 'hotfix/**'
+  # Runs tests on all PRs targeting main
   pull_request:
     branches: [main]
 

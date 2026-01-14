@@ -23,6 +23,7 @@ import functions_framework
 load_dotenv()
 
 from etl_utils.const import BASE_URL, COUNTRIES
+from etl_utils.geo import extract_coords
 from etl_utils.parser import parse_overview_data, parse_resort_page
 
 # Configure logging
@@ -50,6 +51,26 @@ def fetch_resort_detail(area_url: str) -> dict:
         response.raise_for_status()
         
         data = parse_resort_page(response.text, area_url)
+
+        # Coordinate Extraction
+        # 1. Try from current URL/HTML (schneebericht)
+        coords = extract_coords(url, response.text)
+        
+        # 2. Fallback: Try Base URL if no coords found
+        if not coords and "schneebericht" in url:
+            base_resort_url = url.replace("schneebericht/", "")
+            _LOGGER.debug(f"Coords missing, trying base URL: {base_resort_url}")
+            try:
+                base_resp = requests.get(base_resort_url, timeout=30)
+                if base_resp.ok:
+                    coords = extract_coords(base_resort_url, base_resp.text)
+            except Exception as e:
+                _LOGGER.debug(f"Error fetching base URL {base_resort_url}: {e}")
+
+        if coords:
+            data["lat"] = coords[0]
+            data["lon"] = coords[1]
+            
         return data
     except requests.RequestException as e:
         _LOGGER.debug(f"Error fetching detail for {area_url}: {e}")
@@ -82,6 +103,8 @@ def fetch_country_overview(country_name: str, path: str, fetch_details: bool = T
                 "status": None,
                 "scraped_at": datetime.now().isoformat(),
                 "area_url": area_url,
+                "lat": None,
+                "lon": None,
                 "lifts_open_count": None,
                 "lifts_total_count": None,
                 "new_snow": None,
@@ -111,7 +134,8 @@ def fetch_country_overview(country_name: str, path: str, fetch_details: bool = T
                 "avalanche_warning", "snow_condition", "last_snowfall",
                 "slopes_open_km", "slopes_total_km", "slopes_open_count",
                 "slopes_total_count", "slope_condition", "last_update",
-                "elevation_valley", "elevation_mountain", "region_path"
+                "elevation_valley", "elevation_mountain", "region_path",
+                "lat", "lon"
             ]:
                 if field in detail_data:
                     entry[field] = detail_data[field]
@@ -236,7 +260,7 @@ def run_scraper(smoke_test: bool = False, force: bool = False):
         _LOGGER.info(f"✅ Smoke test fetched {len(test_data)} resorts")
         # Verify a few key fields exist in the output dictionary keys
         sample = test_data[0]
-        required_keys = ["slopes_open_km", "snow_mountain", "avalanche_warning", "snow_condition"]
+        required_keys = ["slopes_open_km", "snow_mountain", "avalanche_warning", "snow_condition", "lat", "lon"]
         missing = [k for k in required_keys if k not in sample]
         
         if missing:
@@ -291,7 +315,9 @@ def run_scraper(smoke_test: bool = False, force: bool = False):
                     "region": region,
                     "area_url": url,
                     "elevation_valley": entry.get('elevation_valley'),
-                    "elevation_mountain": entry.get('elevation_mountain')
+                    "elevation_mountain": entry.get('elevation_mountain'),
+                    "lat": entry.get('lat'),
+                    "lon": entry.get('lon')
                 })
                 seen_resorts.add(resort_id)
             
