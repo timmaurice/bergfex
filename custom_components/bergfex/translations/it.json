@@ -1,0 +1,67 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Seleziona Lingua",
+        "description": "Seleziona la lingua preferita. Questo determinerà il dominio Bergfex utilizzato.",
+        "data": {
+          "language": "Lingua"
+        }
+      },
+      "type": {
+        "title": "Seleziona Tipo di Report",
+        "description": "Seleziona il tipo di report che vuoi monitorare.",
+        "data": {
+          "type": "Tipo di Report"
+        }
+      },
+      "country": {
+        "title": "Seleziona Paese",
+        "description": "Seleziona il paese in cui si trova l'area.",
+        "data": {
+          "country": "Paese"
+        }
+      },
+      "ski_area_list": {
+        "title": "Seleziona Area Bergfex",
+        "description": "Seleziona il {report_type} che vuoi monitorare in {country}. In alternativa, puoi inserire il percorso URL di un'area non presente nella lista.",
+        "data": {
+          "ski_area": "Area",
+          "manual_path": "Percorso URL manuale (es. serfaus-fiss-ladis)"
+        }
+      },
+      "ski_area_list_alpine": {
+        "title": "Seleziona Stazione Sciistica Bergfex",
+        "description": "Seleziona la stazione sciistica che vuoi monitorare in {country} ([Link alla panoramica]({url})). In alternativa, puoi inserire il percorso URL di una stazione non presente nella lista.",
+        "data": {
+          "ski_area": "Stazione",
+          "manual_path": "Percorso URL manuale (es. serfaus-fiss-ladis)"
+        }
+      },
+      "ski_area_list_cross_country": {
+        "title": "Seleziona Area Sci di Fondo Bergfex",
+        "description": "Seleziona l'area di sci di fondo che vuoi monitorare in {country} ([Link alla panoramica]({url})). In alternativa, puoi inserire il percorso URL di un'area non presente nella lista.",
+        "data": {
+          "ski_area": "Area",
+          "manual_path": "Percorso URL manuale (es. serfaus-fiss-ladis)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Connessione a Bergfex fallita. Controlla la tua connessione internet.",
+      "no_areas_found": "Nessuna area sciistica trovata per il paese selezionato. Potrebbe non esserci alcun bollettino neve disponibile.",
+      "no_selection": "Seleziona un'area sciistica dalla lista o inserisci un percorso manuale."
+    },
+    "abort": {
+      "already_configured": "Questa area sciistica è già configurata."
+    }
+  },
+  "selector": {
+    "report_type": {
+      "options": {
+        "alpine": "Stazione sciistica alpina",
+        "cross_country": "Sci di fondo"
+      }
+    }
+  }
+}
