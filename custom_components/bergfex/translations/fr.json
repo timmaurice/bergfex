@@ -1,0 +1,69 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Sélectionner la langue",
+        "description": "Veuillez sélectionner votre langue préférée. Cela déterminera le domaine Bergfex utilisé.",
+        "data": {
+          "language": "Langue"
+        }
+      },
+      "type": {
+        "title": "Sélectionner le type de rapport",
+        "description": "Veuillez sélectionner le type de rapport que vous souhaitez surveiller.",
+        "data": {
+          "type": "Type de rapport"
+        }
+      },
+      "country": {
+        "title": "Sélectionner le pays",
+        "description": "Veuillez sélectionner le pays où se trouve la zone.",
+        "data": {
+          "country": "Pays"
+        }
+      },
+      "ski_area_list": {
+        "title": "Sélectionner la région Bergfex",
+        "description": "Veuillez sélectionner le {report_type} que vous souhaitez surveiller en {country}. Alternativement, vous pouvez entrer le chemin URL d'une zone non trouvée dans la liste.",
+        "data": {
+          "ski_area": "Région",
+          "manual_path": "Chemin URL manuel (ex. serfaus-fiss-ladis)"
+        }
+      },
+      "ski_area_list_alpine": {
+        "title": "Sélectionner la station de ski Bergfex",
+        "description": "Veuillez sélectionner la station de ski que vous souhaitez surveiller en {country} ([Lien vers l'aperçu]({url})). Alternativement, vous pouvez entrer le chemin URL d'une station non trouvée dans la liste.",
+        "data": {
+          "ski_area": "Station",
+          "manual_path": "Chemin URL manuel (ex. serfaus-fiss-ladis)",
+          "webhook_url": "URL du Webhook (ex. intégration TRMNL)"
+        }
+      },
+      "ski_area_list_cross_country": {
+        "title": "Sélectionner le domaine de ski de fond Bergfex",
+        "description": "Veuillez sélectionner le domaine de ski de fond que vous souhaitez surveiller en {country} ([Lien vers l'aperçu]({url})). Alternativement, vous pouvez entrer le chemin URL d'une zone non trouvée dans la liste.",
+        "data": {
+          "ski_area": "Domaine",
+          "manual_path": "Chemin URL manuel (ex. serfaus-fiss-ladis)",
+          "webhook_url": "URL du Webhook (ex. intégration TRMNL)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Échec de la connexion à Bergfex. Veuillez vérifier votre connexion Internet.",
+      "no_areas_found": "Aucune station de ski trouvée pour le pays sélectionné. Il se peut qu'aucun bulletin de neige ne soit disponible actuellement.",
+      "no_selection": "Veuillez sélectionner une station de ski dans la liste ou fournir un chemin manuel."
+    },
+    "abort": {
+      "already_configured": "Cette station de ski est déjà configurée."
+    }
+  },
+  "selector": {
+    "report_type": {
+      "options": {
+        "alpine": "Station de ski alpine",
+        "cross_country": "Ski de fond"
+      }
+    }
+  }
+}

@@ -1,16 +1,11 @@
 {
   "domain": "bergfex",
   "name": "Bergfex Snow Report",
-  "codeowners": [
-    "@timmaurice"
-  ],
+  "codeowners": ["@timmaurice"],
   "config_flow": true,
   "documentation": "https://github.com/timmaurice/bergfex",
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/timmaurice/bergfex/issues",
-  "requirements": [
-    "beautifulsoup4>=4.12.2",
-    "lxml>=5.1.0"
-  ],
-  "version": "2.0.0"
+  "requirements": ["beautifulsoup4>=4.12.2", "lxml>=5.1.0"],
+  "version": "2.1.0"
 }

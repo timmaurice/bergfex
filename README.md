@@ -9,17 +9,15 @@
 
 This custom integration for Home Assistant fetches snow reports and ski resort data directly from [Bergfex](https://www.bergfex.com). Since Bergfex does not provide a public API, this component scrapes the data from their website.
 
-*   **Multi-language Support**: Use Bergfex in your preferred language. Now supporting **18 languages** with full keyword parsing and translation:
-    *   **Major**: German, English, French, Italian, Spanish, Dutch
-    *   **Scandinavian**: Swedish, Norwegian, Danish, Finnish
-    *   **Slavic/Central**: Czech, Slovak, Polish, Slovenian, Croatian
-    *   **Others**: Hungarian, Romanian, Russian
-*   **Dynamic Domain Mapping**: Automatically uses the correct Bergfex domain (e.g., .at, .com, .fr, .it) based on your language selection.
-*   **Enhanced Localization**: data values (like "Powder", "Open", "Moderate") are automatically translated into your selected language.
-*   **Multi-Country Support**: Select ski areas from various European countries including Austria, Germany, Switzerland, Italy, France, and others.
-*   **Efficient Polling**: Fetches data for an entire region/country efficiently, shared across all sensors.
-*   **Device per Ski Area**: Creates a dedicated device in Home Assistant for each monitored ski area.
-*   **Detailed Sensors**: Provides comprehensive sensors for snow depths, lift status, slope conditions, and avalanche warnings.
+- **Multi-language Support**: Use Bergfex in your preferred language. Now supporting **18 languages** with full keyword parsing and translation for sensor data.
+- **Localized Setup**: The configuration flow is translated into **major languages** (German, English, French, Italian, Spanish, Dutch, Polish).
+- **Dynamic Domain Mapping**: Automatically uses the correct Bergfex domain (e.g., .at, .com, .fr, .it) based on your language selection.
+- **Enhanced Localization**: data values (like "Powder", "Open", "Moderate") are automatically translated into your selected language.
+- **Multi-Country Support**: Select ski areas from various European countries including Austria, Germany, Switzerland, Italy, France, Slovenia, Czech Republic, Poland, and Slovakia.
+- **Webhook Support**: Send data to external displays via webhooks (e.g., [TRMNL](https://usetrmnl.com) integration).
+- **Efficient Polling**: Fetches data for an entire region/country efficiently, shared across all sensors.
+- **Device per Ski Area**: Creates a dedicated device in Home Assistant for each monitored ski area.
+- **Detailed Sensors**: Provides comprehensive sensors for snow depths, lift status, slope conditions, and avalanche warnings.
 
 ## Installation
 
@@ -37,6 +35,7 @@ This card is available in the [Home Assistant Community Store (HACS)](https://ha
 </details>
 
 ### Related lovelace card:
+
 https://github.com/timmaurice/lovelace-bergfex-card
 
 ## Configuration
@@ -49,7 +48,7 @@ Configuration is done entirely through the Home Assistant UI.
 4.  **Step 2: Select Report Type**: Alpine Ski-Resort or Cross-Country Skiing Area.
 5.  **Step 3: Select Country**: Select the country where your desired area is located.
 6.  **Step 4: Select Ski Area**: Choose a area from the list.
-    *   **Manual Entry**: If your desired area is not in the list, you can manually enter its URL path (e.g., `nebelhorn-oberstdorf` or `lelex-crozet`) in the "Manual URL Path" field.
+    - **Manual Entry**: If your desired area is not in the list, you can manually enter its URL path (e.g., `nebelhorn-oberstdorf` or `lelex-crozet`) in the "Manual URL Path" field.
 7.  Click **Submit**.
 
 A new device will be created for the ski area, containing all the sensors listed below. You can repeat this process to add multiple ski areas.

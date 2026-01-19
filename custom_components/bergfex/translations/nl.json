@@ -1,0 +1,69 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Selecteer taal",
+        "description": "Selecteer je voorkeurstaal. Dit bepaalt welk Bergfex-domein wordt gebruikt.",
+        "data": {
+          "language": "Taal"
+        }
+      },
+      "type": {
+        "title": "Selecteer rapporttype",
+        "description": "Selecteer het type rapport dat je wilt controleren.",
+        "data": {
+          "type": "Rapporttype"
+        }
+      },
+      "country": {
+        "title": "Selecteer land",
+        "description": "Selecteer het land waar het gebied zich bevindt.",
+        "data": {
+          "country": "Land"
+        }
+      },
+      "ski_area_list": {
+        "title": "Selecteer Bergfex-gebied",
+        "description": "Selecteer het {report_type} dat je wilt controleren in {country}. Je kunt ook het URL-pad invoeren voor een gebied dat niet in de lijst staat.",
+        "data": {
+          "ski_area": "Gebied",
+          "manual_path": "Handmatig URL-pad (bijv. serfaus-fiss-ladis)"
+        }
+      },
+      "ski_area_list_alpine": {
+        "title": "Selecteer Bergfex-skigebied",
+        "description": "Selecteer het skigebied dat je wilt controleren in {country} ([Link naar overzicht]({url})). Je kunt ook het URL-pad invoeren voor een gebied dat niet in de lijst staat.",
+        "data": {
+          "ski_area": "Skigebied",
+          "manual_path": "Handmatig URL-pad (bijv. serfaus-fiss-ladis)",
+          "webhook_url": "Webhook-URL (bijv. TRMNL-integratie)"
+        }
+      },
+      "ski_area_list_cross_country": {
+        "title": "Selecteer Bergfex-langlaufgebied",
+        "description": "Selecteer het langlaufgebied dat je wilt controleren in {country} ([Link naar overzicht]({url})). Je kunt ook het URL-pad invoeren voor een gebied dat niet in de lijst staat.",
+        "data": {
+          "ski_area": "Gebied",
+          "manual_path": "Handmatig URL-pad (bijv. serfaus-fiss-ladis)",
+          "webhook_url": "Webhook-URL (bijv. TRMNL-integratie)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Verbinding met Bergfex mislukt. Controleer je internetverbinding.",
+      "no_areas_found": "Geen skigebieden gevonden voor het geselecteerde land. Mogelijk zijn er momenteel geen sneeuwberichte beschikbaar.",
+      "no_selection": "Selecteer een skigebied uit de lijst of geef een handmatig pad op."
+    },
+    "abort": {
+      "already_configured": "Dit skigebied is al geconfigureerd."
+    }
+  },
+  "selector": {
+    "report_type": {
+      "options": {
+        "alpine": "Alpineskigebied",
+        "cross_country": "Langlaufen"
+      }
+    }
+  }
+}

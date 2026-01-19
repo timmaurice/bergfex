@@ -44,7 +44,8 @@
         "description": "Bitte wählen Sie das Langlaufgebiet aus, das Sie in {country} überwachen möchten ([Link zur Übersicht]({url})). Alternativ können Sie den URL-Pfad für ein Gebiet eingeben, das nicht in der Liste gefunden wurde.",
         "data": {
           "ski_area": "Gebiet",
-          "manual_path": "Manueller URL-Pfad (z.B. serfaus-fiss-ladis)"
+          "manual_path": "Manueller URL-Pfad (z.B. serfaus-fiss-ladis)",
+          "webhook_url": "Webhook URL (z.B. Integration mit TRMNL)"
         }
       }
     },

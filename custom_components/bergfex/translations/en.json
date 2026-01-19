@@ -37,7 +37,6 @@
           "ski_area": "Resort",
           "manual_path": "Manual URL Path (e.g., serfaus-fiss-ladis)",
           "webhook_url": "Webhook URL (e.g., TRMNL integration)"
-
         }
       },
       "ski_area_list_cross_country": {
@@ -45,7 +44,8 @@
         "description": "Please select the cross country ski area you want to monitor in {country} ([Link to overview]({url})). Alternatively, you can enter the URL path for an area not found in the list.",
         "data": {
           "ski_area": "Area",
-          "manual_path": "Manual URL Path (e.g., serfaus-fiss-ladis)"
+          "manual_path": "Manual URL Path (e.g., serfaus-fiss-ladis)",
+          "webhook_url": "Webhook URL (e.g., TRMNL integration)"
         }
       }
     },

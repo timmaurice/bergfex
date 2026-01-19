@@ -32,7 +32,7 @@
       },
       "ski_area_list_alpine": {
         "title": "Wybierz ośrodek narciarski ze strony Bergfex",
-        "description": "Wybierz ośrodek narciarski który chcesz monitorować w {country}. Alternatywnie możesz wpisać ścieżkę URL do strony dla ośrodka który nie figuruje na liście.",
+        "description": "Wybierz ośrodek narciarski który chcesz monitorować w {country} ([Link do całości]({url})). Alternatywnie możesz wpisać ścieżkę URL do strony dla ośrodka który nie figuruje na liście.",
         "data": {
           "ski_area": "Ośrodek",
           "manual_path": "Ręczna ścieżka URL (np. lelex-crozet)",
@@ -44,13 +44,14 @@
         "description": "Wybierz ośrodek narciarstwa biegowego który chcesz monitorować w {country} ([Link do całości]({url})). Opcjonalnie możesz podać ścieżkę URL dla obszaru który nie figuruje na liście.",
         "data": {
           "ski_area": "Ośrodek",
-          "manual_path": "Ręczna ścieżka URL (np. serfaus-fiss-ladis)"
+          "manual_path": "Ręczna ścieżka URL (np. serfaus-fiss-ladis)",
+          "webhook_url": "Adres dla Webhook (m.in. integracja z TRMNL)"
         }
       }
     },
     "error": {
       "cannot_connect": "Nie można się połączyć ze stroną Bergfex. Sprawdź swoje połączenie internetowe.",
-      "no_areas_found": "Nie można znaleźć żadnych ośrodków narciarskich dla wybranego kraju.",
+      "no_areas_found": "Nie można znaleźć żadnych ośrodków narciarskich dla wybranego kraju. Być może obecnie nie są dostępne żadne raporty śniegowe.",
       "no_selection": "Wybierz ośrodek narciarski z listy lub podaj ręcznie ścieżkę URL."
     },
     "abort": {

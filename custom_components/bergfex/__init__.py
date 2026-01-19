@@ -231,14 +231,18 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
                 # Send data to Webhook
                 if webhook_url:
-                    try: 
+                    try:
                         # copy parsed_data and remove keys that are not string
-                        json_data = {k: v for k, v in parsed_data.items() if k not in ("last_update")} 
-                        async with session.post(webhook_url, 
-                                                json={"merge_variables": json_data}
-                                                ) as response:
-                            _LOGGER.level("Webhook data sent: %d", response.status)
-          
+                        json_data = {
+                            k: v
+                            for k, v in parsed_data.items()
+                            if k not in ("last_update")
+                        }
+                        async with session.post(
+                            webhook_url, json={"merge_variables": json_data}
+                        ) as response:
+                            _LOGGER.debug("Webhook data sent: %d", response.status)
+
                     except Exception as err:
                         _LOGGER.error(
                             "Error sending data to webhook %s: %s",
