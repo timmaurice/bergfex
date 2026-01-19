@@ -8,6 +8,7 @@ TYPE_ALPINE = "alpine"
 TYPE_CROSS_COUNTRY = "cross_country"
 COORDINATORS = "coordinators"
 BASE_URL = "https://www.bergfex.at"
+CONF_WEBHOOK_URL = "webhook_url"
 
 
 # Dictionary of countries and their corresponding snow report URL paths

@@ -35,7 +35,9 @@
         "description": "Please select the ski resort you want to monitor in {country} ([Link to overview]({url})). Alternatively, you can enter the URL path for a resort not found in the list.",
         "data": {
           "ski_area": "Resort",
-          "manual_path": "Manual URL Path (e.g., serfaus-fiss-ladis)"
+          "manual_path": "Manual URL Path (e.g., serfaus-fiss-ladis)",
+          "webhook_url": "Webhook URL (e.g., TRMNL integration)"
+
         }
       },
       "ski_area_list_cross_country": {

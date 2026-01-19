@@ -19,6 +19,7 @@ from .const import (
     CONF_DOMAIN,
     CONF_LANGUAGE,
     CONF_SKI_AREA,
+    CONF_WEBHOOK_URL,
     CONF_TYPE,
     COORDINATORS,
     COUNTRIES,
@@ -51,6 +52,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     area_path = entry.data[CONF_SKI_AREA]
     domain = entry.data.get(CONF_DOMAIN, BASE_URL)
     lang = entry.data.get(CONF_LANGUAGE, "at")
+    webhook_url = entry.data.get(CONF_WEBHOOK_URL)
     resort_type = entry.data.get(CONF_TYPE, TYPE_ALPINE)
 
     if resort_type == TYPE_CROSS_COUNTRY:
@@ -226,6 +228,23 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                                 )
                     except Exception as err:
                         _LOGGER.warning("Error fetching region snow report: %s", err)
+
+                # Send data to Webhook
+                if webhook_url:
+                    try: 
+                        # copy parsed_data and remove keys that are not string
+                        json_data = {k: v for k, v in parsed_data.items() if k not in ("last_update")} 
+                        async with session.post(webhook_url, 
+                                                json={"merge_variables": json_data}
+                                                ) as response:
+                            _LOGGER.level("Webhook data sent: %d", response.status)
+          
+                    except Exception as err:
+                        _LOGGER.error(
+                            "Error sending data to webhook %s: %s",
+                            webhook_url,
+                            err,
+                        )
 
                 # Fetch snow forecast images (pages 0-5)
                 for i in range(6):
