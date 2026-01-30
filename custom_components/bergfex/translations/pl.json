@@ -58,6 +58,74 @@
       "already_configured": "Ten ośrodek narciarski jest już skonfigurowany."
     }
   },
+  "entity": {
+    "sensor": {
+      "status": {
+        "name": "Status"
+      },
+      "operation_status": {
+        "name": "Status pracy"
+      },
+      "classical_open_km": {
+        "name": "Otwarte trasy klasyczne (km)"
+      },
+      "classical_condition": {
+        "name": "Stan tras klasycznych"
+      },
+      "skating_open_km": {
+        "name": "Otwarte trasy łyżwowe (km)"
+      },
+      "skating_condition": {
+        "name": "Stan tras łyżwowych"
+      },
+      "last_update": {
+        "name": "Ostatnia aktualizacja"
+      },
+      "snow_valley": {
+        "name": "Śnieg w dolinie"
+      },
+      "snow_mountain": {
+        "name": "Śnieg na górze"
+      },
+      "new_snow": {
+        "name": "Nowy śnieg"
+      },
+      "snow_condition": {
+        "name": "Jakość śniegu"
+      },
+      "last_snowfall": {
+        "name": "Ostatnie opady śniegu"
+      },
+      "avalanche_warning": {
+        "name": "Zagrożenie lawinowe"
+      },
+      "lifts_open_count": {
+        "name": "Otwarte wyciągi"
+      },
+      "slopes_open_km": {
+        "name": "Otwarte stoki (km)"
+      },
+      "slopes_open_count": {
+        "name": "Otwarte stoki"
+      },
+      "slope_condition": {
+        "name": "Warunki na stokach"
+      }
+    },
+    "image": {
+      "forecast_image_day_0": { "name": "Prognoza śniegu dzień 0" },
+      "forecast_image_day_1": { "name": "Prognoza śniegu dzień 1" },
+      "forecast_image_day_2": { "name": "Prognoza śniegu dzień 2" },
+      "forecast_image_day_3": { "name": "Prognoza śniegu dzień 3" },
+      "forecast_image_day_4": { "name": "Prognoza śniegu dzień 4" },
+      "forecast_image_day_5": { "name": "Prognoza śniegu dzień 5" },
+      "summary_image_48h": { "name": "Podsumowanie prognozy śniegu 48h" },
+      "summary_image_72h": { "name": "Podsumowanie prognozy śniegu 72h" },
+      "summary_image_96h": { "name": "Podsumowanie prognozy śniegu 96h" },
+      "summary_image_120h": { "name": "Podsumowanie prognozy śniegu 120h" },
+      "summary_image_144h": { "name": "Podsumowanie prognozy śniegu 144h" }
+    }
+  },
   "selector": {
     "report_type": {
       "options": {

@@ -58,6 +58,74 @@
       "already_configured": "Dit skigebied is al geconfigureerd."
     }
   },
+  "entity": {
+    "sensor": {
+      "status": {
+        "name": "Status"
+      },
+      "operation_status": {
+        "name": "Bedrijfsstatus"
+      },
+      "classical_open_km": {
+        "name": "Klassieke loipes open (km)"
+      },
+      "classical_condition": {
+        "name": "Conditie klassiek"
+      },
+      "skating_open_km": {
+        "name": "Skatingloipes open (km)"
+      },
+      "skating_condition": {
+        "name": "Conditie skating"
+      },
+      "last_update": {
+        "name": "Laatste update"
+      },
+      "snow_valley": {
+        "name": "Sneeuwhoogte dal"
+      },
+      "snow_mountain": {
+        "name": "Sneeuwhoogte berg"
+      },
+      "new_snow": {
+        "name": "Nieuwe sneeuw"
+      },
+      "snow_condition": {
+        "name": "Sneeuwkwaliteit"
+      },
+      "last_snowfall": {
+        "name": "Laatste sneeuwval"
+      },
+      "avalanche_warning": {
+        "name": "Lawinegevaar"
+      },
+      "lifts_open_count": {
+        "name": "Geopende liften"
+      },
+      "slopes_open_km": {
+        "name": "Geopende pistes (km)"
+      },
+      "slopes_open_count": {
+        "name": "Geopende pistes"
+      },
+      "slope_condition": {
+        "name": "Pisteconditie"
+      }
+    },
+    "image": {
+      "forecast_image_day_0": { "name": "Sneeuwverwachting dag 0" },
+      "forecast_image_day_1": { "name": "Sneeuwverwachting dag 1" },
+      "forecast_image_day_2": { "name": "Sneeuwverwachting dag 2" },
+      "forecast_image_day_3": { "name": "Sneeuwverwachting dag 3" },
+      "forecast_image_day_4": { "name": "Sneeuwverwachting dag 4" },
+      "forecast_image_day_5": { "name": "Sneeuwverwachting dag 5" },
+      "summary_image_48h": { "name": "Overzicht sneeuwverwachting 48h" },
+      "summary_image_72h": { "name": "Overzicht sneeuwverwachting 72h" },
+      "summary_image_96h": { "name": "Overzicht sneeuwverwachting 96h" },
+      "summary_image_120h": { "name": "Overzicht sneeuwverwachting 120h" },
+      "summary_image_144h": { "name": "Overzicht sneeuwverwachting 144h" }
+    }
+  },
   "selector": {
     "report_type": {
       "options": {

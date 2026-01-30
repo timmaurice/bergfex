@@ -58,6 +58,74 @@
       "already_configured": "Cette station de ski est déjà configurée."
     }
   },
+  "entity": {
+    "sensor": {
+      "status": {
+        "name": "Statut"
+      },
+      "operation_status": {
+        "name": "État de fonctionnement"
+      },
+      "classical_open_km": {
+        "name": "Pistes classiques ouvertes (km)"
+      },
+      "classical_condition": {
+        "name": "Condition classique"
+      },
+      "skating_open_km": {
+        "name": "Pistes de skating ouvertes (km)"
+      },
+      "skating_condition": {
+        "name": "Condition du patinage"
+      },
+      "last_update": {
+        "name": "Dernière mise à jour"
+      },
+      "snow_valley": {
+        "name": "Enneigement vallée"
+      },
+      "snow_mountain": {
+        "name": "Enneigement montagne"
+      },
+      "new_snow": {
+        "name": "Neige fraîche"
+      },
+      "snow_condition": {
+        "name": "Qualité de la neige"
+      },
+      "last_snowfall": {
+        "name": "Dernière chute de neige"
+      },
+      "avalanche_warning": {
+        "name": "Risque d'avalanche"
+      },
+      "lifts_open_count": {
+        "name": "Remontées ouvertes"
+      },
+      "slopes_open_km": {
+        "name": "Pistes ouvertes (km)"
+      },
+      "slopes_open_count": {
+        "name": "Pistes ouvertes"
+      },
+      "slope_condition": {
+        "name": "État des pistes"
+      }
+    },
+    "image": {
+      "forecast_image_day_0": { "name": "Prévisions de neige jour 0" },
+      "forecast_image_day_1": { "name": "Prévisions de neige jour 1" },
+      "forecast_image_day_2": { "name": "Prévisions de neige jour 2" },
+      "forecast_image_day_3": { "name": "Prévisions de neige jour 3" },
+      "forecast_image_day_4": { "name": "Prévisions de neige jour 4" },
+      "forecast_image_day_5": { "name": "Prévisions de neige jour 5" },
+      "summary_image_48h": { "name": "Résumé des prévisions de neige 48h" },
+      "summary_image_72h": { "name": "Résumé des prévisions de neige 72h" },
+      "summary_image_96h": { "name": "Résumé des prévisions de neige 96h" },
+      "summary_image_120h": { "name": "Résumé des prévisions de neige 120h" },
+      "summary_image_144h": { "name": "Résumé des prévisions de neige 144h" }
+    }
+  },
   "selector": {
     "report_type": {
       "options": {

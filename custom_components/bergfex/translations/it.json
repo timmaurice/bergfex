@@ -58,6 +58,74 @@
       "already_configured": "Questa area sciistica è già configurata."
     }
   },
+  "entity": {
+    "sensor": {
+      "status": {
+        "name": "Stato"
+      },
+      "operation_status": {
+        "name": "Stato di funzionamento"
+      },
+      "classical_open_km": {
+        "name": "Piste classiche aperte (km)"
+      },
+      "classical_condition": {
+        "name": "Condizione classica"
+      },
+      "skating_open_km": {
+        "name": "Piste di pattinaggio aperte (km)"
+      },
+      "skating_condition": {
+        "name": "Condizione pattinaggio"
+      },
+      "last_update": {
+        "name": "Ultimo aggiornamento"
+      },
+      "snow_valley": {
+        "name": "Neve a valle"
+      },
+      "snow_mountain": {
+        "name": "Neve in montagna"
+      },
+      "new_snow": {
+        "name": "Neve fresca"
+      },
+      "snow_condition": {
+        "name": "Qualità della neve"
+      },
+      "last_snowfall": {
+        "name": "Ultima nevicata"
+      },
+      "avalanche_warning": {
+        "name": "Pericolo valanghe"
+      },
+      "lifts_open_count": {
+        "name": "Impianti aperti"
+      },
+      "slopes_open_km": {
+        "name": "Piste aperte (km)"
+      },
+      "slopes_open_count": {
+        "name": "Piste aperte"
+      },
+      "slope_condition": {
+        "name": "Condizioni delle piste"
+      }
+    },
+    "image": {
+      "forecast_image_day_0": { "name": "Previsioni neve giorno 0" },
+      "forecast_image_day_1": { "name": "Previsioni neve giorno 1" },
+      "forecast_image_day_2": { "name": "Previsioni neve giorno 2" },
+      "forecast_image_day_3": { "name": "Previsioni neve giorno 3" },
+      "forecast_image_day_4": { "name": "Previsioni neve giorno 4" },
+      "forecast_image_day_5": { "name": "Previsioni neve giorno 5" },
+      "summary_image_48h": { "name": "Riepilogo previsioni neve 48h" },
+      "summary_image_72h": { "name": "Riepilogo previsioni neve 72h" },
+      "summary_image_96h": { "name": "Riepilogo previsioni neve 96h" },
+      "summary_image_120h": { "name": "Riepilogo previsioni neve 120h" },
+      "summary_image_144h": { "name": "Riepilogo previsioni neve 144h" }
+    }
+  },
   "selector": {
     "report_type": {
       "options": {

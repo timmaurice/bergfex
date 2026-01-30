@@ -58,6 +58,74 @@
       "already_configured": "Esta estación de esquí ya está configurada."
     }
   },
+  "entity": {
+    "sensor": {
+      "status": {
+        "name": "Estado"
+      },
+      "operation_status": {
+        "name": "Estado de Funcionamiento"
+      },
+      "classical_open_km": {
+        "name": "Pistas Clásicas Abiertas (km)"
+      },
+      "classical_condition": {
+        "name": "Condición Clásica"
+      },
+      "skating_open_km": {
+        "name": "Pistas de Patinaje Abiertas (km)"
+      },
+      "skating_condition": {
+        "name": "Condición de Patinaje"
+      },
+      "last_update": {
+        "name": "Última Actualización"
+      },
+      "snow_valley": {
+        "name": "Nieve en el valle"
+      },
+      "snow_mountain": {
+        "name": "Nieve en la montaña"
+      },
+      "new_snow": {
+        "name": "Nieve Nueva"
+      },
+      "snow_condition": {
+        "name": "Calidad de la nieve"
+      },
+      "last_snowfall": {
+        "name": "Última Nevada"
+      },
+      "avalanche_warning": {
+        "name": "Peligro de avalanchas"
+      },
+      "lifts_open_count": {
+        "name": "Remontes abiertos"
+      },
+      "slopes_open_km": {
+        "name": "Pistas Abiertas (km)"
+      },
+      "slopes_open_count": {
+        "name": "Pistas Abiertas"
+      },
+      "slope_condition": {
+        "name": "Estado de las pistas"
+      }
+    },
+    "image": {
+      "forecast_image_day_0": { "name": "Pronóstico de nieve día 0" },
+      "forecast_image_day_1": { "name": "Pronóstico de nieve día 1" },
+      "forecast_image_day_2": { "name": "Pronóstico de nieve día 2" },
+      "forecast_image_day_3": { "name": "Pronóstico de nieve día 3" },
+      "forecast_image_day_4": { "name": "Pronóstico de nieve día 4" },
+      "forecast_image_day_5": { "name": "Pronóstico de nieve día 5" },
+      "summary_image_48h": { "name": "Resumen del pronóstico de nieve 48h" },
+      "summary_image_72h": { "name": "Resumen del pronóstico de nieve 72h" },
+      "summary_image_96h": { "name": "Resumen del pronóstico de nieve 96h" },
+      "summary_image_120h": { "name": "Resumen del pronóstico de nieve 120h" },
+      "summary_image_144h": { "name": "Resumen del pronóstico de nieve 144h" }
+    }
+  },
   "selector": {
     "report_type": {
       "options": {

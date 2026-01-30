@@ -211,6 +211,8 @@ async def async_setup_entry(
 class BergfexSensor(SensorEntity):
     """Representation of a Bergfex Sensor."""
 
+    _attr_has_entity_name = True
+
     def __init__(
         self,
         coordinator: DataUpdateCoordinator,
@@ -233,6 +235,7 @@ class BergfexSensor(SensorEntity):
         self._config_url = urljoin(self._domain, self._area_path)
         self._sensor_name = sensor_name
         self._data_key = data_key
+        self._attr_translation_key = data_key
         self._total_key = total_key
         self._attr_icon = icon
         self._attr_native_unit_of_measurement = unit
@@ -240,13 +243,12 @@ class BergfexSensor(SensorEntity):
         self._attr_device_class = device_class
         # Initialize Unique ID and name here
         self._attr_unique_id = f"bergfex_{self._initial_area_name.lower().replace(' ', '_')}_{self._sensor_name.lower().replace(' ', '_')}"
-        self._attr_name = f"{self._initial_area_name} {self._sensor_name}"
+        self._attr_suggested_object_id = data_key
         _LOGGER.debug(
-            "BergfexSensor __init__ - Area Path: %s, Initial Area Name: %s, Unique ID: %s, Name: %s",
+            "BergfexSensor __init__ - Area Path: %s, Initial Area Name: %s, Unique ID: %s",
             self._area_path,
             self._initial_area_name,
             self._attr_unique_id,
-            self._attr_name,
         )
 
     def _update_names(self) -> None:
@@ -262,15 +264,13 @@ class BergfexSensor(SensorEntity):
 
         # Always update unique_id and name after _area_name might have changed
         self._attr_unique_id = f"bergfex_{self._area_path.replace('/', '_')}_{self._sensor_name.lower().replace(' ', '_')}"
-        self._attr_name = f"{self._area_name} {self._sensor_name}"
 
         _LOGGER.debug(
-            "BergfexSensor _update_names - Coordinator Data: %s, Area Path: %s, Resulting Area Name: %s, Unique ID: %s, Name: %s",
+            "BergfexSensor _update_names - Coordinator Data: %s, Area Path: %s, Resulting Area Name: %s, Unique ID: %s",
             self.coordinator.data,
             self._area_path,
             self._area_name,
             self._attr_unique_id,
-            self._attr_name,
         )
 
     @property

@@ -58,6 +58,74 @@
       "already_configured": "This ski area is already configured."
     }
   },
+  "entity": {
+    "sensor": {
+      "status": {
+        "name": "Status"
+      },
+      "operation_status": {
+        "name": "Operation Status"
+      },
+      "classical_open_km": {
+        "name": "Classical Trails Open"
+      },
+      "classical_condition": {
+        "name": "Classical Condition"
+      },
+      "skating_open_km": {
+        "name": "Skating Trails Open"
+      },
+      "skating_condition": {
+        "name": "Skating Condition"
+      },
+      "last_update": {
+        "name": "Last Update"
+      },
+      "snow_valley": {
+        "name": "Snow Valley"
+      },
+      "snow_mountain": {
+        "name": "Snow Mountain"
+      },
+      "new_snow": {
+        "name": "New Snow"
+      },
+      "snow_condition": {
+        "name": "Snow Condition"
+      },
+      "last_snowfall": {
+        "name": "Last Snowfall"
+      },
+      "avalanche_warning": {
+        "name": "Avalanche Warning"
+      },
+      "lifts_open_count": {
+        "name": "Lifts Open"
+      },
+      "slopes_open_km": {
+        "name": "Slopes Open (km)"
+      },
+      "slopes_open_count": {
+        "name": "Slopes Open"
+      },
+      "slope_condition": {
+        "name": "Slope Condition"
+      }
+    },
+    "image": {
+      "forecast_image_day_0": { "name": "Snow Forecast Day 0" },
+      "forecast_image_day_1": { "name": "Snow Forecast Day 1" },
+      "forecast_image_day_2": { "name": "Snow Forecast Day 2" },
+      "forecast_image_day_3": { "name": "Snow Forecast Day 3" },
+      "forecast_image_day_4": { "name": "Snow Forecast Day 4" },
+      "forecast_image_day_5": { "name": "Snow Forecast Day 5" },
+      "summary_image_48h": { "name": "Snow Forecast Summary 48h" },
+      "summary_image_72h": { "name": "Snow Forecast Summary 72h" },
+      "summary_image_96h": { "name": "Snow Forecast Summary 96h" },
+      "summary_image_120h": { "name": "Snow Forecast Summary 120h" },
+      "summary_image_144h": { "name": "Snow Forecast Summary 144h" }
+    }
+  },
   "selector": {
     "report_type": {
       "options": {

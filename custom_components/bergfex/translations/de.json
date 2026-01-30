@@ -58,6 +58,74 @@
       "already_configured": "Dieses Skigebiet ist bereits konfiguriert."
     }
   },
+  "entity": {
+    "sensor": {
+      "status": {
+        "name": "Status"
+      },
+      "operation_status": {
+        "name": "Betriebsstatus"
+      },
+      "classical_open_km": {
+        "name": "Offene klassische Loipen (km)"
+      },
+      "classical_condition": {
+        "name": "Zustand Klassisch"
+      },
+      "skating_open_km": {
+        "name": "Offene Skating-Loipen (km)"
+      },
+      "skating_condition": {
+        "name": "Zustand Skating"
+      },
+      "last_update": {
+        "name": "Letzte Aktualisierung"
+      },
+      "snow_valley": {
+        "name": "Schneehöhe Tal"
+      },
+      "snow_mountain": {
+        "name": "Schneehöhe Berg"
+      },
+      "new_snow": {
+        "name": "Neuschnee"
+      },
+      "snow_condition": {
+        "name": "Schneequalität"
+      },
+      "last_snowfall": {
+        "name": "Letzter Schneefall"
+      },
+      "avalanche_warning": {
+        "name": "Lawinenwarnstufe"
+      },
+      "lifts_open_count": {
+        "name": "Offene Lifte"
+      },
+      "slopes_open_km": {
+        "name": "Offene Pisten (km)"
+      },
+      "slopes_open_count": {
+        "name": "Offene Pisten"
+      },
+      "slope_condition": {
+        "name": "Pistenzustand"
+      }
+    },
+    "image": {
+      "forecast_image_day_0": { "name": "Schneeprognose Tag 0" },
+      "forecast_image_day_1": { "name": "Schneeprognose Tag 1" },
+      "forecast_image_day_2": { "name": "Schneeprognose Tag 2" },
+      "forecast_image_day_3": { "name": "Schneeprognose Tag 3" },
+      "forecast_image_day_4": { "name": "Schneeprognose Tag 4" },
+      "forecast_image_day_5": { "name": "Schneeprognose Tag 5" },
+      "summary_image_48h": { "name": "Schneeprognose Zusammenfassung 48h" },
+      "summary_image_72h": { "name": "Schneeprognose Zusammenfassung 72h" },
+      "summary_image_96h": { "name": "Schneeprognose Zusammenfassung 96h" },
+      "summary_image_120h": { "name": "Schneeprognose Zusammenfassung 120h" },
+      "summary_image_144h": { "name": "Schneeprognose Zusammenfassung 144h" }
+    }
+  },
   "selector": {
     "report_type": {
       "options": {

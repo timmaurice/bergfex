@@ -102,9 +102,14 @@ class BergfexImage(ImageEntity):
         self._sensor_name = name
         self._data_key = data_key
 
-        # Initialize Unique ID and name
-        self._attr_unique_id = f"bergfex_{self._initial_area_name.lower().replace(' ', '_')}_{self._sensor_name.lower().replace(' ', '_')}"
-        self._attr_name = f"{self._initial_area_name} {self._sensor_name}"
+        self._attr_has_entity_name = True
+        self._attr_translation_key = data_key.replace("_url", "")
+        
+        # Use English slug for suggested_object_id to match user request (e.g. snow_forecast_day_0)
+        self._attr_suggested_object_id = self._sensor_name.lower().replace(' ', '_')
+
+        # Initialize Unique ID matching sensor.py pattern: initial_area_name + english_slug
+        self._attr_unique_id = f"bergfex_{self._initial_area_name.lower().replace(' ', '_')}_{self._attr_suggested_object_id}"
 
         self._client = async_get_clientsession(coordinator.hass)
 
@@ -192,5 +197,4 @@ class BergfexImage(ImageEntity):
         else:
             self._area_name = self._initial_area_name
 
-        self._attr_unique_id = f"bergfex_{self._area_path.replace('/', '_')}_{self._sensor_name.lower().replace(' ', '_')}"
-        self._attr_name = f"{self._area_name} {self._sensor_name}"
+        self._attr_unique_id = f"bergfex_{self._initial_area_name.lower().replace(' ', '_')}_{self._attr_suggested_object_id}"
