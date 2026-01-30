@@ -489,6 +489,46 @@ def parse_resort_page(
     if slope_condition:
         area_data["slope_condition"] = _translate_value(slope_condition, lang)
 
+    # Price
+    prices_kw = keywords.get("prices", "Preise")
+    day_ticket_kw = keywords.get("day_ticket", "Tageskarte")
+
+    # Strategy 1: Find the specific layout from newer Bergfex design
+    price_header = None
+    for tag in ["h2", "h3", "h4", "div"]:
+        price_header = soup.find(tag, string=re.compile(rf"^{prices_kw}$", re.I))
+        if price_header:
+            break
+
+    if price_header:
+        parent = price_header.find_parent("div")
+        if parent:
+            # Check siblings and children for tw-text-2xl which usually contains the price
+            search_area = parent.find_next_sibling("div")
+            if not search_area:
+                search_area = parent.parent
+            
+            if search_area:
+                price_val = search_area.find("div", class_="tw-text-2xl")
+                if price_val:
+                    area_data["price"] = price_val.get_text().strip()
+
+    # Strategy 2: Fallback to searching for "Tageskarte"/"Day ticket" and a nearby price pattern
+    if "price" not in area_data:
+        day_ticket_label = soup.find(string=re.compile(rf"{day_ticket_kw}", re.I))
+        if day_ticket_label:
+            # Look for a price pattern like € 81,80 or 81,80 € in the surrounding block
+            container = day_ticket_label.find_parent("div")
+            if container:
+                # Search in the parent container for a price-looking string
+                context = container.find_parent("div") or container
+                price_text = context.get_text()
+                # Pattern for price: currency symbol and decimal number, or vice versa
+                # Handles € 81,80, 81.80€, etc.
+                match = re.search(r"([€$£]\s*\d+(?:[\.,]\d+)?|\d+(?:[\.,]\d+)?\s*[€$£])", price_text)
+                if match:
+                    area_data["price"] = match.group(0).strip()
+
     # Status
     if area_data.get("lifts_open_count", 0) > 0:
         area_data["status"] = "Open"

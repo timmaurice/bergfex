@@ -319,6 +319,10 @@ class BergfexSensor(SensorEntity):
 
         if self._data_key == "status":
             attrs["link"] = self._config_url
+            if self.coordinator.data and self._area_path in self.coordinator.data:
+                area_data = self.coordinator.data[self._area_path]
+                if "price" in area_data:
+                    attrs["price"] = area_data["price"]
 
         if self.coordinator.data and self._area_path in self.coordinator.data:
             area_data = self.coordinator.data[self._area_path]

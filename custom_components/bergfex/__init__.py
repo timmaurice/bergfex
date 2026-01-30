@@ -192,6 +192,47 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
                 parsed_data = parse_resort_page(html, area_path, lang)
 
+                # Fetch main resort page if price is missing and we are on a known subpage
+                # e.g. /meribel/schneebericht/ -> /meribel/
+                if "price" not in parsed_data:
+                    parts = area_path.strip("/").split("/")
+                    # List of typical subpages that usually don't have the primary price block
+                    subpages = [
+                        "schneebericht",
+                        "wetter",
+                        "webcams",
+                        "pistenplan",
+                        "unterkunft",
+                        "bewertungen",
+                    ]
+                    if len(parts) > 1 and parts[-1].lower() in subpages:
+                        main_path = "/" + "/".join(parts[:-1]) + "/"
+                        if main_path != area_path:
+                            main_url = urljoin(domain, main_path)
+                            _LOGGER.debug(
+                                "Price missing on subpage, trying to fetch from main page: %s",
+                                main_url,
+                            )
+                            try:
+                                async with session.get(
+                                    main_url, allow_redirects=True
+                                ) as response:
+                                    if response.status == 200:
+                                        main_html = await response.text()
+                                        main_data = parse_resort_page(
+                                            main_html, main_path, lang
+                                        )
+                                        if "price" in main_data:
+                                            parsed_data["price"] = main_data["price"]
+                                            _LOGGER.debug(
+                                                "Found price on main page: %s",
+                                                parsed_data["price"],
+                                            )
+                            except Exception as err:
+                                _LOGGER.debug(
+                                    "Could not fetch main page for price: %s", err
+                                )
+
                 # Fetch "New Snow" from region overview (more accurate than detail page)
                 region_path_from_data = parsed_data.get("region_path", "").strip("/")
                 if region_path_from_data:
