@@ -1,5 +1,3 @@
-"""Image platform for Bergfex."""
-
 from __future__ import annotations
 
 import logging
@@ -13,6 +11,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from urllib.parse import urljoin
 from homeassistant.util import dt as dt_util
+from homeassistant.util import slugify
 
 from .const import (
     BASE_URL,
@@ -57,7 +56,6 @@ async def async_setup_entry(
                 BergfexImage(
                     coordinator,
                     entry,
-                    f"Snow Forecast Day {i}",
                     data_key,
                 )
             )
@@ -71,7 +69,6 @@ async def async_setup_entry(
                 BergfexImage(
                     coordinator,
                     entry,
-                    f"Snow Forecast Summary {hours}h",
                     data_key,
                 )
             )
@@ -83,11 +80,13 @@ async def async_setup_entry(
 class BergfexImage(ImageEntity):
     """Representation of a Bergfex Image."""
 
+    _attr_has_entity_name = True
+    _attr_name: str | None = None
+
     def __init__(
         self,
         coordinator: DataUpdateCoordinator,
         entry: ConfigEntry,
-        name: str,
         data_key: str,
     ) -> None:
         """Initialize the image entity."""
@@ -99,17 +98,24 @@ class BergfexImage(ImageEntity):
         self._area_path = entry.data[CONF_SKI_AREA]
         self._domain = entry.data.get(CONF_DOMAIN, BASE_URL)
         self._config_url = urljoin(self._domain, self._area_path)
-        self._sensor_name = name
         self._data_key = data_key
 
-        self._attr_has_entity_name = True
-        self._attr_translation_key = data_key.replace("_url", "")
+        # Use English slug for suggested_object_id
+        english_key = data_key.replace("_url", "")
+        self._attr_translation_key = english_key
+        self._attr_suggested_object_id = english_key
         
-        # Use English slug for suggested_object_id to match user request (e.g. snow_forecast_day_0)
-        self._attr_suggested_object_id = self._sensor_name.lower().replace(' ', '_')
+        # English slug for keys
+        english_key = data_key.replace("_url", "")
+        self._attr_translation_key = english_key
+        self._attr_suggested_object_id = english_key
+        
+        # Use slugified name for stable IDs
+        resort_prefix = slugify(self._initial_area_name)
+        self.entity_id = f"image.{resort_prefix}_{english_key}"
 
-        # Initialize Unique ID matching sensor.py pattern: initial_area_name + english_slug
-        self._attr_unique_id = f"bergfex_{self._initial_area_name.lower().replace(' ', '_')}_{self._attr_suggested_object_id}"
+        # Initialize Unique ID matching sensor.py pattern
+        self._attr_unique_id = f"bergfex_{resort_prefix}_{english_key}"
 
         self._client = async_get_clientsession(coordinator.hass)
 

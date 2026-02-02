@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 import logging
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Any, cast
 from urllib.parse import urljoin
@@ -7,6 +10,7 @@ from bs4 import BeautifulSoup
 from homeassistant.components.sensor import (
     SensorDeviceClass,
     SensorEntity,
+    SensorEntityDescription,
     SensorStateClass,
 )
 from homeassistant.config_entries import ConfigEntry
@@ -14,6 +18,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from homeassistant.util import slugify
 
 from .const import (
     BASE_URL,
@@ -30,8 +35,157 @@ from .const import (
 )
 from .parser import parse_overview_data, parse_resort_page
 
-_LOGGER = logging.getLogger(__name__)
+@dataclass
+class BergfexSensorEntityDescription(SensorEntityDescription):
+    """Class describing Bergfex sensor entities."""
+
+    total_key: str | None = None
+
+
+ALPINE_SENSORS: tuple[BergfexSensorEntityDescription, ...] = (
+    BergfexSensorEntityDescription(
+        key="status",
+        name="Status",
+        translation_key="status",
+        icon="mdi:ski",
+    ),
+    BergfexSensorEntityDescription(
+        key="snow_valley",
+        name="Snow Valley",
+        translation_key="snow_valley",
+        icon="mdi:snowflake",
+        native_unit_of_measurement="cm",
+        state_class=SensorStateClass.MEASUREMENT,
+    ),
+    BergfexSensorEntityDescription(
+        key="snow_mountain",
+        name="Snow Mountain",
+        translation_key="snow_mountain",
+        icon="mdi:snowflake",
+        native_unit_of_measurement="cm",
+        state_class=SensorStateClass.MEASUREMENT,
+    ),
+    BergfexSensorEntityDescription(
+        key="new_snow",
+        name="New Snow",
+        translation_key="new_snow",
+        icon="mdi:weather-snowy-heavy",
+        native_unit_of_measurement="cm",
+        state_class=SensorStateClass.MEASUREMENT,
+    ),
+    BergfexSensorEntityDescription(
+        key="snow_condition",
+        name="Snow Condition",
+        translation_key="snow_condition",
+        icon="mdi:snowflake-alert",
+    ),
+    BergfexSensorEntityDescription(
+        key="last_snowfall",
+        name="Last Snowfall",
+        translation_key="last_snowfall",
+        icon="mdi:calendar-clock",
+    ),
+    BergfexSensorEntityDescription(
+        key="avalanche_warning",
+        name="Avalanche Warning",
+        translation_key="avalanche_warning",
+        icon="mdi:alert-octagon",
+    ),
+    BergfexSensorEntityDescription(
+        key="lifts_open_count",
+        name="Lifts Open",
+        translation_key="lifts_open_count",
+        total_key="lifts_total_count",
+        icon="mdi:gondola",
+        state_class=SensorStateClass.MEASUREMENT,
+    ),
+    BergfexSensorEntityDescription(
+        key="slopes_open_km",
+        name="Slopes Open (km)",
+        translation_key="slopes_open_km",
+        total_key="slopes_total_km",
+        icon="mdi:ski",
+        native_unit_of_measurement="km",
+        state_class=SensorStateClass.MEASUREMENT,
+    ),
+    BergfexSensorEntityDescription(
+        key="slopes_open_count",
+        name="Slopes Open",
+        translation_key="slopes_open_count",
+        total_key="slopes_total_count",
+        icon="mdi:ski",
+        state_class=SensorStateClass.MEASUREMENT,
+    ),
+    BergfexSensorEntityDescription(
+        key="slope_condition",
+        name="Slope Condition",
+        translation_key="slope_condition",
+        icon="mdi:snowflake-variant",
+    ),
+    BergfexSensorEntityDescription(
+        key="last_update",
+        name="Last Update",
+        translation_key="last_update",
+        icon="mdi:clock-outline",
+        device_class=SensorDeviceClass.TIMESTAMP,
+    ),
+)
+
+CROSS_COUNTRY_SENSORS: tuple[BergfexSensorEntityDescription, ...] = (
+    BergfexSensorEntityDescription(
+        key="status",
+        name="Status",
+        translation_key="status",
+        icon="mdi:ski-cross-country",
+    ),
+    BergfexSensorEntityDescription(
+        key="operation_status",
+        name="Operation Status",
+        translation_key="operation_status",
+        icon="mdi:check-circle-outline",
+    ),
+    BergfexSensorEntityDescription(
+        key="classical_open_km",
+        name="Classical Trails Open",
+        translation_key="classical_open_km",
+        total_key="classical_total_km",
+        icon="mdi:ski-cross-country",
+        native_unit_of_measurement="km",
+        state_class=SensorStateClass.MEASUREMENT,
+    ),
+    BergfexSensorEntityDescription(
+        key="classical_condition",
+        name="Classical Condition",
+        translation_key="classical_condition",
+        icon="mdi:snowflake-variant",
+    ),
+    BergfexSensorEntityDescription(
+        key="skating_open_km",
+        name="Skating Trails Open",
+        translation_key="skating_open_km",
+        total_key="skating_total_km",
+        icon="mdi:ski-cross-country",
+        native_unit_of_measurement="km",
+        state_class=SensorStateClass.MEASUREMENT,
+    ),
+    BergfexSensorEntityDescription(
+        key="skating_condition",
+        name="Skating Condition",
+        translation_key="skating_condition",
+        icon="mdi:snowflake-variant",
+    ),
+    BergfexSensorEntityDescription(
+        key="last_update",
+        name="Last Update",
+        translation_key="last_update",
+        icon="mdi:clock-outline",
+        device_class=SensorDeviceClass.TIMESTAMP,
+    ),
+)
+
+
 SCAN_INTERVAL = timedelta(minutes=30)
+_LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_entry(
@@ -56,153 +210,13 @@ async def async_setup_entry(
 
     if resort_type == TYPE_CROSS_COUNTRY:
         sensors = [
-            BergfexSensor(
-                coordinator, entry, "Status", "status", icon="mdi:ski-cross-country"
-            ),
-            BergfexSensor(
-                coordinator,
-                entry,
-                "Operation Status",
-                "operation_status",
-                icon="mdi:check-circle-outline",
-            ),
-            BergfexSensor(
-                coordinator,
-                entry,
-                "Classical Trails Open",
-                "classical_open_km",
-                total_key="classical_total_km",
-                icon="mdi:ski-cross-country",
-                unit="km",
-                state_class=SensorStateClass.MEASUREMENT,
-            ),
-            BergfexSensor(
-                coordinator,
-                entry,
-                "Classical Condition",
-                "classical_condition",
-                icon="mdi:snowflake-variant",
-            ),
-            BergfexSensor(
-                coordinator,
-                entry,
-                "Skating Trails Open",
-                "skating_open_km",
-                total_key="skating_total_km",
-                icon="mdi:ski-cross-country",
-                unit="km",
-                state_class=SensorStateClass.MEASUREMENT,
-            ),
-            BergfexSensor(
-                coordinator,
-                entry,
-                "Skating Condition",
-                "skating_condition",
-                icon="mdi:snowflake-variant",
-            ),
-            BergfexSensor(
-                coordinator,
-                entry,
-                "Last Update",
-                "last_update",
-                icon="mdi:clock-outline",
-                device_class=SensorDeviceClass.TIMESTAMP,
-            ),
+            BergfexSensor(coordinator, entry, description)
+            for description in CROSS_COUNTRY_SENSORS
         ]
     else:
         sensors = [
-            BergfexSensor(coordinator, entry, "Status", "status", icon="mdi:ski"),
-            BergfexSensor(
-                coordinator,
-                entry,
-                "Snow Valley",
-                "snow_valley",
-                icon="mdi:snowflake",
-                unit="cm",
-                state_class=SensorStateClass.MEASUREMENT,
-            ),
-            BergfexSensor(
-                coordinator,
-                entry,
-                "Snow Mountain",
-                "snow_mountain",
-                icon="mdi:snowflake",
-                unit="cm",
-                state_class=SensorStateClass.MEASUREMENT,
-            ),
-            BergfexSensor(
-                coordinator,
-                entry,
-                "New Snow",
-                "new_snow",
-                icon="mdi:weather-snowy-heavy",
-                unit="cm",
-                state_class=SensorStateClass.MEASUREMENT,
-            ),
-            BergfexSensor(
-                coordinator,
-                entry,
-                "Snow Condition",
-                "snow_condition",
-                icon="mdi:snowflake-alert",
-            ),
-            BergfexSensor(
-                coordinator,
-                entry,
-                "Last Snowfall",
-                "last_snowfall",
-                icon="mdi:calendar-clock",
-            ),
-            BergfexSensor(
-                coordinator,
-                entry,
-                "Avalanche Warning",
-                "avalanche_warning",
-                icon="mdi:alert-octagon",
-            ),
-            BergfexSensor(
-                coordinator,
-                entry,
-                "Lifts Open",
-                "lifts_open_count",
-                total_key="lifts_total_count",
-                icon="mdi:gondola",
-                state_class=SensorStateClass.MEASUREMENT,
-            ),
-            BergfexSensor(
-                coordinator,
-                entry,
-                "Slopes Open (km)",
-                "slopes_open_km",
-                total_key="slopes_total_km",
-                icon="mdi:ski",
-                unit="km",
-                state_class=SensorStateClass.MEASUREMENT,
-            ),
-            BergfexSensor(
-                coordinator,
-                entry,
-                "Slopes Open",
-                "slopes_open_count",
-                total_key="slopes_total_count",
-                icon="mdi:ski",
-                state_class=SensorStateClass.MEASUREMENT,
-            ),
-            BergfexSensor(
-                coordinator,
-                entry,
-                "Slope Condition",
-                "slope_condition",
-                icon="mdi:snowflake-variant",
-            ),
-            BergfexSensor(
-                coordinator,
-                entry,
-                "Last Update",
-                "last_update",
-                icon="mdi:clock-outline",
-                device_class=SensorDeviceClass.TIMESTAMP,
-            ),
+            BergfexSensor(coordinator, entry, description)
+            for description in ALPINE_SENSORS
         ]
 
     async_add_entities(sensors)
@@ -217,33 +231,32 @@ class BergfexSensor(SensorEntity):
         self,
         coordinator: DataUpdateCoordinator,
         entry: ConfigEntry,
-        sensor_name: str,
-        data_key: str,
-        total_key: str | None = None,
-        icon: str | None = None,
-        unit: str | None = None,
-        state_class: SensorStateClass | None = None,
-        device_class: SensorDeviceClass | None = None,
+        description: BergfexSensorEntityDescription,
     ):
         """Initialize the sensor."""
         self.coordinator = coordinator
+        self.entity_description = description
         self._resort_type = entry.data.get(CONF_TYPE, TYPE_ALPINE)
         self._initial_area_name = entry.data["name"]  # Store initial name as fallback
         self._area_name = self._initial_area_name  # Current name, can be updated
         self._area_path = entry.data[CONF_SKI_AREA]
         self._domain = entry.data.get(CONF_DOMAIN, BASE_URL)
         self._config_url = urljoin(self._domain, self._area_path)
-        self._sensor_name = sensor_name
-        self._data_key = data_key
-        self._attr_translation_key = data_key
-        self._total_key = total_key
-        self._attr_icon = icon
-        self._attr_native_unit_of_measurement = unit
-        self._attr_state_class = state_class
-        self._attr_device_class = device_class
-        # Initialize Unique ID and name here
-        self._attr_unique_id = f"bergfex_{self._initial_area_name.lower().replace(' ', '_')}_{self._sensor_name.lower().replace(' ', '_')}"
-        self._attr_suggested_object_id = data_key
+        
+        # Use slugified name for a stable prefix that matches typical HA defaults
+        # This helps in "reusing" IDs that were automatically generated from the name
+        resort_prefix = slugify(self._initial_area_name)
+        
+        # unique_id should be stable and English-keyed
+        # We use the resort_prefix to stay compatible with earlier registry entries if possible
+        self._attr_unique_id = f"bergfex_{resort_prefix}_{description.key}"
+        
+        # Explicitly set entity_id to the desired English format
+        self.entity_id = f"sensor.{resort_prefix}_{description.key}"
+        
+        # suggested_object_id provides a hint for new entity creation
+        self._attr_suggested_object_id = description.key
+
         _LOGGER.debug(
             "BergfexSensor __init__ - Area Path: %s, Initial Area Name: %s, Unique ID: %s",
             self._area_path,
@@ -252,7 +265,7 @@ class BergfexSensor(SensorEntity):
         )
 
     def _update_names(self) -> None:
-        """Update the area name, unique ID, and entity name based on coordinator data."""
+        """Update the area name and device info based on coordinator data."""
         if self.coordinator.data and self._area_path in self.coordinator.data:
             area_data = self.coordinator.data[self._area_path]
             if "resort_name" in area_data:
@@ -262,15 +275,11 @@ class BergfexSensor(SensorEntity):
         else:
             self._area_name = self._initial_area_name
 
-        # Always update unique_id and name after _area_name might have changed
-        self._attr_unique_id = f"bergfex_{self._area_path.replace('/', '_')}_{self._sensor_name.lower().replace(' ', '_')}"
-
         _LOGGER.debug(
-            "BergfexSensor _update_names - Coordinator Data: %s, Area Path: %s, Resulting Area Name: %s, Unique ID: %s",
+            "BergfexSensor _update_names - Coordinator Data: %s, Area Path: %s, Resulting Area Name: %s",
             self.coordinator.data,
             self._area_path,
             self._area_name,
-            self._attr_unique_id,
         )
 
     @property
@@ -281,14 +290,15 @@ class BergfexSensor(SensorEntity):
             return None
         all_areas_data = cast(dict, self.coordinator.data)
         area_data = all_areas_data.get(self._area_path)
+        data_key = self.entity_description.key
 
-        if area_data and self._data_key in area_data:
-            value = area_data[self._data_key]
+        if area_data and data_key in area_data:
+            value = area_data[data_key]
             _LOGGER.debug(
                 "BergfexSensor native_value - Coordinator Data: %s, Area Data: %s, Data Key: %s, Value: %s",
                 self.coordinator.data,
                 area_data,
-                self._data_key,
+                data_key,
                 value,
             )
             # Return datetime objects as-is for timestamp sensors
@@ -317,7 +327,10 @@ class BergfexSensor(SensorEntity):
         """Return the state attributes."""
         attrs = {}
 
-        if self._data_key == "status":
+        data_key = self.entity_description.key
+        total_key = self.entity_description.total_key
+
+        if data_key == "status":
             attrs["link"] = self._config_url
             if self.coordinator.data and self._area_path in self.coordinator.data:
                 area_data = self.coordinator.data[self._area_path]
@@ -327,18 +340,18 @@ class BergfexSensor(SensorEntity):
         if self.coordinator.data and self._area_path in self.coordinator.data:
             area_data = self.coordinator.data[self._area_path]
 
-            if self._data_key == "snow_mountain" and "elevation_mountain" in area_data:
+            if data_key == "snow_mountain" and "elevation_mountain" in area_data:
                 attrs["elevation"] = area_data["elevation_mountain"]
 
-            if self._data_key == "snow_valley" and "elevation_valley" in area_data:
+            if data_key == "snow_valley" and "elevation_valley" in area_data:
                 attrs["elevation"] = area_data["elevation_valley"]
 
-            if self._total_key and self._total_key in area_data:
-                attrs["total"] = area_data[self._total_key]
+            if total_key and total_key in area_data:
+                attrs["total"] = area_data[total_key]
 
             # Add caption for image sensors
-            if self._data_key.endswith("_url"):
-                caption_key = self._data_key.replace("_url", "_caption")
+            if data_key.endswith("_url"):
+                caption_key = data_key.replace("_url", "_caption")
                 if caption_key in area_data:
                     attrs["caption"] = area_data[caption_key]
 
