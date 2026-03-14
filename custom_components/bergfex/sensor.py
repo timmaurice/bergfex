@@ -35,6 +35,7 @@ from .const import (
 )
 from .parser import parse_overview_data, parse_resort_page
 
+
 @dataclass
 class BergfexSensorEntityDescription(SensorEntityDescription):
     """Class describing Bergfex sensor entities."""
@@ -242,18 +243,18 @@ class BergfexSensor(SensorEntity):
         self._area_path = entry.data[CONF_SKI_AREA]
         self._domain = entry.data.get(CONF_DOMAIN, BASE_URL)
         self._config_url = urljoin(self._domain, self._area_path)
-        
+
         # Use slugified name for a stable prefix that matches typical HA defaults
         # This helps in "reusing" IDs that were automatically generated from the name
         resort_prefix = slugify(self._initial_area_name)
-        
+
         # unique_id should be stable and English-keyed
         # We use the resort_prefix to stay compatible with earlier registry entries if possible
         self._attr_unique_id = f"bergfex_{resort_prefix}_{description.key}"
-        
+
         # Explicitly set entity_id to the desired English format
         self.entity_id = f"sensor.{resort_prefix}_{description.key}"
-        
+
         # suggested_object_id provides a hint for new entity creation
         self._attr_suggested_object_id = description.key
 
@@ -336,6 +337,8 @@ class BergfexSensor(SensorEntity):
                 area_data = self.coordinator.data[self._area_path]
                 if "price" in area_data:
                     attrs["price"] = area_data["price"]
+                if "open_pistes" in area_data:
+                    attrs["open_pistes"] = area_data["open_pistes"]
 
         if self.coordinator.data and self._area_path in self.coordinator.data:
             area_data = self.coordinator.data[self._area_path]

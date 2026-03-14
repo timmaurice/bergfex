@@ -104,12 +104,12 @@ class BergfexImage(ImageEntity):
         english_key = data_key.replace("_url", "")
         self._attr_translation_key = english_key
         self._attr_suggested_object_id = english_key
-        
+
         # English slug for keys
         english_key = data_key.replace("_url", "")
         self._attr_translation_key = english_key
         self._attr_suggested_object_id = english_key
-        
+
         # Use slugified name for stable IDs
         resort_prefix = slugify(self._initial_area_name)
         self.entity_id = f"image.{resort_prefix}_{english_key}"

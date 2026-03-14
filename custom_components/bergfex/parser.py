@@ -484,6 +484,60 @@ def parse_resort_page(
                         area_data["slopes_total_count"] = t
                     break
 
+    # Parse individual open slopes if available
+    open_pistes = []
+    for row in soup.find_all("tr"):
+        status_td = row.find("td", class_="pisten-icon-status")
+        if status_td:
+            status_icon = status_td.find("i", class_="icon-status")
+            if status_icon:
+                classes = status_icon.get("class", [])
+                if "icon-status1" in classes or "icon-status2" in classes:
+                    # It's an open or partially open slope
+                    slope = {}
+
+                    # Name
+                    name_td = row.find("td", class_="pisten-name")
+                    if name_td:
+                        slope["name"] = name_td.get_text(strip=True).replace(
+                            "\xa0", " "
+                        )
+
+                    # Number
+                    nr_td = row.find("td", class_="pisten-kuerzel")
+                    if nr_td:
+                        slope["number"] = nr_td.get_text(strip=True).replace(
+                            "\xa0", " "
+                        )
+
+                    # Difficulty
+                    diff_icon = status_td.find(
+                        "i", class_=re.compile(r"icon-pisten\d+")
+                    )
+                    if diff_icon:
+                        diff_classes = diff_icon.get("class", [])
+                        diff_id = None
+                        for c in diff_classes:
+                            if m := re.match(r"icon-pisten(\d+)", c):
+                                diff_id = m.group(1)
+                                break
+                        slope["difficulty"] = {
+                            "id": diff_id,
+                            "description": diff_icon.get("title", "").strip(),
+                        }
+
+                    # Length
+                    len_td = row.find("td", class_="pisten-laenge")
+                    if len_td:
+                        slope["length"] = len_td.get_text(strip=True).replace(
+                            "\xa0", " "
+                        )
+
+                    if slope.get("name"):
+                        open_pistes.append(slope)
+    if open_pistes:
+        area_data["open_pistes"] = open_pistes
+
     # Slope condition (Pistenzustand)
     slope_condition = get_text_from_dd(soup, keywords["slope_condition"])
     if slope_condition:
@@ -507,7 +561,7 @@ def parse_resort_page(
             search_area = parent.find_next_sibling("div")
             if not search_area:
                 search_area = parent.parent
-            
+
             if search_area:
                 price_val = search_area.find("div", class_="tw-text-2xl")
                 if price_val:
@@ -525,7 +579,9 @@ def parse_resort_page(
                 price_text = context.get_text()
                 # Pattern for price: currency symbol and decimal number, or vice versa
                 # Handles € 81,80, 81.80€, etc.
-                match = re.search(r"([€$£]\s*\d+(?:[\.,]\d+)?|\d+(?:[\.,]\d+)?\s*[€$£])", price_text)
+                match = re.search(
+                    r"([€$£]\s*\d+(?:[\.,]\d+)?|\d+(?:[\.,]\d+)?\s*[€$£])", price_text
+                )
                 if match:
                     area_data["price"] = match.group(0).strip()
 

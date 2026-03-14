@@ -59,7 +59,7 @@ For each configured ski area, the following sensors will be created:
 
 | Sensor                    | Description                                   | Attributes  | Example Value         |
 | :------------------------ | :-------------------------------------------- | :---------- | :-------------------- |
-| **Status**                | The current operational status of the resort. |             | `Open`                |
+| **Status**                | The current operational status of the resort. | `open_pistes`, `link` | `Open`                |
 | **Snow Valley**           | Snow depth in the valley, in cm.              | `elevation` | `35`                  |
 | **Snow Mountain**         | Snow depth on the mountain, in cm.            | `elevation` | `110`                 |
 | **New Snow**              | Fresh snow in the last 24h, in cm.            |             | `15`                  |
@@ -78,6 +78,9 @@ For each configured ski area, the following sensors will be created:
 | **Last Update**           | The timestamp of the last data report.        |             | `2024-10-28 21:54:24` |
 
 ## Image Entities
+
+> **Note on `open_pistes`**: The `open_pistes` attribute on the Status sensor is a list of objects containing detailed information about each open or partially open slope. Each object includes the `name`, `number`, `length`, and `difficulty` (with an `id` and localized `description`).
+
 
 In addition to sensors, the integration provides image entities for snow forecasts. These can be displayed in dashboards using the Picture Entity card or similar.
 
