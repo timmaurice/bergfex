@@ -9,10 +9,12 @@
 
 This custom integration for Home Assistant fetches snow reports and ski resort data directly from [Bergfex](https://www.bergfex.com). Since Bergfex does not provide a public API, this component scrapes the data from their website.
 
+## Features
+
 - **Multi-language Support**: Use Bergfex in your preferred language. Now supporting **18 languages** with full keyword parsing and translation for sensor data.
 - **Localized Setup**: The configuration flow is translated into **major languages** (German, English, French, Italian, Spanish, Dutch, Polish).
 - **Dynamic Domain Mapping**: Automatically uses the correct Bergfex domain (e.g., .at, .com, .fr, .it) based on your language selection.
-- **Enhanced Localization**: data values (like "Powder", "Open", "Moderate") are automatically translated into your selected language.
+- **Enhanced Localization**: Data values (like "Powder", "Open", "Moderate") are automatically translated into your selected language.
 - **Multi-Country Support**: Select ski areas from various European countries including Austria, Germany, Switzerland, Italy, France, Slovenia, Czech Republic, Poland, and Slovakia.
 - **Webhook Support**: Send data to external displays via webhooks (e.g., [TRMNL](https://usetrmnl.com) integration).
 - **Efficient Polling**: Fetches data for an entire region/country efficiently, shared across all sensors.
@@ -47,7 +49,7 @@ Configuration is done entirely through the Home Assistant UI.
 3.  **Step 1: Select Language**: Choose your preferred language. This will determine the Bergfex domain used (e.g., English -> bergfex.com, French -> bergfex.fr).
 4.  **Step 2: Select Report Type**: Alpine Ski-Resort or Cross-Country Skiing Area.
 5.  **Step 3: Select Country**: Select the country where your desired area is located.
-6.  **Step 4: Select Ski Area**: Choose a area from the list.
+6.  **Step 4: Select Ski Area**: Choose an area from the list.
     - **Manual Entry**: If your desired area is not in the list, you can manually enter its URL path (e.g., `nebelhorn-oberstdorf` or `lelex-crozet`) in the "Manual URL Path" field.
 7.  Click **Submit**.
 
@@ -57,30 +59,27 @@ A new device will be created for the ski area, containing all the sensors listed
 
 For each configured ski area, the following sensors will be created:
 
-| Sensor                    | Description                                   | Attributes  | Example Value         |
-| :------------------------ | :-------------------------------------------- | :---------- | :-------------------- |
-| **Status**                | The current operational status of the resort. | `open_pistes`, `link` | `Open`                |
-| **Snow Valley**           | Snow depth in the valley, in cm.              | `elevation` | `35`                  |
-| **Snow Mountain**         | Snow depth on the mountain, in cm.            | `elevation` | `110`                 |
-| **New Snow**              | Fresh snow in the last 24h, in cm.            |             | `15`                  |
-| **Snow Condition**        | Condition of the snow.                        |             | `Pulver`              |
-| **Last Snowfall**         | Date of the last snowfall.                    |             | `28.11.`              |
-| **Avalanche Warning**     | Current avalanche warning level.              |             | `2 - mäßig`           |
-| **Lifts Open**            | The number of currently open lifts.           | `total`     | `14` (total: `26`)    |
-| **Slopes Open (km)**      | Kilometers of open slopes.                    | `total`     | `45.5` (total: `60`)  |
-| **Slopes Open**           | Number of open slopes.                        | `total`     | `20` (total: `30`)    |
-| **Slope Condition**       | Condition of the slopes.                      |             | `gut`                 |
-| **Classical Trails Open** | Kilometers of open classical trails.          | `total`     | `30` (total: `50`)    |
-| **Classical Condition**   | Condition of the classical trails.            |             | `gespurt (sehr gut)`  |
-| **Skating Trails Open**   | Kilometers of open skating trails.            | `total`     | `25` (total: `40`)    |
-| **Skating Condition**     | Condition of the skating trails.              |             | `gespurt (sehr gut)`  |
-| **Operation Status**      | The current operational status of the trails. |             | `täglich`             |
-| **Last Update**           | The timestamp of the last data report.        |             | `2024-10-28 21:54:24` |
+| Sensor                    | Description                                   | Attributes             | Example Value         |
+| :------------------------ | :-------------------------------------------- | :--------------------- | :-------------------- |
+| **Status**                | The current operational status of the resort. | `link`                 | `Open`                |
+| **Snow Valley**           | Snow depth in the valley, in cm.              | `elevation`            | `35`                  |
+| **Snow Mountain**         | Snow depth on the mountain, in cm.            | `elevation`            | `110`                 |
+| **New Snow**              | Fresh snow in the last 24h, in cm.            |                        | `15`                  |
+| **Snow Condition**        | Condition of the snow.                        |                        | `Pulver`              |
+| **Last Snowfall**         | Date of the last snowfall.                    |                        | `28.11.`              |
+| **Avalanche Warning**     | Current avalanche warning level.              |                        | `2 - mäßig`           |
+| **Lifts Open**            | The number of currently open lifts.           | `total`                | `14` (total: `26`)    |
+| **Slopes Open (km)**      | Kilometers of open slopes.                    | `total`                | `45.5` (total: `60`)  |
+| **Slopes Open**           | Number of open slopes.                        | `open_pistes`, `total` | `20` (total: `30`)    |
+| **Slope Condition**       | Condition of the slopes.                      |                        | `gut`                 |
+| **Classical Trails Open** | Kilometers of open classical trails.          | `total`                | `30` (total: `50`)    |
+| **Classical Condition**   | Condition of the classical trails.            |                        | `gespurt (sehr gut)`  |
+| **Skating Trails Open**   | Kilometers of open skating trails.            | `total`                | `25` (total: `40`)    |
+| **Skating Condition**     | Condition of the skating trails.              |                        | `gespurt (sehr gut)`  |
+| **Operation Status**      | The current operational status of the trails. |                        | `täglich`             |
+| **Last Update**           | The timestamp of the last data report.        |                        | `2024-10-28 21:54:24` |
 
 ## Image Entities
-
-> **Note on `open_pistes`**: The `open_pistes` attribute on the Status sensor is a list of objects containing detailed information about each open or partially open slope. Each object includes the `name`, `number`, `length`, and `difficulty` (with an `id` and localized `description`).
-
 
 In addition to sensors, the integration provides image entities for snow forecasts. These can be displayed in dashboards using the Picture Entity card or similar.
 
@@ -88,6 +87,8 @@ In addition to sensors, the integration provides image entities for snow forecas
 | ---------------------------- | -------------------------------------------------- |
 | **Snow Forecast Day 0-5**    | Daily snow forecast maps for the next 6 days.      |
 | **Snow Forecast Summary Xh** | Summary forecast maps (48h, 72h, 96h, 120h, 144h). |
+
+> **Note on `open_pistes`**: The `open_pistes` attribute on the Slopes Open sensor is a list of objects containing detailed information about each open or partially open slope. Each object includes the `name`, `number`, `length`, and `difficulty` (with an `id` and localized `description`).
 
 ## Contributions
 

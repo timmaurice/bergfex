@@ -9,6 +9,10 @@ TYPE_CROSS_COUNTRY = "cross_country"
 COORDINATORS = "coordinators"
 BASE_URL = "https://www.bergfex.at"
 CONF_WEBHOOK_URL = "webhook_url"
+CONF_UPDATE_INTERVAL = "update_interval"
+DEFAULT_UPDATE_INTERVAL = 30
+MIN_UPDATE_INTERVAL = 15
+MAX_UPDATE_INTERVAL = 1440
 
 
 # Dictionary of countries and their corresponding snow report URL paths

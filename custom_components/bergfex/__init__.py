@@ -28,6 +28,8 @@ from .const import (
     KEYWORDS,
     TYPE_ALPINE,
     TYPE_CROSS_COUNTRY,
+    CONF_UPDATE_INTERVAL,
+    DEFAULT_UPDATE_INTERVAL,
 )
 from .parser import (
     parse_cross_country_resort_page,
@@ -38,7 +40,6 @@ from .parser import (
 )
 
 PLATFORMS = ["sensor", "image"]
-SCAN_INTERVAL = timedelta(minutes=30)
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -355,12 +356,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 )
                 raise UpdateFailed(f"Error communicating with Bergfex: {err}") from err
 
+        update_interval_minutes = entry.options.get(
+            CONF_UPDATE_INTERVAL, DEFAULT_UPDATE_INTERVAL
+        )
+
         coordinator = DataUpdateCoordinator(
             hass,
             _LOGGER,
             name=resort_coordinator_name,
             update_method=async_update_data_resort,
-            update_interval=SCAN_INTERVAL,
+            update_interval=timedelta(minutes=update_interval_minutes),
         )
         try:
             await coordinator.async_config_entry_first_refresh()
@@ -378,10 +383,20 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
+    entry.async_on_unload(entry.add_update_listener(async_reload_entry))
+
     return True
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
     # Forward the unloading to the sensor platform
-    return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+    if unload_ok := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
+        if DOMAIN in hass.data and COORDINATORS in hass.data[DOMAIN]:
+            hass.data[DOMAIN][COORDINATORS].pop(f"bergfex_{entry.data['name']}", None)
+    return unload_ok
+
+
+async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Reload config entry."""
+    await hass.config_entries.async_reload(entry.entry_id)

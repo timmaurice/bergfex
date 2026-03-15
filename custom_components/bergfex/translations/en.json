@@ -58,6 +58,17 @@
       "already_configured": "This ski area is already configured."
     }
   },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Configure Update Interval",
+        "description": "Set the update interval in minutes. Bergfex might block IP addresses querying too frequently.",
+        "data": {
+          "update_interval": "Update Interval (minutes)"
+        }
+      }
+    }
+  },
   "entity": {
     "sensor": {
       "status": {

@@ -3,8 +3,8 @@ from custom_components.bergfex.parser import parse_resort_page
 
 
 def test_parse_open_pistes_hintertux():
-    """Test parsing of open pistes for Hintertux (schneebericht.html)."""
-    fixture_path = Path("/Users/tim.bayer/Projekte/bergfex/schneebericht.html")
+    """Test parsing of open pistes for Hintertux (hintertux.html)."""
+    fixture_path = Path(__file__).parent / "fixtures" / "hintertux.html"
     with open(fixture_path, "r") as f:
         html = f.read()
 
@@ -14,7 +14,7 @@ def test_parse_open_pistes_hintertux():
     assert isinstance(data["open_pistes"], list)
     assert len(data["open_pistes"]) > 0
 
-    # Check for some specific open slopes from schneebericht.html
+    # Check for some specific open slopes from hintertux.html
     open_pistes = data["open_pistes"]
     names = [s["name"] for s in open_pistes]
     assert "1 schwarze Pfanne - beschneit" in names  # icon-status2
@@ -30,8 +30,8 @@ def test_parse_open_pistes_hintertux():
 
 
 def test_parse_open_pistes_ankogel():
-    """Test parsing of open pistes for Ankogel (schneebericht2.html)."""
-    fixture_path = Path("/Users/tim.bayer/Projekte/bergfex/schneebericht2.html")
+    """Test parsing of open pistes for Ankogel (ankogel.html)."""
+    fixture_path = Path(__file__).parent / "fixtures" / "ankogel.html"
     with open(fixture_path, "r") as f:
         html = f.read()
 
@@ -42,8 +42,8 @@ def test_parse_open_pistes_ankogel():
 
 
 def test_parse_open_pistes_airolo():
-    """Test parsing of open pistes for Airolo (airolo_schneebericht.html)."""
-    fixture_path = Path("/Users/tim.bayer/Projekte/bergfex/airolo_schneebericht.html")
+    """Test parsing of open pistes for Airolo (airolo.html)."""
+    fixture_path = Path(__file__).parent / "fixtures" / "airolo.html"
     with open(fixture_path, "r") as f:
         html = f.read()
 

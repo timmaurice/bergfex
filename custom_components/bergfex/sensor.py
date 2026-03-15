@@ -337,8 +337,6 @@ class BergfexSensor(SensorEntity):
                 area_data = self.coordinator.data[self._area_path]
                 if "price" in area_data:
                     attrs["price"] = area_data["price"]
-                if "open_pistes" in area_data:
-                    attrs["open_pistes"] = area_data["open_pistes"]
 
         if self.coordinator.data and self._area_path in self.coordinator.data:
             area_data = self.coordinator.data[self._area_path]
@@ -348,6 +346,9 @@ class BergfexSensor(SensorEntity):
 
             if data_key == "snow_valley" and "elevation_valley" in area_data:
                 attrs["elevation"] = area_data["elevation_valley"]
+
+            if data_key == "slopes_open_count" and "open_pistes" in area_data:
+                attrs["open_pistes"] = area_data["open_pistes"]
 
             if total_key and total_key in area_data:
                 attrs["total"] = area_data[total_key]

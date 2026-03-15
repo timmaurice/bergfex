@@ -23,6 +23,8 @@ from .const import (
     TYPE_CROSS_COUNTRY,
 )
 
+_LOGGER = logging.getLogger(__name__)
+
 # ... (rest of imports)
 
 

@@ -720,6 +720,54 @@ def parse_cross_country_resort_page(html: str, lang: str = "at") -> dict[str, An
                                 match.group(1).replace(",", ".")
                             )
 
+    # Fallback to new table-based layout if no km found (e.g. Cortina d'Ampezzo)
+    if "classical_open_km" not in area_data and "skating_open_km" not in area_data:
+        table = soup.find("table", class_="status-table")
+        if table:
+            c_km = 0.0
+            s_km = 0.0
+
+            # Additional keywords for different languages
+            c_keywords = ["classical", "klassisch", "classico", "classique"]
+            s_keywords = ["skating", "skate", "scivolare"]
+
+            for row in table.find_all("tr"):
+                # Check status: open trails usually have icon-status1 or icon-status2. Closed have icon-status0
+                status_icon = row.find("i", class_=re.compile(r"icon-status[012]"))
+                is_open = True
+                if status_icon:
+                    classes = status_icon.get("class", [])
+                    if "icon-status0" in classes:
+                        is_open = False
+
+                if not is_open:
+                    continue
+
+                name_td = row.find("td", class_="loipen-name")
+                len_td = row.find("td", class_="loipen-laenge")
+
+                if name_td and len_td:
+                    name_text = name_td.text.lower()
+                    len_text = len_td.text.strip()
+
+                    match = re.search(r"(\d+(?:[\.,]\d+)?)", len_text)
+                    km = 0.0
+                    if match:
+                        try:
+                            km = float(match.group(1).replace(",", "."))
+                        except ValueError:
+                            pass
+
+                    if any(kw in name_text for kw in c_keywords):
+                        c_km += km
+                    if any(kw in name_text for kw in s_keywords):
+                        s_km += km
+
+            if c_km > 0:
+                area_data["classical_open_km"] = round(c_km, 2)
+            if s_km > 0:
+                area_data["skating_open_km"] = round(s_km, 2)
+
     # Status
     if (
         area_data.get("classical_open_km", 0) > 0

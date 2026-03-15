@@ -1,3 +1,9 @@
 GEMINI.md
-schneebericht*
 test_parser.py
+
+# Docker test environment
+docker-compose.yml
+config/
+*.pem
+
+*__pycache__*

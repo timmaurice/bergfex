@@ -58,6 +58,17 @@
       "already_configured": "Dieses Skigebiet ist bereits konfiguriert."
     }
   },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Aktualisierungsintervall konfigurieren",
+        "description": "Legen Sie das Aktualisierungsintervall in Minuten fest. Bergfex blockiert möglicherweise IP-Adressen, die zu häufig abfragen.",
+        "data": {
+          "update_interval": "Aktualisierungsintervall (Minuten)"
+        }
+      }
+    }
+  },
   "entity": {
     "sensor": {
       "status": {

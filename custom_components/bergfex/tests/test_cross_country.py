@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from custom_components.bergfex.parser import (
     parse_cross_country_resort_page,
     parse_cross_country_overview_data,
@@ -204,3 +206,18 @@ def test_merged_cross_country_parsing():
     assert parsed_data["skating_open_km"] == 14.7
     assert parsed_data["classical_total_km"] == 30.0
     assert parsed_data["skating_total_km"] == 30.0
+
+
+def test_parse_cross_country_cortina():
+    """Test parsing of cross-country page using the new Cortina d'Ampezzo tabular layout."""
+    fixture_path = Path(__file__).parent / "fixtures" / "cortina_loipen.html"
+    with open(fixture_path, "r") as f:
+        html = f.read()
+
+    data = parse_cross_country_resort_page(html, lang="en")
+
+    assert "classical_open_km" in data
+    assert "skating_open_km" in data
+    assert data["classical_open_km"] == 38.9
+    assert data["skating_open_km"] == 16.9
+    assert data["status"] == "Open"
