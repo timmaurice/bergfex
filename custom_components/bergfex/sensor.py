@@ -319,7 +319,7 @@ class BergfexSensor(SensorEntity):
             "BergfexSensor native_value - Coordinator Data: %s, Area Data: %s, Data Key: %s, Returning None",
             self.coordinator.data,
             area_data,
-            self._data_key,
+            self.entity_description.key,
         )
         return None
 
