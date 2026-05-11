@@ -224,8 +224,15 @@ class BergfexConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     ski_area_path = manual_path
                     if not ski_area_path.startswith("/"):
                         ski_area_path = f"/{ski_area_path}"
-                    if not ski_area_path.endswith("/schneebericht/"):
-                        ski_area_path = f"/{ski_area_path.strip('/')}/schneebericht/"
+
+                    if self._data.get(CONF_TYPE) == TYPE_CROSS_COUNTRY:
+                        if not ski_area_path.endswith("/"):
+                            ski_area_path = f"{ski_area_path}/"
+                    else:
+                        if not ski_area_path.endswith("/schneebericht/"):
+                            ski_area_path = (
+                                f"/{ski_area_path.strip('/')}/schneebericht/"
+                            )
 
                 # Keep ski_area_path as the unique ID
                 ski_area_name = ski_areas.get(

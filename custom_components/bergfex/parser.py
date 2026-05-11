@@ -214,12 +214,33 @@ def parse_overview_data(html: str, lang: str = "at") -> dict[str, dict[str, Any]
 
 
 def get_text_from_dd(soup: BeautifulSoup, text: str) -> str | None:
-    """Get the text from a dd element based on the text of the preceding dt element."""
-    # Use a more robust search that handles nested tags in DT
+    """Get the text associated with a keyword, trying both dt/dd and span structures."""
+    if not text:
+        return None
+    keyword = text.lower().rstrip(":")
+
+    # 1. Try dt/dd
     for dt in soup.find_all("dt"):
-        if text.lower() in dt.get_text().lower():
+        dt_text = dt.get_text(strip=True).lower().rstrip(":")
+        if dt_text == keyword or dt_text.startswith(keyword):
             if dd := dt.find_next_sibling("dd"):
-                return dd.text.strip()
+                return dd.get_text(separator="\n", strip=True)
+
+    # 2. Try spans (new design)
+    for span in soup.find_all("span"):
+        span_text = span.get_text(strip=True).lower().rstrip(":")
+        if span_text == keyword or span_text.startswith(keyword):
+            # Check for next sibling span
+            next_span = span.find_next_sibling("span")
+            if next_span:
+                return next_span.get_text(separator="\n", strip=True)
+            # Or parent's children (sometimes nested)
+            parent = span.parent
+            if parent:
+                all_spans = parent.find_all("span", recursive=False)
+                if len(all_spans) >= 2 and all_spans[0] == span:
+                    return all_spans[1].get_text(separator="\n", strip=True)
+
     return None
 
 
@@ -233,11 +254,16 @@ def parse_resort_page(
     keywords = KEYWORDS.get(lang, KEYWORDS["at"])
 
     # Resort Name
-    h1_tag = soup.find("h1", class_="tw-text-4xl")
+    h1_tag = soup.find("h1")
     if h1_tag:
-        spans = h1_tag.find_all("span")
-        if len(spans) > 1:
-            area_data["resort_name"] = spans[1].text.strip()
+        if h1_tag.has_attr("class") and "tw-text-4xl" in h1_tag["class"]:
+            spans = h1_tag.find_all("span")
+            if len(spans) > 1:
+                area_data["resort_name"] = spans[1].text.strip()
+            else:
+                area_data["resort_name"] = h1_tag.get_text(strip=True)
+        else:
+            area_data["resort_name"] = h1_tag.get_text(strip=True)
 
     # Region path from breadcrumbs
     # Try finding by aria-label "Breadcrumb" (newer design)
@@ -384,6 +410,37 @@ def parse_resort_page(
         last_update_dt = parse_bergfex_datetime(last_update_text, lang)
         if last_update_dt:
             area_data["last_update"] = last_update_dt
+
+    # Season dates (e.g., "13.12.2025 – 11.04.2026" or "13.12.2025 - 11.04.2026")
+    season_kw = keywords.get("season", "Saison")
+    season_text = get_text_from_dd(soup, season_kw)
+
+    if season_text:
+        # Expected format: start - end (handle different dash types: -, –, —)
+        parts = [p.strip() for p in re.split(r"[-–—]", season_text)]
+        if len(parts) == 2:
+            for fmt in ("%d.%m.%Y", "%d/%m/%Y"):
+                try:
+                    start = datetime.strptime(parts[0], fmt).date()
+                    end = datetime.strptime(parts[1], fmt).date()
+                    area_data["season_start"] = start
+                    area_data["season_end"] = end
+                    break
+                except ValueError:
+                    continue
+            else:
+                _LOGGER.debug("Failed to parse season dates: %s", season_text)
+
+    # Operating Hours (Betrieb)
+    op_hours_kw = keywords.get("operating_hours", "Betrieb")
+    op_hours_text = get_text_from_dd(soup, op_hours_kw)
+    if op_hours_text:
+        area_data["operation_status"] = _translate_value(op_hours_text, lang)
+        # Try to extract start/end times: "09:00 - 16:45"
+        time_match = re.search(r"(\d{2}:\d{2})\s*-\s*(\d{2}:\d{2})", op_hours_text)
+        if time_match:
+            area_data["operating_hours_start"] = time_match.group(1)
+            area_data["operating_hours_end"] = time_match.group(2)
 
     # Snow condition (Schneezustand)
     snow_condition = get_text_from_dd(soup, keywords["snow_condition"])
@@ -585,8 +642,25 @@ def parse_resort_page(
                 if match:
                     area_data["price"] = match.group(0).strip()
 
-    # Status
-    if area_data.get("lifts_open_count", 0) > 0:
+    # Status with seasonal and time check
+    lifts_ok = area_data.get("lifts_open_count", 0) > 0
+    season_ok = True
+    time_ok = True
+    now_dt = datetime.now()
+    today = now_dt.date()
+    now_time_str = now_dt.strftime("%H:%M")
+
+    if "season_start" in area_data and "season_end" in area_data:
+        season_ok = area_data["season_start"] <= today <= area_data["season_end"]
+
+    if "operating_hours_start" in area_data and "operating_hours_end" in area_data:
+        time_ok = (
+            area_data["operating_hours_start"]
+            <= now_time_str
+            <= area_data["operating_hours_end"]
+        )
+
+    if lifts_ok and season_ok and time_ok:
         area_data["status"] = "Open"
     else:
         area_data["status"] = "Closed"

@@ -337,6 +337,16 @@ class BergfexSensor(SensorEntity):
                 area_data = self.coordinator.data[self._area_path]
                 if "price" in area_data:
                     attrs["price"] = area_data["price"]
+                if "season_start" in area_data:
+                    attrs["season_start"] = area_data["season_start"]
+                if "season_end" in area_data:
+                    attrs["season_end"] = area_data["season_end"]
+                if "operation_status" in area_data:
+                    attrs["operation_status"] = area_data["operation_status"]
+                if "operating_hours_start" in area_data:
+                    attrs["operating_hours_start"] = area_data["operating_hours_start"]
+                if "operating_hours_end" in area_data:
+                    attrs["operating_hours_end"] = area_data["operating_hours_end"]
 
         if self.coordinator.data and self._area_path in self.coordinator.data:
             area_data = self.coordinator.data[self._area_path]
