@@ -235,7 +235,7 @@ KEYWORDS = {
         "today": "hoy",
         "yesterday": "ayer",
         "from": "desde",
-        "operation": "Operación",
+        "operation": "Oficina",
         "classical": "clásico",
         "skating": "Patinaje",
         "trail_report": "Informe de las pistas de esquí de fondo",
@@ -263,7 +263,7 @@ KEYWORDS = {
         "snow_condition": "Sneeuwtoestand",
         "last_snowfall": "Laatste sneeuwval",
         "avalanche": "Lawinewaarschuwingsniveau",
-        "lifts": "Open liften",
+        "lifts": "Geopende liften",
         "pistes": "Open pistes",
         "slope_condition": "Pistetoestand",
         "prices": "Prijzen",
@@ -289,7 +289,7 @@ KEYWORDS = {
         "values": {
             "geen melding": "unknown",
         },
-        "operating_hours": "Dienst",
+        "operating_hours": "Operatie",
         "season": "Seizoen",
     },
     "se": {
@@ -361,7 +361,7 @@ KEYWORDS = {
         "values": {
             "ingen melding": "unknown",
         },
-        "operating_hours": "Yrke",
+        "operating_hours": "Drift",
         "season": "Sesong",
     },
     "dk": {
@@ -418,7 +418,7 @@ KEYWORDS = {
         "operation": "Toiminta",
         "classical": "perinteinen",
         "skating": "Luistelu",
-        "trail_report": "Latutilanne",
+        "trail_report": "Latutiedote",
         "countries": {
             "Österreich": "Itävalta",
             "Deutschland": "Saksa",
@@ -433,7 +433,7 @@ KEYWORDS = {
         "values": {
             "ei raporttia": "unknown",
         },
-        "operating_hours": "Toiminta",
+        "operating_hours": "Operaatio",
         "season": "Kausi",
     },
     "cz": {
@@ -487,7 +487,7 @@ KEYWORDS = {
         "today": "dnes",
         "yesterday": "včera",
         "from": "z",
-        "operation": "Operácia",
+        "operation": "Prevádzka",
         "classical": "klasické",
         "skating": "Korčuľovanie",
         "trail_report": "Správa o bežeckých tratiach",
@@ -577,8 +577,8 @@ KEYWORDS = {
         "values": {
             "nema izvješća": "unknown",
         },
-        "operating_hours": "Pogon",
-        "season": "Sezona",
+        "operating_hours": "Betrieb",
+        "season": "Saison",
     },
     "si": {
         "mountain": "Mountain",
@@ -631,7 +631,7 @@ KEYWORDS = {
         "today": "ma",
         "yesterday": "tegnap",
         "from": "-tól",
-        "operation": "Művelet",
+        "operation": "Üzem",
         "classical": "klasszikus",
         "skating": "Skating",
         "trail_report": "Sífutópálya jelentés",
@@ -667,7 +667,7 @@ KEYWORDS = {
         "today": "astăzi",
         "yesterday": "ieri",
         "from": "de la",
-        "operation": "Operațiunea",
+        "operation": "Întreprindere/acţionare",
         "classical": "clasic",
         "skating": "Patinaj",
         "trail_report": "Raport pârtii de schi de fond",
@@ -706,7 +706,7 @@ KEYWORDS = {
         "operation": "Работа",
         "classical": "классические",
         "skating": "Катание",
-        "trail_report": "Отчет по лыжne",
+        "trail_report": "Отчёт по лыжне",
         "countries": {
             "Österreich": "Австрия",
             "Deutschland": "Германия",
@@ -721,7 +721,7 @@ KEYWORDS = {
         "values": {
             "нет данных": "unknown",
         },
-        "operating_hours": "Работа",
+        "operating_hours": "Операция",
         "season": "Сезон",
     },
 }

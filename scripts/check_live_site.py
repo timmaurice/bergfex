@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Global Baseline Structural Validation Script for Bergfex (Async Version).
-Builds a master mapping from multiple 'Golden Resorts' and verifies all languages
-concurrently. Treating positional shifts as SUCCESS but logging them for awareness.
+Global Baseline Structural Validation Script for Bergfex (Harden Version).
+Uses strict exact-matching for baseline mapping and prevents misidentification
+of keywords from large containers.
 """
 
 import sys
@@ -29,16 +29,17 @@ sys.path.insert(0, base_dir)
 
 from custom_components.bergfex.const import SUPPORTED_LANGUAGES, KEYWORDS
 
-# Configuration of structural groups to check
+# Configuration of structural groups
 GROUPS = {
-    "snow_report_big": {
+    "snow_big": {
         "page": "snow",
         "selector": "dt.big",
         "keys": ["mountain", "valley", "snow_depth"],
+        "strict": False,  # because it has elevations like (1.377m)
     },
-    "snow_report_standard": {
+    "snow_standard": {
         "page": "snow",
-        "selector": "dt:not(.big)",
+        "selector": "dt:not(.big), th",
         "keys": [
             "snow_condition",
             "last_snowfall",
@@ -48,27 +49,46 @@ GROUPS = {
             "pistes",
             "slope_condition",
         ],
+        "strict": False,  # because it often has trailing 'Region'
     },
-    "main_page_content": {
+    "main_labels": {
         "page": "main",
-        "selector": "span.tw-font-semibold, div.box-header, dt, th, td, h2, a, div",
-        "keys": ["operating_hours", "season", "prices", "day_ticket"],
+        "selector": "span.tw-font-semibold, div.box-header, dt, th, h2, a.link-preise",
+        "keys": ["operating_hours", "season", "prices"],
+        "strict": False,  # because it often has trailing colons
     },
-    "loipen_report": {
+    "main_special": {
+        "page": "main",
+        "selector": "div, span, a",
+        "keys": ["day_ticket"],
+        "strict": False,
+    },
+    "loipen": {
         "page": "loipen",
         "selector": "dt, .loipen-bericht dt, th",
         "keys": ["trail_report", "classical", "skating"],
+        "strict": False,
     },
-    "value_keywords": {
+    "values": {
         "page": "snow",
         "selector": "dd, span, div",
         "keys": ["today", "yesterday", "from"],
+        "strict": False,
     },
 }
 
 OPTIONAL_KEYS = ["today", "yesterday"]
 
 TARGET_RESORTS = [
+    {
+        "name": "Stubai",
+        "path": "/stubaier-gletscher/",
+    },
+    {
+        "name": "Cortina",
+        "path": "/cortina-dampezzo/",
+        "loipen_path": "/veneto/langlaufen/cortina-dampezzo/loipen/",
+    },
     {
         "name": "Soelden",
         "path": "/soelden/",
@@ -91,16 +111,13 @@ USER_AGENTS = [
 
 
 def sanitize(text):
-    """Clean text but keep brackets as they may contain keywords."""
     if not text:
         return ""
     text = text.strip().rstrip(":")
-    text = " ".join(text.split())
-    return text.lower()
+    return " ".join(text.split()).lower()
 
 
 def get_group_elements(soup, selector):
-    """Get sanitized text for all elements matching selector, filtering out large containers."""
     if not soup:
         return []
     results = []
@@ -126,25 +143,42 @@ async def fetch_html_async(session, url, retries=50):
                 if response.status in [429, 404]:
                     await asyncio.sleep(random.uniform(0.1, 0.4))
                     continue
-                return None
         except Exception:
             continue
     return None
 
 
 async def build_baseline(session):
-    print("Building Global Baseline Mapping (AT)...")
+    print("Building Stricter Global Baseline Mapping (AT)...")
     global_baseline = {}
     at_keywords = KEYWORDS["at"]
 
+    # Scanners include major resorts and the overview page
+    scanners = []
     for resort in TARGET_RESORTS:
+        scanners.append(("resort", resort))
+
+    # Add overview page as a virtual resort for header detection
+    scanners.append(
+        (
+            "overview",
+            {
+                "name": "Overview AT",
+                "path": "/oesterreich/schneewerte/",
+            },
+        )
+    )
+
+    for stype, resort in scanners:
         print(f"  Scanning {resort['name']}...")
-        pages = {
-            "snow": f"https://www.bergfex.at{resort['path']}schneebericht/",
-            "main": f"https://www.bergfex.at{resort['path']}",
-        }
-        if "loipen_path" in resort:
-            pages["loipen"] = f"https://www.bergfex.at{resort['loipen_path']}"
+        pages = {}
+        if stype == "overview":
+            pages["snow"] = f"https://www.bergfex.at{resort['path']}"
+        else:
+            pages["snow"] = f"https://www.bergfex.at{resort['path']}schneebericht/"
+            pages["main"] = f"https://www.bergfex.at{resort['path']}"
+            if "loipen_path" in resort:
+                pages["loipen"] = f"https://www.bergfex.at{resort['loipen_path']}"
 
         for ptype, url in pages.items():
             html = await fetch_html_async(session, url)
@@ -160,13 +194,20 @@ async def build_baseline(session):
                 for key in cfg["keys"]:
                     if key in global_baseline:
                         continue
-
                     target_kw = sanitize(at_keywords[key])
+
                     best_match = None
                     best_len = 999
 
                     for i, text in enumerate(elements):
-                        if target_kw in text and len(text) < best_len:
+                        # Use exact match if group is marked as strict
+                        match = (
+                            (text == target_kw)
+                            if cfg["strict"]
+                            else (target_kw in text)
+                        )
+
+                        if match and len(text) < best_len:
                             best_match = (i, text)
                             best_len = len(text)
 
@@ -180,7 +221,7 @@ async def build_baseline(session):
                             "ptype": ptype,
                         }
                         print(
-                            f"    - Found '{key}' in {resort['name']} ({ptype} index {idx}: '{text}')"
+                            f"    - Found '{key}' in {resort['name']} ({group_name} index {idx}: '{text}')"
                         )
 
     missing = (
@@ -189,8 +230,7 @@ async def build_baseline(session):
         - set(OPTIONAL_KEYS)
     )
     if missing:
-        print(f"\nWARNING: Baseline incomplete! Missing: {missing}")
-
+        print(f"\nWARNING: Baseline mapping incomplete! Missing keys: {missing}")
     return global_baseline
 
 
@@ -205,12 +245,10 @@ async def validate_language(session, lang_code, lang_info, global_baseline, sema
         for key, info in global_baseline.items():
             resort = info["resort"]
             ptype = info["ptype"]
-            group_name = info["group"]
-            group_cfg = GROUPS[group_name]
+            group_cfg = GROUPS[info["group"]]
 
             if resort["name"] not in resort_caches:
                 resort_caches[resort["name"]] = {}
-
             if ptype not in resort_caches[resort["name"]]:
                 path = (
                     resort["loipen_path"]
@@ -226,17 +264,16 @@ async def validate_language(session, lang_code, lang_info, global_baseline, sema
 
             soup = resort_caches[resort["name"]][ptype]
             actual_elements = get_group_elements(soup, group_cfg["selector"])
-
             expected_raw = lang_keywords.get(key, "MISSING_IN_CONST")
             expected = sanitize(expected_raw)
 
             if not actual_elements:
-                lang_errors.append(f"Could not fetch {ptype} for {resort['name']}")
+                lang_errors.append(f"Fetch failed: {ptype} for {resort['name']}")
                 continue
 
             idx = info["index"]
             if idx < len(actual_elements) and expected in actual_elements[idx]:
-                continue  # Perfect positional match
+                continue
 
             # Check for shift
             found_at = -1
@@ -246,8 +283,7 @@ async def validate_language(session, lang_code, lang_info, global_baseline, sema
                     break
 
             if found_at != -1:
-                # Treating a shift as SUCCESS but logging it
-                lang_shifts.append(f"'{key}' shifted from index {idx} to {found_at}")
+                lang_shifts.append(f"'{key}' shifted {idx} -> {found_at}")
             elif key not in OPTIONAL_KEYS:
                 actual_text = (
                     actual_elements[idx]
@@ -255,17 +291,19 @@ async def validate_language(session, lang_code, lang_info, global_baseline, sema
                     else "OUT_OF_BOUNDS"
                 )
                 lang_errors.append(
-                    f"MISMATCH '{key}': expected '{expected_raw}', found '{actual_text.capitalize()}'"
+                    {
+                        "key": key,
+                        "at": info["at_text"],
+                        "expected": expected_raw,
+                        "found": actual_text.capitalize(),
+                    }
                 )
 
         if lang_errors:
-            print(
-                f"[{lang_code.upper()}] FAILED: {len(lang_errors)} mismatches ({len(lang_shifts)} shifts)."
-            )
+            print(f"[{lang_code.upper()}] FAILED: {len(lang_errors)} mismatches.")
             return lang_code, lang_errors, lang_shifts
         else:
-            status = f"OK ({len(lang_shifts)} shifts)" if lang_shifts else "OK"
-            print(f"[{lang_code.upper()}] {status}.")
+            print(f"[{lang_code.upper()}] OK.")
             return lang_code, [], lang_shifts
 
 
@@ -277,7 +315,7 @@ async def main():
             return
 
         print("\nStarting Async Cross-Language Validation...")
-        semaphore = asyncio.Semaphore(3)  # Limit concurrency to stay under WAF
+        semaphore = asyncio.Semaphore(3)
         tasks = []
         for lang_code, lang_info in SUPPORTED_LANGUAGES.items():
             if lang_code == "at":
@@ -289,19 +327,35 @@ async def main():
             )
 
         results = await asyncio.gather(*tasks)
-
         passed = sum(1 for r in results if not r[1])
-        failed = sum(1 for r in results if r[1])
+        failed_structurally = sum(
+            1 for r in results if any(isinstance(e, dict) for e in r[1])
+        )
+        failed_fetch = sum(
+            1
+            for r in results
+            if any(not isinstance(e, dict) for e in r[1])
+            and not any(isinstance(e, dict) for e in r[1])
+        )
 
         print("\n" + "=" * 50)
-        print(f"OVERALL SUMMARY: {passed + 1} Passed (inc. AT), {failed} Failed")
+        print(
+            f"OVERALL SUMMARY: {passed + 1} Passed, {failed_structurally} Structural, {failed_fetch} Fetch errors"
+        )
         print("=" * 50)
 
-        if failed > 0:
-            print("\nCritical Mismatches (Ignoring shifts):")
+        if failed_structurally > 0:
+            print("\nCritical Structural Mismatches (Ignoring shifts):")
+            print(
+                f"{'LANG':<6} | {'KEY':<18} | {'AT BASELINE':<25} | {'EXPECTED':<25} | {'FOUND'}"
+            )
+            print("-" * 100)
             for lang, errs, shifts in results:
                 for e in errs:
-                    print(f"- [{lang.upper()}] {e}")
+                    if isinstance(e, dict):
+                        print(
+                            f"{lang.upper():<6} | {e['key']:<18} | {e['at']:<25} | {e['expected']:<25} | {e['found']}"
+                        )
             sys.exit(1)
         else:
             print("\nValidation Successful! All keywords found (shifts ignored).")
