@@ -2,9 +2,9 @@ name: Tests
 
 on:
   push:
-    branches: [ "main", "master" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main", "master" ]
+    branches: ["main"]
 
 jobs:
   test:
@@ -20,7 +20,8 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install homeassistant pytest-homeassistant-custom-component beautifulsoup4 lxml pytest pytest-asyncio pytest-socket aiohttp
+          pip install -r requirements.txt
+          pip install -r requirements-test.txt
 
       - name: Run tests (offline)
         run: |

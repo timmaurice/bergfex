@@ -6,6 +6,6 @@ updates:
       interval: "weekly"
 
   - package-ecosystem: "pip"
-    directory: "/custom_components/bergfex"
+    directory: "/"
     schedule:
       interval: "weekly"
