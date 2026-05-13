@@ -12,7 +12,7 @@ jobs:
       contents: write
     steps:
       # 1. Checkout code
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       # 2. Get version from tag
       - name: Get version from tag
@@ -31,7 +31,7 @@ jobs:
 
       # 5. Create GitHub Release and attach ZIP
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ github.ref }}
           name: "Version ${{ env.VERSION }}"
