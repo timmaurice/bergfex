@@ -59,25 +59,25 @@ A new device will be created for the ski area, containing all the sensors listed
 
 For each configured ski area, the following sensors will be created:
 
-| Sensor                    | Description                                   | Attributes             | Example Value         |
-| :------------------------ | :-------------------------------------------- | :--------------------- | :-------------------- |
+| Sensor                    | Description                                   | Attributes                                                                                    | Example Value         |
+| :------------------------ | :-------------------------------------------- | :-------------------------------------------------------------------------------------------- | :-------------------- |
 | **Status**                | The current operational status of the resort. | `link`, `price`, `season_start`, `season_end`, `operating_hours_start`, `operating_hours_end` | `Open`                |
-| **Snow Valley**           | Snow depth in the valley, in cm.              | `elevation`            | `35`                  |
-| **Snow Mountain**         | Snow depth on the mountain, in cm.            | `elevation`            | `110`                 |
-| **New Snow**              | Fresh snow in the last 24h, in cm.            |                        | `15`                  |
-| **Snow Condition**        | Condition of the snow.                        |                        | `Pulver`              |
-| **Last Snowfall**         | Date of the last snowfall.                    |                        | `28.11.`              |
-| **Avalanche Warning**     | Current avalanche warning level.              |                        | `2 - mäßig`           |
-| **Lifts Open**            | The number of currently open lifts.           | `total`                | `14` (total: `26`)    |
-| **Slopes Open (km)**      | Kilometers of open slopes.                    | `total`                | `45.5` (total: `60`)  |
-| **Slopes Open**           | Number of open slopes.                        | `open_pistes`, `total` | `20` (total: `30`)    |
-| **Slope Condition**       | Condition of the slopes.                      |                        | `gut`                 |
-| **Classical Trails Open** | Kilometers of open classical trails.          | `total`                | `30` (total: `50`)    |
-| **Classical Condition**   | Condition of the classical trails.            |                        | `gespurt (sehr gut)`  |
-| **Skating Trails Open**   | Kilometers of open skating trails.            | `total`                | `25` (total: `40`)    |
-| **Skating Condition**     | Condition of the skating trails.              |                        | `gespurt (sehr gut)`  |
-| **Operation Status**      | The current operational status of the trails. |                        | `täglich`             |
-| **Last Update**           | The timestamp of the last data report.        |                        | `2024-10-28 21:54:24` |
+| **Snow Valley**           | Snow depth in the valley, in cm.              | `elevation`                                                                                   | `35`                  |
+| **Snow Mountain**         | Snow depth on the mountain, in cm.            | `elevation`                                                                                   | `110`                 |
+| **New Snow**              | Fresh snow in the last 24h, in cm.            |                                                                                               | `15`                  |
+| **Snow Condition**        | Condition of the snow.                        |                                                                                               | `Pulver`              |
+| **Last Snowfall**         | Date of the last snowfall.                    |                                                                                               | `28.11.`              |
+| **Avalanche Warning**     | Current avalanche warning level.              |                                                                                               | `2 - mäßig`           |
+| **Lifts Open**            | The number of currently open lifts.           | `total`                                                                                       | `14` (total: `26`)    |
+| **Slopes Open (km)**      | Kilometers of open slopes.                    | `total`                                                                                       | `45.5` (total: `60`)  |
+| **Slopes Open**           | Number of open slopes.                        | `open_pistes`, `total`                                                                        | `20` (total: `30`)    |
+| **Slope Condition**       | Condition of the slopes.                      |                                                                                               | `gut`                 |
+| **Classical Trails Open** | Kilometers of open classical trails.          | `total`                                                                                       | `30` (total: `50`)    |
+| **Classical Condition**   | Condition of the classical trails.            |                                                                                               | `gespurt (sehr gut)`  |
+| **Skating Trails Open**   | Kilometers of open skating trails.            | `total`                                                                                       | `25` (total: `40`)    |
+| **Skating Condition**     | Condition of the skating trails.              |                                                                                               | `gespurt (sehr gut)`  |
+| **Operation Status**      | The current operational status of the trails. |                                                                                               | `täglich`             |
+| **Last Update**           | The timestamp of the last data report.        |                                                                                               | `2024-10-28 21:54:24` |
 
 ## Image Entities
 
