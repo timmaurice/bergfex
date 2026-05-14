@@ -61,7 +61,7 @@ For each configured ski area, the following sensors will be created:
 
 | Sensor                    | Description                                   | Attributes             | Example Value         |
 | :------------------------ | :-------------------------------------------- | :--------------------- | :-------------------- |
-| **Status**                | The current operational status of the resort. | `link`                 | `Open`                |
+| **Status**                | The current operational status of the resort. | `link`, `price`, `season_start`, `season_end`, `operating_hours_start`, `operating_hours_end` | `Open`                |
 | **Snow Valley**           | Snow depth in the valley, in cm.              | `elevation`            | `35`                  |
 | **Snow Mountain**         | Snow depth on the mountain, in cm.            | `elevation`            | `110`                 |
 | **New Snow**              | Fresh snow in the last 24h, in cm.            |                        | `15`                  |

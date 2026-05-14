@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from datetime import timedelta
+from datetime import timedelta, datetime
 from urllib.parse import urljoin
 
 from homeassistant.config_entries import ConfigEntry
@@ -193,9 +193,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
                 parsed_data = parse_resort_page(html, area_path, lang)
 
-                # Fetch main resort page if price is missing and we are on a known subpage
+                # Fetch main resort page if price or season is missing and we are on a known subpage
                 # e.g. /meribel/schneebericht/ -> /meribel/
-                if "price" not in parsed_data:
+                if "price" not in parsed_data or "season_start" not in parsed_data:
                     parts = area_path.strip("/").split("/")
                     # List of typical subpages that usually don't have the primary price block
                     subpages = [
@@ -223,12 +223,59 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                                         main_data = parse_resort_page(
                                             main_html, main_path, lang
                                         )
-                                        if "price" in main_data:
-                                            parsed_data["price"] = main_data["price"]
-                                            _LOGGER.debug(
-                                                "Found price on main page: %s",
-                                                parsed_data["price"],
+                                        for key in [
+                                            "price",
+                                            "season_start",
+                                            "season_end",
+                                            "operating_hours_start",
+                                            "operating_hours_end",
+                                            "operation_status",
+                                        ]:
+                                            if (
+                                                key in main_data
+                                                and key not in parsed_data
+                                            ):
+                                                parsed_data[key] = main_data[key]
+                                                _LOGGER.debug(
+                                                    "Found %s on main page: %s",
+                                                    key,
+                                                    parsed_data[key],
+                                                )
+
+                                        # Re-evaluate status since we might have new seasonal boundaries
+                                        lifts_ok = (
+                                            parsed_data.get("lifts_open_count", 0) > 0
+                                        )
+                                        season_ok = True
+                                        time_ok = True
+                                        now_dt = datetime.now()
+                                        today = now_dt.date()
+                                        now_time_str = now_dt.strftime("%H:%M")
+
+                                        if (
+                                            "season_start" in parsed_data
+                                            and "season_end" in parsed_data
+                                        ):
+                                            season_ok = (
+                                                parsed_data["season_start"]
+                                                <= today
+                                                <= parsed_data["season_end"]
                                             )
+
+                                        if (
+                                            "operating_hours_start" in parsed_data
+                                            and "operating_hours_end" in parsed_data
+                                        ):
+                                            time_ok = (
+                                                parsed_data["operating_hours_start"]
+                                                <= now_time_str
+                                                <= parsed_data["operating_hours_end"]
+                                            )
+
+                                        if lifts_ok and season_ok and time_ok:
+                                            parsed_data["status"] = "Open"
+                                        else:
+                                            parsed_data["status"] = "Closed"
                             except Exception as err:
                                 _LOGGER.debug(
                                     "Could not fetch main page for price: %s", err
