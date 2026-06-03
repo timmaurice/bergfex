@@ -143,7 +143,7 @@ KEYWORDS = {
         "values": {
             "no report": "no report",
         },
-        "operating_hours": "Operation",
+        "operating_hours": "Operating hours",
         "season": "Season",
     },
     "fr": {
@@ -253,7 +253,7 @@ KEYWORDS = {
         "values": {
             "sin información": "unknown",
         },
-        "operating_hours": "Operación",
+        "operating_hours": "Horas de funcionamiento",
         "season": "Temporada",
     },
     "nl": {
@@ -289,7 +289,7 @@ KEYWORDS = {
         "values": {
             "geen melding": "unknown",
         },
-        "operating_hours": "Operatie",
+        "operating_hours": "Bedrijfsuren",
         "season": "Seizoen",
     },
     "se": {
@@ -361,7 +361,7 @@ KEYWORDS = {
         "values": {
             "ingen melding": "unknown",
         },
-        "operating_hours": "Drift",
+        "operating_hours": "Åpningstider",
         "season": "Sesong",
     },
     "dk": {
@@ -397,7 +397,7 @@ KEYWORDS = {
         "values": {
             "ingen melding": "unknown",
         },
-        "operating_hours": "Betjening",
+        "operating_hours": "Driftstimer",
         "season": "Sæson",
     },
     "fi": {
@@ -433,7 +433,7 @@ KEYWORDS = {
         "values": {
             "ei raporttia": "unknown",
         },
-        "operating_hours": "Operaatio",
+        "operating_hours": "Toiminta-aika",
         "season": "Kausi",
     },
     "cz": {
@@ -445,7 +445,7 @@ KEYWORDS = {
         "avalanche": "Lavinový výstražný stupeň",
         "lifts": "Otevřené výtahy",
         "pistes": "Otevřené svahy",
-        "slope_condition": "Sjezdovka",
+        "slope_condition": "Stav vzletové a přistávací dráhy",
         "prices": "Ceny",
         "day_ticket": "denní jízdenka",
         "today": "dnes",
@@ -469,7 +469,7 @@ KEYWORDS = {
         "values": {
             "žádná zpráva": "unknown",
         },
-        "operating_hours": "Operace",
+        "operating_hours": "Provozní doba",
         "season": "Sezóna",
     },
     "sk": {
@@ -505,7 +505,7 @@ KEYWORDS = {
         "values": {
             "žiadna správa": "unknown",
         },
-        "operating_hours": "Operácia",
+        "operating_hours": "Prevádzkové hodiny",
         "season": "Sezóna",
     },
     "pl": {
@@ -541,7 +541,7 @@ KEYWORDS = {
         "values": {
             "brak komunikatu": "unknown",
         },
-        "operating_hours": "Działanie",
+        "operating_hours": "Godziny pracy",
         "season": "Sezon",
     },
     "hr": {
@@ -613,7 +613,7 @@ KEYWORDS = {
         "values": {
             "ni poročila": "unknown",
         },
-        "operating_hours": "Operacija",
+        "operating_hours": "Delovne ure",
         "season": "Sezona",
     },
     "hu": {
@@ -649,7 +649,7 @@ KEYWORDS = {
         "values": {
             "nincs jelentés": "unknown",
         },
-        "operating_hours": "Művelet",
+        "operating_hours": "Működési idő",
         "season": "Szezon",
     },
     "ro": {
@@ -685,7 +685,7 @@ KEYWORDS = {
         "values": {
             "fără raport": "unknown",
         },
-        "operating_hours": "Operațiunea",
+        "operating_hours": "Ore de funcționare",
         "season": "Sezonul",
     },
     "ru": {
@@ -721,7 +721,7 @@ KEYWORDS = {
         "values": {
             "нет данных": "unknown",
         },
-        "operating_hours": "Операция",
+        "operating_hours": "Время работы",
         "season": "Сезон",
     },
 }

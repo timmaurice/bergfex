@@ -67,7 +67,7 @@ def validate():
 
         # Detect suspicious keywords (German/English leaks in other languages)
         suspicious_terms = ["Betrieb", "Saison", "Operation"]
-        if lang_code not in ["at", "en", "fr"]:
+        if lang_code not in ["at", "en", "fr", "hr"]:
             for key in ["operation", "operating_hours", "season"]:
                 if key in keywords and keywords[key] in suspicious_terms:
                     errors.append(

@@ -217,7 +217,7 @@ SERFAUS_LANG_VALUES = {
     "cz": {
         "snow_condition": "přilnavý",
         "avalanche_warning": "závažný",
-        "slope_condition": "dobrá",
+        "slope_condition": "dobré",
     },
     "sk": {
         "snow_condition": "zrnitý",
