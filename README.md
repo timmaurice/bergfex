@@ -54,6 +54,39 @@ This integration is available in the [Home Assistant Community Store (HACS)](htt
 
 The Bergfex card is bundled with this integration and registered automatically — no separate installation needed.
 
+### Migrating from the standalone Bergfex Card
+
+Up to version 2.x the card lived in its own repository, [timmaurice/lovelace-bergfex-card](https://github.com/timmaurice/lovelace-bergfex-card). From 3.0.0 it ships with the integration, so that repository is no longer needed. If you have it installed:
+
+1.  Update the integration to 3.0.0 and restart Home Assistant.
+2.  Open **HACS** → **Frontend** → **Bergfex Card** → **Uninstall**.
+3.  Reload your browser with a cache-bypassing refresh (<kbd>Ctrl</kbd>/<kbd>Cmd</kbd> + <kbd>Shift</kbd> + <kbd>R</kbd>).
+
+**Your dashboard configuration does not change.** The card type is still `custom:bergfex-card` and every option keeps its meaning, so your existing YAML and any cards placed through the UI keep working.
+
+Two things happen on their own, so you do not need to touch them:
+
+- The stale Lovelace resource pointing at `/hacsfiles/lovelace-bergfex-card/bergfex-card.js` (or a hand-added `/local/bergfex-card.js`) is removed on startup.
+- A repair notice appears under **Settings** → **System** → **Repairs** reminding you to uninstall the HACS repository, because removing the resource does not uninstall the files.
+
+Until you complete step 2 both copies define the same `bergfex-card` element. Whichever loads second stays inactive and logs a warning to the browser console — the card keeps working, but you may be looking at the older version.
+
+<details>
+<summary>If your Lovelace runs in YAML mode</summary>
+
+Automatic resource registration only works in storage mode. In YAML mode the integration logs a warning and you add the resource yourself:
+
+```yaml
+lovelace:
+  resources:
+    - url: /bergfex_frontend/bergfex-card.js
+      type: module
+```
+
+Remove any earlier `lovelace-bergfex-card` entry at the same time.
+
+</details>
+
 ## Configuration
 
 Configuration is done entirely through the Home Assistant UI.
@@ -176,21 +209,29 @@ In addition to sensors, the integration provides image entities for snow forecas
 
 ### Frontend (Lovelace Card)
 
+The Node version is pinned in `.nvmrc`; `nvm use` picks it up.
+
 ```bash
-# Install dependencies (use bun; npm test requires Node v24+)
-bun install
+# Install dependencies
+npm ci
 
 # Build the card (output: custom_components/bergfex/bergfex-card.js)
 npm run build
 
 # Run tests
-/usr/local/bin/node node_modules/.bin/vitest run
+npm run test
 
-# Lint
+# Lint and formatting
 npm run lint
+npm run check-format
+npm run format
 
-# Watch mode
+# Rebuild on change
 npm run watch
+
+# Build and verify the HACS archive, as the release workflow does
+npm run build:release
+node scripts/build-release-zip.mjs --dry-run   # inspect without writing
 ```
 
 ### Backend (Python integration)

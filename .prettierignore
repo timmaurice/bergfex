@@ -10,7 +10,9 @@ bun.lock
 
 # Exclude python and compiled dirs
 custom_components/bergfex/__pycache__
-custom_components/bergfex/tests/
+
+# Python test suite, including the raw bergfex HTML fixtures
+tests/
 config
 venv
 
