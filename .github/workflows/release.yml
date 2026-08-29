@@ -19,17 +19,30 @@ jobs:
         id: get_version
         run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
 
-      # 3. Create ZIP in repo root (only bergfex folder)
+      # 3. Build the Lovelace card
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Build Lovelace card
+        run: npm run build
+
+      # 4. Create ZIP in repo root (only bergfex folder, includes bergfex-card.js)
       - name: Create zip archive for HACS
         run: |
           cd custom_components/bergfex
           zip -r ../../bergfex.zip .
 
-      # 4. Verify ZIP exists
+      # 5. Verify ZIP exists
       - name: List files
         run: ls -l bergfex.zip
 
-      # 5. Create GitHub Release and attach ZIP
+      # 6. Create GitHub Release and attach ZIP
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v3
         with:
