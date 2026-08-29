@@ -13,6 +13,8 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.exceptions import ConfigEntryNotReady
 
 
+import homeassistant.helpers.config_validation as cv
+
 from .const import (
     BASE_URL,
     CONF_COUNTRY,
@@ -41,6 +43,73 @@ from .parser import (
 
 PLATFORMS = ["sensor", "image"]
 _LOGGER = logging.getLogger(__name__)
+
+CARD_FILENAME = "bergfex-card.js"
+CARD_URL_BASE = "/bergfex_frontend"
+
+CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
+
+
+async def async_setup(hass: HomeAssistant, config: dict) -> bool:
+    """Set up the Bergfex component and register the Lovelace card."""
+    from homeassistant.components.http import StaticPathConfig
+    from homeassistant.loader import async_get_integration
+
+    integration = await async_get_integration(hass, DOMAIN)
+    version = integration.version or "1.0.0"
+
+    await hass.http.async_register_static_paths(
+        [
+            StaticPathConfig(
+                url_path=f"{CARD_URL_BASE}/{CARD_FILENAME}",
+                path=hass.config.path(f"custom_components/{DOMAIN}/{CARD_FILENAME}"),
+                cache_headers=True,
+            )
+        ]
+    )
+    new_url = f"{CARD_URL_BASE}/{CARD_FILENAME}?v={version}"
+
+    async def _async_register_lovelace_resource(event=None):
+        if "lovelace" not in hass.data:
+            _LOGGER.warning("Lovelace not found in hass.data")
+            return
+
+        lovelace_data = hass.data["lovelace"]
+        mode = getattr(lovelace_data, "resource_mode", "storage")
+        resources = getattr(lovelace_data, "resources", None)
+
+        if not resources:
+            _LOGGER.warning("Lovelace data does not have resources")
+            return
+
+        if mode != "storage":
+            _LOGGER.warning(
+                "Lovelace is not in storage mode (mode is '%s'), cannot auto-register",
+                mode,
+            )
+            return
+
+        for item in resources.async_items():
+            if item.get("url", "").startswith(f"{CARD_URL_BASE}/"):
+                if item.get("url") != new_url:
+                    await resources.async_update_item(item.get("id"), {"url": new_url})
+                return
+
+        await resources.async_create_item(
+            {"res_type": "module", "url": new_url}
+        )
+
+    from homeassistant.core import CoreState
+    from homeassistant.const import EVENT_HOMEASSISTANT_STARTED
+
+    if hass.state == CoreState.running:
+        await _async_register_lovelace_resource()
+    else:
+        hass.bus.async_listen_once(
+            EVENT_HOMEASSISTANT_STARTED, _async_register_lovelace_resource
+        )
+
+    return True
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
