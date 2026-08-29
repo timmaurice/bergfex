@@ -14,7 +14,7 @@ then retire `timmaurice/lovelace-bergfex-card` from HACS and archive the repo.
   snow columns showing N/A — so layout, sorting, badges and the accordion are all
   verifiable before the season starts.
 - Everything below marked _(offline)_ is verifiable today via the 27 HTML fixtures
-  in `custom_components/bergfex/tests/fixtures/` (58 pytest + 33 vitest, all green).
+  in `tests/fixtures/` (58 pytest + 33 vitest, all green).
 - **Season anchors:**
   | Resort                 | Opening                                              |
   | ---------------------- | ---------------------------------------------------- |
@@ -53,8 +53,9 @@ then retire `timmaurice/lovelace-bergfex-card` from HACS and archive the repo.
 
 ### Release hygiene _(offline)_
 
-- [ ] Clean up stale releases on `timmaurice/bergfex`: draft `2.4.0b3`, pre-releases
-      `2.4.0b2` / `2.4.0b1`. Either delete or fold their notes into 3.0.0.
+- [x] Stale releases on `timmaurice/bergfex` (draft `2.4.0b3`, pre-releases `2.4.0b2`
+      / `2.4.0b1`): **keep them.** Their notes are folded into the 3.0.0 changelog;
+      the releases themselves stay as history. Do not delete.
 - [x] CHANGELOG for 2.3.1 → 3.0.0, with the 2.4.0 betas folded in and the skipped
       version line called out.
 - [x] Verify `hacs.json` `zip_release` / `bergfex.zip` actually contains the built
@@ -62,9 +63,9 @@ then retire `timmaurice/lovelace-bergfex-card` from HACS and archive the repo.
       `__pycache__`, `.pytest_cache` and `.DS_Store` to every user: 56 of ~80 entries,
       759 K instead of 60 K. Excluded in `release.yml`, with a CI guard that fails the
       release if a required file is missing or junk creeps back in.
-- [ ] Decide whether `tests/` should move out of `custom_components/bergfex/`. The zip
-      is clean now, but the README's manual-install path still tells users to copy the
-      whole folder, fixtures and all (3.7 MB).
+- [x] Move `tests/` out of `custom_components/bergfex/` to the repo root. The manual
+      install now copies 416 K instead of 4 MB, and the component directory holds only
+      what ships. Imports were already absolute, so nothing needed rewriting.
 - [x] Verify `.github/workflows/release.yml` runs the rollup build **before** zipping,
       so the bundle can never ship stale.
 - [ ] README rewrite: one-install story, card config reference, explicit
@@ -76,16 +77,17 @@ then retire `timmaurice/lovelace-bergfex-card` from HACS and archive the repo.
 
 - [ ] Card: fixture-driven visual states — loading, off-season, missing sensor,
       partial data, cross-country.
-- [ ] Add a regression test for the `_getResorts()` null-guard.
+- [x] Add a regression test for the `_getResorts()` null-guard.
 - [x] Get the Frontend workflow green: it failed on both `lint` and `check-format`
       before it had ever run.
 - [x] Test the "both card versions installed" path in a live HA instance: seven
       resources collapsed to three, the HACS and `/local/` leftovers and two duplicate
       entries were removed, unrelated resources untouched, repair issue raised and
       rendered, and a second bundle import warned instead of throwing.
-- [ ] Fix "Invalid Date" in the card footer. `airolo` parses with no `last_update` at
-      all, and the card formats the missing value instead of falling back. Guard the
-      card, and check whether the parser should be finding a timestamp there.
+- [x] Fix "Invalid Date" in the card footer. `airolo` parses with no `last_update` at
+      all. Fixed in the card via `parseDate()`; the footer row now hides when there is
+      no timestamp. Whether the parser _should_ find one for `airolo` is still open —
+      worth a look during the Phase 1 fixture refresh.
 - [ ] **Fixture-refresh canary:** a check that flags when a live bergfex page yields
       0 `<dt>` elements _during_ the season — today off-season emptiness and a site
       redesign are indistinguishable, so a summer restructure would only surface in November.

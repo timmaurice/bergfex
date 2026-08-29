@@ -196,7 +196,7 @@ npm run watch
 ### Backend (Python integration)
 
 ```bash
-PYTHONPATH=. pytest custom_components/bergfex/tests
+PYTHONPATH=. pytest tests
 ```
 
 ### Local Docker Testing
