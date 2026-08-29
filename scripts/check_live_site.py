@@ -8,21 +8,30 @@ of keywords from large containers.
 import sys
 import os
 import asyncio
+import datetime
 import random
 import re
 import aiohttp
 from bs4 import BeautifulSoup
 from unittest.mock import MagicMock
 
-# Mock homeassistant
-sys.modules["homeassistant"] = MagicMock()
-sys.modules["homeassistant.config_entries"] = MagicMock()
-sys.modules["homeassistant.const"] = MagicMock()
-sys.modules["homeassistant.core"] = MagicMock()
-sys.modules["homeassistant.helpers"] = MagicMock()
-sys.modules["homeassistant.helpers.aiohttp_client"] = MagicMock()
-sys.modules["homeassistant.helpers.update_coordinator"] = MagicMock()
-sys.modules["homeassistant.exceptions"] = MagicMock()
+# This script runs in CI without Home Assistant installed. Stub it out only when
+# it is genuinely missing - unconditional stubbing would poison sys.modules for
+# anything that imports this module afterwards, the test suite included.
+try:  # pragma: no cover - depends on the environment, not on the code
+    import homeassistant  # noqa: F401
+except ImportError:  # pragma: no cover
+    for _name in (
+        "homeassistant",
+        "homeassistant.config_entries",
+        "homeassistant.const",
+        "homeassistant.core",
+        "homeassistant.helpers",
+        "homeassistant.helpers.aiohttp_client",
+        "homeassistant.helpers.update_coordinator",
+        "homeassistant.exceptions",
+    ):
+        sys.modules[_name] = MagicMock()
 
 base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, base_dir)
@@ -53,7 +62,12 @@ GROUPS = {
     },
     "main_labels": {
         "page": "main",
-        "selector": "span.tw-font-semibold, div.box-header, dt, th, h2, a.link-preise",
+        # bergfex dropped the Tailwind `tw-` class prefix at some point; both are
+        # matched so the check keeps working across the change.
+        "selector": (
+            "span.tw-font-semibold, span.font-semibold, div.box-header, "
+            "dt, th, h2, h3, a.link-preise"
+        ),
         "keys": ["operating_hours", "season", "prices"],
         "strict": False,  # because it often has trailing colons
     },
@@ -78,6 +92,41 @@ GROUPS = {
 }
 
 OPTIONAL_KEYS = ["today", "yesterday"]
+
+# bergfex removes the entire snow-report block outside the winter season, so keys
+# living on those pages are legitimately absent in summer. Keys on the main page
+# (season dates, prices, operating hours) are published year-round - if those
+# vanish, the site was restructured and the parser is about to break.
+SEASONAL_PAGES = {"snow", "loipen"}
+
+# Deliberately narrow. The reference resorts are a mix of glaciers (Stubai,
+# Soelden, Hintertux) and ordinary areas (Ramsau, Axamer Lizum), and in October
+# and November only the glaciers report, so insisting on a snow report then would
+# produce false alarms - the one failure mode a canary must not have. December to
+# March every reference area is running, and that is also when a broken parser
+# actually hurts users. Restructures outside this window are still caught by the
+# year-round keys, which bergfex publishes all summer.
+IN_SEASON_MONTHS = {12, 1, 2, 3}
+
+
+def key_is_seasonal(key):
+    """Whether a key may legitimately disappear outside the winter season."""
+    for cfg in GROUPS.values():
+        if key in cfg["keys"]:
+            return cfg["page"] in SEASONAL_PAGES
+    return False
+
+
+def in_season(today=None):
+    """Whether the snow report is expected to exist right now.
+
+    BERGFEX_FORCE_SEASON overrides the calendar so either branch can be exercised
+    on demand: `BERGFEX_FORCE_SEASON=1` treats today as mid-winter.
+    """
+    override = os.environ.get("BERGFEX_FORCE_SEASON")
+    if override is not None:
+        return override.strip().lower() in ("1", "true", "yes")
+    return (today or datetime.date.today()).month in IN_SEASON_MONTHS
 
 TARGET_RESORTS = [
     {
@@ -230,8 +279,10 @@ async def build_baseline(session):
         - set(OPTIONAL_KEYS)
     )
     if missing:
-        print(f"\nWARNING: Baseline mapping incomplete! Missing keys: {missing}")
-    return global_baseline
+        # A key that never made it into the baseline is silently skipped for all
+        # 18 languages, so this has to reach the exit code rather than scroll past.
+        print(f"\nBaseline mapping incomplete! Missing keys: {sorted(missing)}")
+    return global_baseline, missing
 
 
 async def validate_language(session, lang_code, lang_info, global_baseline, semaphore):
@@ -268,7 +319,15 @@ async def validate_language(session, lang_code, lang_info, global_baseline, sema
             expected = sanitize(expected_raw)
 
             if not actual_elements:
-                lang_errors.append(f"Fetch failed: {ptype} for {resort['name']}")
+                # The selector matched nothing at all. Off-season this is normal;
+                # in season it means the structure we parse is gone.
+                lang_errors.append(
+                    {
+                        "kind": "absent",
+                        "key": key,
+                        "detail": f"{ptype} page of {resort['name']}: selector matched nothing",
+                    }
+                )
                 continue
 
             idx = info["index"]
@@ -292,6 +351,7 @@ async def validate_language(session, lang_code, lang_info, global_baseline, sema
                 )
                 lang_errors.append(
                     {
+                        "kind": "mismatch",
                         "key": key,
                         "at": info["at_text"],
                         "expected": expected_raw,
@@ -300,7 +360,11 @@ async def validate_language(session, lang_code, lang_info, global_baseline, sema
                 )
 
         if lang_errors:
-            print(f"[{lang_code.upper()}] FAILED: {len(lang_errors)} mismatches.")
+            mismatches = sum(1 for e in lang_errors if e["kind"] == "mismatch")
+            absent = len(lang_errors) - mismatches
+            print(
+                f"[{lang_code.upper()}] {mismatches} mismatches, {absent} absent structures."
+            )
             return lang_code, lang_errors, lang_shifts
         else:
             print(f"[{lang_code.upper()}] OK.")
@@ -309,10 +373,10 @@ async def validate_language(session, lang_code, lang_info, global_baseline, sema
 
 async def main():
     async with aiohttp.ClientSession() as session:
-        global_baseline = await build_baseline(session)
+        global_baseline, baseline_gaps = await build_baseline(session)
         if not global_baseline:
-            print("CRITICAL: No baseline. Aborting.")
-            return
+            print("\nCRITICAL: No baseline could be built at all. Aborting.")
+            sys.exit(1)
 
         print("\nStarting Async Cross-Language Validation...")
         semaphore = asyncio.Semaphore(3)
@@ -327,38 +391,74 @@ async def main():
             )
 
         results = await asyncio.gather(*tasks)
-        passed = sum(1 for r in results if not r[1])
-        failed_structurally = sum(
-            1 for r in results if any(isinstance(e, dict) for e in r[1])
-        )
-        failed_fetch = sum(
-            1
-            for r in results
-            if any(not isinstance(e, dict) for e in r[1])
-            and not any(isinstance(e, dict) for e in r[1])
-        )
+        report(results, baseline_gaps)
 
-        print("\n" + "=" * 50)
+
+def report(results, baseline_gaps):
+    """Turn the three outcomes into a verdict.
+
+    A mismatch always fails. An absent structure fails too, unless it is a
+    snow-report key outside the winter season - bergfex removes that block every
+    summer, which is the one case we must not cry wolf about.
+    """
+    mismatches = [e for _, errs, _ in results for e in errs if e["kind"] == "mismatch"]
+    absences = [e for _, errs, _ in results for e in errs if e["kind"] == "absent"]
+    clean = sum(1 for _, errs, _ in results if not errs)
+
+    absent_keys = {e["key"] for e in absences} | set(baseline_gaps)
+    seasonal_absent = {k for k in absent_keys if key_is_seasonal(k)}
+    year_round_absent = absent_keys - seasonal_absent
+    winter = in_season()
+
+    print("\n" + "=" * 60)
+    print(
+        f"SUMMARY: {clean} languages clean, {len(mismatches)} mismatches, "
+        f"{len(absences)} absent structures"
+    )
+    print(f"Season: {'in season' if winter else 'off-season'}")
+    print("=" * 60)
+
+    if mismatches:
+        print("\nKeyword mismatches (shifts ignored):")
+        print(f"{'LANG':<6} | {'KEY':<18} | {'AT BASELINE':<25} | {'EXPECTED':<25} | FOUND")
+        print("-" * 100)
+        for lang, errs, _ in results:
+            for e in errs:
+                if e["kind"] == "mismatch":
+                    print(
+                        f"{lang.upper():<6} | {e['key']:<18} | {e['at']:<25} | "
+                        f"{e['expected']:<25} | {e['found']}"
+                    )
+
+    if baseline_gaps:
         print(
-            f"OVERALL SUMMARY: {passed + 1} Passed, {failed_structurally} Structural, {failed_fetch} Fetch errors"
+            f"\nNever reached validation - absent from the AT baseline: "
+            f"{sorted(baseline_gaps)}"
         )
-        print("=" * 50)
 
-        if failed_structurally > 0:
-            print("\nCritical Structural Mismatches (Ignoring shifts):")
-            print(
-                f"{'LANG':<6} | {'KEY':<18} | {'AT BASELINE':<25} | {'EXPECTED':<25} | {'FOUND'}"
-            )
-            print("-" * 100)
-            for lang, errs, shifts in results:
-                for e in errs:
-                    if isinstance(e, dict):
-                        print(
-                            f"{lang.upper():<6} | {e['key']:<18} | {e['at']:<25} | {e['expected']:<25} | {e['found']}"
-                        )
-            sys.exit(1)
-        else:
-            print("\nValidation Successful! All keywords found (shifts ignored).")
+    if year_round_absent:
+        print(
+            f"\nCRITICAL: year-round structure is missing: {sorted(year_round_absent)}"
+        )
+        print("These are published outside the winter season too, so this is not")
+        print("seasonality - the page was restructured and the parser will break.")
+
+    if seasonal_absent:
+        label = "CRITICAL" if winter else "EXPECTED"
+        print(f"\n{label}: snow-report structure is missing: {sorted(seasonal_absent)}")
+        if not winter:
+            print("bergfex drops this block off-season. It cannot be verified until")
+            print("the resorts reopen - re-run this check once they do.")
+
+    failed = bool(mismatches) or bool(year_round_absent) or (winter and seasonal_absent)
+
+    if failed:
+        sys.exit(1)
+
+    if seasonal_absent:
+        print("\nNo mismatches found, but the snow report could not be verified.")
+    else:
+        print("\nValidation successful - every tracked structure was found.")
 
 
 if __name__ == "__main__":

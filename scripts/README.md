@@ -9,7 +9,8 @@ This directory contains utility scripts for maintaining and validating the Bergf
 **Purpose**: Validates the structural integrity of the Bergfex website and ensures that all localized keywords in `const.py` still match the live site.
 
 - **Usage**: `./venv/bin/python3 scripts/check_live_site.py`
-- **When to use**: Run this after Bergfex updates their website or when adding support for a new language. It uses a "Golden Baseline" (AT) to detect positional shifts and ensures all languages stay in sync.
+- **When to use**: Run this after Bergfex updates their website or when adding support for a new language. It uses a "Golden Baseline" (AT) to detect positional shifts and ensures all languages stay in sync. Runs daily via the `Live Website Check` workflow.
+- **Exit code**: fails on a keyword mismatch, on missing year-round structure (season dates, prices, operating hours), and on a missing snow report during the winter season. Outside the season the snow report is reported as unverifiable without failing, because bergfex removes that block every summer. Set `BERGFEX_FORCE_SEASON=1` to override the calendar.
 
 ### 2. `e2e_report.py`
 

@@ -22,6 +22,8 @@ jobs:
           pip install -r requirements.txt
           pip install aiohttp
 
+      # Fails on a keyword mismatch, on missing year-round structure, and on a
+      # missing snow report during the season. Off-season it reports the snow
+      # report as unverifiable without failing - see scripts/check_live_site.py.
       - name: Run Live Site Validation
-        run: |
-          python scripts/check_live_site.py
+        run: PYTHONPATH=. python scripts/check_live_site.py
