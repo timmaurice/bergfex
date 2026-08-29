@@ -1,0 +1,75 @@
+{
+  "editor": {
+    "groups": {
+      "core": "Core Configuration",
+      "display": "Display",
+      "ski_only": "Ski Resort Options"
+    },
+    "title": "Title (Optional)",
+    "resorts": "Resort Entities",
+    "show_snow": "Show snow information",
+    "show_lifts_slopes": "Show lift & slope statistics",
+    "show_conditions": "Show conditions section",
+    "conditions_default_open": "Conditions section expanded by default",
+    "show_forecast": "Show snow forecast",
+    "forecast_default_open": "Snow forecast expanded by default",
+    "show_trend": "Show trend indicators (24h)",
+    "show_last_updated": "Show last updated",
+    "show_link": "Show link icon",
+    "hide_closed_resorts": "Hide closed resorts",
+    "sort_by": "Sort by",
+    "sort_by_options": {
+      "mountain": "Snow (Mountain)",
+      "valley": "Snow (Valley)",
+      "new": "New Snow",
+      "lift": "Lifts Open",
+      "classical": "Classical Trails",
+      "skating": "Skating Trails",
+      "update": "Last Update"
+    }
+  },
+  "card": {
+    "resort_not_found": "Resort not found: {resort}",
+    "lifts_open": "Lifts",
+    "header": {
+      "snow_mountain": "Mountain",
+      "snow_valley": "Valley",
+      "new_snow": "New",
+      "snow_condition": "Snow Condition",
+      "slope_condition": "Slope Condition",
+      "avalanche_warning": "Avalanche Warning",
+      "last_snowfall": "Last Snowfall",
+      "slopes_info": "Slopes",
+      "slopes_info_km": "Slopes (km)",
+      "slopes_open_km": "Open",
+      "slopes_total": "Total",
+      "classical_trails": "Classical Trails",
+      "skating_trails": "Skating Trails",
+      "classical_condition": "Classical Condition",
+      "skating_condition": "Skating Condition",
+      "operation_status": "Operation Status",
+      "link_title": "Open {resortName} detail page on bergfex"
+    },
+    "forecast": {
+      "daily": "Daily",
+      "summary": "Summary",
+      "hour": "{hours} Hours",
+      "today": "Today",
+      "tomorrow": "Tomorrow"
+    },
+    "accordion": {
+      "conditions": "Conditions",
+      "forecast": "Snow Forecast"
+    },
+    "status": {
+      "open": "Open",
+      "closed": "Closed",
+      "unknown": "Unknown"
+    }
+  },
+  "common": {
+    "errors": {
+      "no_resorts": "You need to define at least one resort entity."
+    }
+  }
+}

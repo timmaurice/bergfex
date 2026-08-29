@@ -1,0 +1,75 @@
+{
+  "editor": {
+    "groups": {
+      "core": "Główna konfiguracja",
+      "display": "Wyświetlacz",
+      "ski_only": "Opcje kurortu narciarskiego"
+    },
+    "title": "Tytuł (opcjonalnie)",
+    "resorts": "Wpisy kurortu",
+    "show_snow": "Pokaż informację o śniegu",
+    "show_lifts_slopes": "Pokaż statystyki wyciągów i stoków",
+    "show_conditions": "Pokaż sekcję warunków",
+    "conditions_default_open": "Sekcja warunków domyślnie rozwinięta",
+    "show_forecast": "Pokaż prognozę śniegu",
+    "forecast_default_open": "Prognoza śniegu domyślnie rozwinięta",
+    "show_trend": "Pokaż indykator trendu (24g)",
+    "show_last_updated": "Pokaż ostatnio aktualizowane",
+    "show_link": "Pokaż ikonę linku",
+    "hide_closed_resorts": "Ukryj zamknięte kurorty",
+    "sort_by": "Posortuj",
+    "sort_by_options": {
+      "mountain": "Śnieg (szczyt)",
+      "valley": "Śnieg (dolina)",
+      "new": "Nowy śnieg",
+      "lift": "Otwarte wyciągi",
+      "classical": "Trasy klasyczne",
+      "skating": "Trasy łyżwiarskie",
+      "update": "Ostatnio aktualizowane"
+    }
+  },
+  "card": {
+    "resort_not_found": "Nie znaleziono resortu: {resort}",
+    "lifts_open": "Wyciągi",
+    "header": {
+      "snow_mountain": "Szczyt",
+      "snow_valley": "Dolina",
+      "new_snow": "Nowy opad",
+      "snow_condition": "Warunki śniegowe",
+      "slope_condition": "Warunki na stoku",
+      "avalanche_warning": "Ostrzeżenie lawinowe",
+      "last_snowfall": "Ostatni opad",
+      "slopes_info": "Trasy",
+      "slopes_info_km": "Trasy (km)",
+      "slopes_open_km": "Otwarte",
+      "slopes_total": "Całkowite",
+      "classical_trails": "Trasy klasyczne",
+      "skating_trails": "Trasy łyżwiarskie",
+      "classical_condition": "Stan tras klasycznych",
+      "skating_condition": "Stan tras łyżwiarskich",
+      "operation_status": "Status działania",
+      "link_title": "Otwórz informację o  {resortName} na stronie Bergfex"
+    },
+    "forecast": {
+      "daily": "Dzienna",
+      "summary": "Podsumowanie",
+      "hour": "{hours} godziny",
+      "today": "Dziś",
+      "tomorrow": "Jutro"
+    },
+    "accordion": {
+      "conditions": "Warunki",
+      "forecast": "Prognoza opadów"
+    },
+    "status": {
+      "open": "Otwarte",
+      "closed": "Zamknięte",
+      "unknown": "Nieznany"
+    }
+  },
+  "common": {
+    "errors": {
+      "no_resorts": "Musisz zdefiniować przynajmniej jeden wpis o resorcie."
+    }
+  }
+}

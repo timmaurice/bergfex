@@ -1,0 +1,75 @@
+{
+  "editor": {
+    "groups": {
+      "core": "Kerne Konfiguration",
+      "display": "Visning",
+      "ski_only": "Skiområde muligheder"
+    },
+    "title": "Title (Valgfri)",
+    "resorts": "Område enheder",
+    "show_snow": "Vis sne information",
+    "show_lifts_slopes": "Vis lift & piste statistik",
+    "show_conditions": "Vis forholds sektion",
+    "conditions_default_open": "Forholds sektion udvidet som standard",
+    "show_forecast": "Vis sne udsigt",
+    "forecast_default_open": "Sne udsigt udvidet som standard",
+    "show_trend": "Vis trend indikatorer (24h)",
+    "show_last_updated": "Vis sidst opdateret",
+    "show_link": "Vis link ikon",
+    "hide_closed_resorts": "Skjul lukkede områder",
+    "sort_by": "Sorter efter",
+    "sort_by_options": {
+      "mountain": "Sne (Bjerg)",
+      "valley": "Sne (Dal)",
+      "new": "Ny sne",
+      "lift": "Lifter åbne",
+      "classical": "Klassiske stier",
+      "skating": "Skate stier",
+      "update": "Sidste opdatering"
+    }
+  },
+  "card": {
+    "resort_not_found": "Områder ikke fundet: {resort}",
+    "lifts_open": "Lifter",
+    "header": {
+      "snow_mountain": "Bjerg",
+      "snow_valley": "Dal",
+      "new_snow": "Ny",
+      "snow_condition": "Sne forhold",
+      "slope_condition": "Piste forhold",
+      "avalanche_warning": "Lavine advarsel",
+      "last_snowfall": "Sidste snefald",
+      "slopes_info": "Pister",
+      "slopes_info_km": "Pister (km)",
+      "slopes_open_km": "Åben",
+      "slopes_total": "Total",
+      "classical_trails": "Klassiske stier",
+      "skating_trails": "Skate stier",
+      "classical_condition": "Klassisk forhold",
+      "skating_condition": "Skate forhold",
+      "operation_status": "Driftsstatus",
+      "link_title": "Åben {resortName} detaljeret side på bergfex"
+    },
+    "forecast": {
+      "daily": "Daglig",
+      "summary": "Opsummeret",
+      "hour": "{hours} Timer",
+      "today": "I dag",
+      "tomorrow": "I morgen"
+    },
+    "accordion": {
+      "conditions": "Forhold",
+      "forecast": "Sne udsigt"
+    },
+    "status": {
+      "open": "Åben",
+      "closed": "Lukket",
+      "unknown": "Ukendt"
+    }
+  },
+  "common": {
+    "errors": {
+      "no_resorts": "Du skal definere mindst én feriestedsenhed."
+    }
+  }
+}
