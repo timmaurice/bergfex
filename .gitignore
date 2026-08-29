@@ -9,6 +9,9 @@ config/
 *__pycache__*
 .pytest_cache/
 
+# Release artifact
+bergfex.zip
+
 # Frontend build tooling
 node_modules/
 bun.lock

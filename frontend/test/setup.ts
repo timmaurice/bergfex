@@ -7,19 +7,19 @@ const ResizeObserverMock = vi.fn(() => ({
   disconnect: vi.fn(),
 }));
 vi.stubGlobal('ResizeObserver', ResizeObserverMock);
-// Mock for window.customCards
-if (typeof window !== 'undefined') {
-  window.customCards = [];
-}
-
 // Mock for Home Assistant helpers
 interface TestWindow extends Window {
   loadCardHelpers: Mock;
 }
 
-const testWindow = window as unknown as TestWindow;
-testWindow.loadCardHelpers = vi.fn().mockResolvedValue({
-  createCardElement: vi.fn().mockResolvedValue({
-    constructor: { getConfigElement: vi.fn().mockResolvedValue(undefined) },
-  } as unknown as LovelaceCard),
-});
+// Guarded so suites that opt into the node environment can share this setup file.
+if (typeof window !== 'undefined') {
+  window.customCards = [];
+
+  const testWindow = window as unknown as TestWindow;
+  testWindow.loadCardHelpers = vi.fn().mockResolvedValue({
+    createCardElement: vi.fn().mockResolvedValue({
+      constructor: { getConfigElement: vi.fn().mockResolvedValue(undefined) },
+    } as unknown as LovelaceCard),
+  });
+}

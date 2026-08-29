@@ -16,9 +16,10 @@
   "main": "custom_components/bergfex/bergfex-card.js",
   "scripts": {
     "build": "rollup -c",
+    "build:release": "node scripts/build-release-zip.mjs",
     "check-format": "prettier --check .",
     "format": "prettier . --write",
-    "lint": "eslint frontend/",
+    "lint": "eslint frontend/ scripts/ *.config.mjs rollup.config.js",
     "test": "NODE_ENV=production vitest run",
     "watch": "rollup -c -w"
   },

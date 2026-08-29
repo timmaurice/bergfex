@@ -27,5 +27,14 @@ export default tseslint.config(
       },
     },
   },
+  {
+    // Build tooling runs on Node, not in the browser.
+    files: ['scripts/**/*.mjs', '*.config.mjs', 'rollup.config.js'],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
+    },
+  },
   prettierConfig,
 );
