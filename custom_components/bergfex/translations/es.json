@@ -113,17 +113,39 @@
       }
     },
     "image": {
-      "forecast_image_day_0": { "name": "Pronóstico de nieve día 0" },
-      "forecast_image_day_1": { "name": "Pronóstico de nieve día 1" },
-      "forecast_image_day_2": { "name": "Pronóstico de nieve día 2" },
-      "forecast_image_day_3": { "name": "Pronóstico de nieve día 3" },
-      "forecast_image_day_4": { "name": "Pronóstico de nieve día 4" },
-      "forecast_image_day_5": { "name": "Pronóstico de nieve día 5" },
-      "summary_image_48h": { "name": "Resumen del pronóstico de nieve 48h" },
-      "summary_image_72h": { "name": "Resumen del pronóstico de nieve 72h" },
-      "summary_image_96h": { "name": "Resumen del pronóstico de nieve 96h" },
-      "summary_image_120h": { "name": "Resumen del pronóstico de nieve 120h" },
-      "summary_image_144h": { "name": "Resumen del pronóstico de nieve 144h" }
+      "forecast_image_day_0": {
+        "name": "Pronóstico de nieve día 0"
+      },
+      "forecast_image_day_1": {
+        "name": "Pronóstico de nieve día 1"
+      },
+      "forecast_image_day_2": {
+        "name": "Pronóstico de nieve día 2"
+      },
+      "forecast_image_day_3": {
+        "name": "Pronóstico de nieve día 3"
+      },
+      "forecast_image_day_4": {
+        "name": "Pronóstico de nieve día 4"
+      },
+      "forecast_image_day_5": {
+        "name": "Pronóstico de nieve día 5"
+      },
+      "summary_image_48h": {
+        "name": "Resumen del pronóstico de nieve 48h"
+      },
+      "summary_image_72h": {
+        "name": "Resumen del pronóstico de nieve 72h"
+      },
+      "summary_image_96h": {
+        "name": "Resumen del pronóstico de nieve 96h"
+      },
+      "summary_image_120h": {
+        "name": "Resumen del pronóstico de nieve 120h"
+      },
+      "summary_image_144h": {
+        "name": "Resumen del pronóstico de nieve 144h"
+      }
     }
   },
   "selector": {
@@ -132,6 +154,12 @@
         "alpine": "Estación de esquí alpino",
         "cross_country": "Esquí de fondo"
       }
+    }
+  },
+  "issues": {
+    "standalone_card_installed": {
+      "title": "Eliminar la Bergfex Card independiente",
+      "description": "La tarjeta Bergfex ahora se incluye con esta integración. La \"Bergfex Card\" independiente sigue instalada mediante HACS y carga una segunda copia en conflicto. Abre HACS, desinstala \"Bergfex Card\" y reinicia Home Assistant."
     }
   }
 }

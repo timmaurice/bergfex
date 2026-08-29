@@ -113,17 +113,39 @@
       }
     },
     "image": {
-      "forecast_image_day_0": { "name": "Prognoza śniegu dzień 0" },
-      "forecast_image_day_1": { "name": "Prognoza śniegu dzień 1" },
-      "forecast_image_day_2": { "name": "Prognoza śniegu dzień 2" },
-      "forecast_image_day_3": { "name": "Prognoza śniegu dzień 3" },
-      "forecast_image_day_4": { "name": "Prognoza śniegu dzień 4" },
-      "forecast_image_day_5": { "name": "Prognoza śniegu dzień 5" },
-      "summary_image_48h": { "name": "Podsumowanie prognozy śniegu 48h" },
-      "summary_image_72h": { "name": "Podsumowanie prognozy śniegu 72h" },
-      "summary_image_96h": { "name": "Podsumowanie prognozy śniegu 96h" },
-      "summary_image_120h": { "name": "Podsumowanie prognozy śniegu 120h" },
-      "summary_image_144h": { "name": "Podsumowanie prognozy śniegu 144h" }
+      "forecast_image_day_0": {
+        "name": "Prognoza śniegu dzień 0"
+      },
+      "forecast_image_day_1": {
+        "name": "Prognoza śniegu dzień 1"
+      },
+      "forecast_image_day_2": {
+        "name": "Prognoza śniegu dzień 2"
+      },
+      "forecast_image_day_3": {
+        "name": "Prognoza śniegu dzień 3"
+      },
+      "forecast_image_day_4": {
+        "name": "Prognoza śniegu dzień 4"
+      },
+      "forecast_image_day_5": {
+        "name": "Prognoza śniegu dzień 5"
+      },
+      "summary_image_48h": {
+        "name": "Podsumowanie prognozy śniegu 48h"
+      },
+      "summary_image_72h": {
+        "name": "Podsumowanie prognozy śniegu 72h"
+      },
+      "summary_image_96h": {
+        "name": "Podsumowanie prognozy śniegu 96h"
+      },
+      "summary_image_120h": {
+        "name": "Podsumowanie prognozy śniegu 120h"
+      },
+      "summary_image_144h": {
+        "name": "Podsumowanie prognozy śniegu 144h"
+      }
     }
   },
   "selector": {
@@ -132,6 +154,12 @@
         "alpine": "Ośrodek narciarstwa alpejskiego",
         "cross_country": "Ośrodek narciarstwa biegowego"
       }
+    }
+  },
+  "issues": {
+    "standalone_card_installed": {
+      "title": "Usuń samodzielną kartę Bergfex Card",
+      "description": "Karta Bergfex jest teraz częścią tej integracji. Osobna „Bergfex Card\" jest nadal zainstalowana przez HACS i ładuje drugą, konfliktową kopię. Otwórz HACS, odinstaluj „Bergfex Card\", a następnie uruchom ponownie Home Assistant."
     }
   }
 }

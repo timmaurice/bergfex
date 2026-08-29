@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 from datetime import timedelta, datetime
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
@@ -14,6 +14,7 @@ from homeassistant.exceptions import ConfigEntryNotReady
 
 
 import homeassistant.helpers.config_validation as cv
+from homeassistant.helpers import issue_registry as ir
 
 from .const import (
     BASE_URL,
@@ -47,7 +48,18 @@ _LOGGER = logging.getLogger(__name__)
 CARD_FILENAME = "bergfex-card.js"
 CARD_URL_BASE = "/bergfex_frontend"
 
+LEGACY_CARD_ISSUE_ID = "standalone_card_installed"
+
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
+
+
+def _is_bergfex_card_resource(url: str) -> bool:
+    """Return True for any Lovelace resource that loads a Bergfex card bundle.
+
+    Matches the bundle we serve as well as leftovers from the standalone
+    lovelace-bergfex-card, wherever the user happened to put them.
+    """
+    return urlparse(url).path.rsplit("/", 1)[-1] == CARD_FILENAME
 
 
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:
@@ -89,15 +101,49 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
             )
             return
 
-        for item in resources.async_items():
-            if item.get("url", "").startswith(f"{CARD_URL_BASE}/"):
-                if item.get("url") != new_url:
-                    await resources.async_update_item(item.get("id"), {"url": new_url})
-                return
+        # Collect first, mutate after: async_items() must not change while iterating.
+        own_resource = None
+        stale_resources = []
 
-        await resources.async_create_item(
-            {"res_type": "module", "url": new_url}
-        )
+        for item in resources.async_items():
+            url = item.get("url", "")
+            if not _is_bergfex_card_resource(url):
+                continue
+            if url.startswith(f"{CARD_URL_BASE}/") and own_resource is None:
+                own_resource = item
+            else:
+                # Anything else pointing at a bergfex-card.js is a leftover: the
+                # HACS copy, a hand-added /local/ entry, or a duplicate of ours.
+                # Leaving it in place loads a second bundle that fights ours over
+                # the bergfex-card element name.
+                stale_resources.append(item)
+
+        for item in stale_resources:
+            _LOGGER.info(
+                "Removing stale Bergfex card resource %s; the card now ships with the integration",
+                item.get("url"),
+            )
+            await resources.async_delete_item(item.get("id"))
+
+        if own_resource is None:
+            await resources.async_create_item({"res_type": "module", "url": new_url})
+        elif own_resource.get("url") != new_url:
+            await resources.async_update_item(own_resource.get("id"), {"url": new_url})
+
+        # Dropping the resource does not uninstall the HACS repository: its files
+        # stay in www/community and HACS keeps offering updates for them. Ask the
+        # user to remove it so the two copies cannot diverge.
+        if any(
+            "lovelace-bergfex-card" in item.get("url", "") for item in stale_resources
+        ):
+            ir.async_create_issue(
+                hass,
+                DOMAIN,
+                LEGACY_CARD_ISSUE_ID,
+                is_fixable=False,
+                severity=ir.IssueSeverity.WARNING,
+                translation_key=LEGACY_CARD_ISSUE_ID,
+            )
 
     from homeassistant.core import CoreState
     from homeassistant.const import EVENT_HOMEASSISTANT_STARTED

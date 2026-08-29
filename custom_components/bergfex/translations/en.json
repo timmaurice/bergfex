@@ -124,17 +124,39 @@
       }
     },
     "image": {
-      "forecast_image_day_0": { "name": "Snow Forecast Day 0" },
-      "forecast_image_day_1": { "name": "Snow Forecast Day 1" },
-      "forecast_image_day_2": { "name": "Snow Forecast Day 2" },
-      "forecast_image_day_3": { "name": "Snow Forecast Day 3" },
-      "forecast_image_day_4": { "name": "Snow Forecast Day 4" },
-      "forecast_image_day_5": { "name": "Snow Forecast Day 5" },
-      "summary_image_48h": { "name": "Snow Forecast Summary 48h" },
-      "summary_image_72h": { "name": "Snow Forecast Summary 72h" },
-      "summary_image_96h": { "name": "Snow Forecast Summary 96h" },
-      "summary_image_120h": { "name": "Snow Forecast Summary 120h" },
-      "summary_image_144h": { "name": "Snow Forecast Summary 144h" }
+      "forecast_image_day_0": {
+        "name": "Snow Forecast Day 0"
+      },
+      "forecast_image_day_1": {
+        "name": "Snow Forecast Day 1"
+      },
+      "forecast_image_day_2": {
+        "name": "Snow Forecast Day 2"
+      },
+      "forecast_image_day_3": {
+        "name": "Snow Forecast Day 3"
+      },
+      "forecast_image_day_4": {
+        "name": "Snow Forecast Day 4"
+      },
+      "forecast_image_day_5": {
+        "name": "Snow Forecast Day 5"
+      },
+      "summary_image_48h": {
+        "name": "Snow Forecast Summary 48h"
+      },
+      "summary_image_72h": {
+        "name": "Snow Forecast Summary 72h"
+      },
+      "summary_image_96h": {
+        "name": "Snow Forecast Summary 96h"
+      },
+      "summary_image_120h": {
+        "name": "Snow Forecast Summary 120h"
+      },
+      "summary_image_144h": {
+        "name": "Snow Forecast Summary 144h"
+      }
     }
   },
   "selector": {
@@ -143,6 +165,12 @@
         "alpine": "Alpine ski resort",
         "cross_country": "Cross country skiing"
       }
+    }
+  },
+  "issues": {
+    "standalone_card_installed": {
+      "title": "Remove the standalone Bergfex Card",
+      "description": "The Bergfex card now ships with this integration. The separate \"Bergfex Card\" is still installed via HACS and loads a second, conflicting copy. Open HACS, uninstall \"Bergfex Card\", then restart Home Assistant."
     }
   }
 }
