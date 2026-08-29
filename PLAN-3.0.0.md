@@ -68,7 +68,7 @@ then retire `timmaurice/lovelace-bergfex-card` from HACS and archive the repo.
       what ships. Imports were already absolute, so nothing needed rewriting.
 - [x] Verify `.github/workflows/release.yml` runs the rollup build **before** zipping,
       so the bundle can never ship stale.
-- [ ] README rewrite: one-install story, card config reference, explicit
+- [x] README rewrite: one-install story, card config reference, explicit
       "migrating from lovelace-bergfex-card" section.
 - [ ] Document the merged repo layout for contributors. The local AI context file is
       now `CLAUDE.md` and gitignored, so this needs a home in the README instead.
@@ -85,8 +85,21 @@ then retire `timmaurice/lovelace-bergfex-card` from HACS and archive the repo.
       wider sweep during the Phase 1 fixture refresh — other `tw-` selectors may be
       dead too, and the winter fixtures still carry the old markup, so the test suite
       cannot see it.
-- [ ] Card: fixture-driven visual states — loading, off-season, missing sensor,
-      partial data, cross-country.
+- [x] Card states already covered: cross-country has its own suite, and missing
+      sensors are exercised through the `lifts_open` / `slopes_open` fallbacks, the
+      "without total" cases and the absent-timestamp tests.
+- [ ] Card: cover the two remaining degraded states, which are pure test work. - **loading** — `hass` is set but the coordinator has not delivered yet.
+      Nothing asserts what the card renders in that window. - **partial data** — some sensors carry values while others are `unknown`,
+      within the same resort row. Only covered field by field, never as a row.
+- [ ] **Decide what the card should look like off-season.** This is a design call,
+      not a test, and it blocks writing the test.
+      Right now every snow field renders `N/A`: `airolo` shows six of six. That is
+      correct and still a poor display, and from September to November it is what
+      every user sees — the state the card spends a quarter of the year in.
+      Options worth weighing: - Drop the snow row entirely instead of filling it with `N/A`. - Render closed out-of-season resorts in a compact form. - Show the season start where it is known. The data is already there;
+      `season_start` parses year-round (Serfaus: 2026-06-13 → 2026-10-11).
+      Once decided, pin it down with a whole-card off-season test — the state is
+      reproducible offline from the current sensor shape, no snow required.
 - [x] Add a regression test for the `_getResorts()` null-guard.
 - [x] Get the Frontend workflow green: it failed on both `lint` and `check-format`
       before it had ever run.
