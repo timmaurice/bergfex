@@ -1,0 +1,18 @@
+# Build output
+custom_components/bergfex/bergfex-card.js
+
+# Dependencies
+node_modules
+
+# Lockfiles
+package-lock.json
+bun.lock
+
+# Exclude python and compiled dirs
+custom_components/bergfex/__pycache__
+custom_components/bergfex/tests/
+config
+venv
+
+# GitHub Actions / Dependabot YAML
+.github/

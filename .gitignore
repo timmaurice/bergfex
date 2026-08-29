@@ -7,3 +7,7 @@ config/
 *.pem
 
 *__pycache__*
+
+# Frontend build tooling
+node_modules/
+bun.lock

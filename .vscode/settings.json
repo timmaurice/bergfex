@@ -1,0 +1,4 @@
+{
+  "cSpell.words": ["Bergfex", "HACS", "hacsfiles", "hass", "Ischgl"],
+  "cSpell.ignorePaths": [".github/**", "node_modules/**", "custom_components/bergfex/bergfex-card.js", "de.json"]
+}
