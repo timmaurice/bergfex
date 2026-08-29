@@ -515,11 +515,19 @@ export class BergfexCard extends LitElement implements LovelaceCard {
             valA = a.new_snow ? parseFloat(this.hass.states[a.new_snow].state) : NaN;
             valB = b.new_snow ? parseFloat(this.hass.states[b.new_snow].state) : NaN;
             break;
-          case 'lift':
+          case 'lift': {
             if (this._isCrossCountryResort(a) || this._isCrossCountryResort(b)) break; // Skip for cross-country
-            valA = a.lifts_open ? parseFloat(this.hass.states[a.lifts_open].state) : NaN;
-            valB = b.lifts_open ? parseFloat(this.hass.states[b.lifts_open].state) : NaN;
+            // `lifts_open` is only mapped when `lifts_open_count` is absent, so
+            // reading it alone left every resort at NaN and the sort did nothing.
+            // Mirror what the card renders, which prefers the count.
+            const liftsOf = (r: Resort) => {
+              const entity = r.lifts_open_count ?? r.lifts_open;
+              return entity ? parseFloat(this.hass.states[entity]?.state ?? '') : NaN;
+            };
+            valA = liftsOf(a);
+            valB = liftsOf(b);
             break;
+          }
           case 'classical':
             valA = a.classical_trails_open ? parseFloat(this.hass.states[a.classical_trails_open].state) : NaN;
             valB = b.classical_trails_open ? parseFloat(this.hass.states[b.classical_trails_open].state) : NaN;

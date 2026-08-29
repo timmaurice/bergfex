@@ -501,6 +501,35 @@ describe('BergfexCard', () => {
     });
   });
 
+  describe('Sorting', () => {
+    it('sorts by open lifts when resorts report lifts_open_count', async () => {
+      // The sort read `lifts_open`, which is only mapped when `lifts_open_count`
+      // is absent - so for every current resort it compared NaN and did nothing.
+      const few = createMockResort('few', 'Few', { status: 'Open', lifts_open_count: '2', lifts_total: '10' });
+      const many = createMockResort('many', 'Many', { status: 'Open', lifts_open_count: '9', lifts_total: '10' });
+      const mid = createMockResort('mid', 'Mid', { status: 'Open', lifts_open_count: '5', lifts_total: '10' });
+
+      await setupCard({ sort_by: 'lift' }, few, many, mid);
+
+      const names = Array.from(element.shadowRoot?.querySelectorAll('.resort-name') ?? []).map((e) =>
+        e.textContent?.trim(),
+      );
+      expect(names).toEqual(['Many', 'Mid', 'Few']);
+    });
+
+    it('still sorts by open lifts when only the legacy lifts_open exists', async () => {
+      const few = createMockResort('few', 'Few', { status: 'Open', lifts_open: '2' });
+      const many = createMockResort('many', 'Many', { status: 'Open', lifts_open: '9' });
+
+      await setupCard({ sort_by: 'lift' }, few, many);
+
+      const names = Array.from(element.shadowRoot?.querySelectorAll('.resort-name') ?? []).map((e) =>
+        e.textContent?.trim(),
+      );
+      expect(names).toEqual(['Many', 'Few']);
+    });
+  });
+
   describe('Status badge', () => {
     const period = (season: 'winter' | 'summer', start: string, end: string) => ({
       [`${season}_season_start`]: start,
