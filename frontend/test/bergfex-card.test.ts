@@ -550,6 +550,39 @@ describe('BergfexCard', () => {
       expect(element.shadowRoot?.querySelector('.resort-status.closed')).not.toBeNull();
     });
 
+    it('teases the winter start while the summer season runs', async () => {
+      const resort = createMockResort('ischgl', 'Ischgl', {
+        status: 'Closed',
+        season_attrs: { ...period('summer', day(-30), day(30)), ...period('winter', day(60), day(180)) },
+      });
+      await setupCard({}, resort);
+      expect(element.shadowRoot?.querySelector('.season-teaser')).not.toBeNull();
+    });
+
+    it('teases the winter start between the seasons too', async () => {
+      const resort = createMockResort('ischgl', 'Ischgl', {
+        status: 'Closed',
+        season_attrs: period('winter', day(60), day(180)),
+      });
+      await setupCard({}, resort);
+      expect(element.shadowRoot?.querySelector('.season-teaser')).not.toBeNull();
+    });
+
+    it('drops the teaser once the winter season has started', async () => {
+      const resort = createMockResort('ischgl', 'Ischgl', {
+        status: 'Closed',
+        season_attrs: period('winter', day(-30), day(30)),
+      });
+      await setupCard({}, resort);
+      expect(element.shadowRoot?.querySelector('.season-teaser')).toBeNull();
+    });
+
+    it('shows no teaser for a resort without winter dates', async () => {
+      const resort = createMockResort('les-saisies', 'Les Saisies', { status: 'Closed' });
+      await setupCard({}, resort);
+      expect(element.shadowRoot?.querySelector('.season-teaser')).toBeNull();
+    });
+
     it('falls back to Closed for a resort that publishes no season at all', async () => {
       const resort = createMockResort('les-saisies', 'Les Saisies', { status: 'Closed' });
       await setupCard({}, resort);
@@ -565,6 +598,8 @@ describe('BergfexCard', () => {
           status: 'Open',
           snow_condition: state,
           slope_condition: state,
+          last_snowfall: state,
+          avalanche_warning: state,
         });
         await setupCard({ show_conditions: true, conditions_default_open: true }, resort);
 

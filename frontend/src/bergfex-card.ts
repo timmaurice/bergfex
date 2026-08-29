@@ -427,6 +427,34 @@ export class BergfexCard extends LitElement implements LovelaceCard {
     return { key: 'unknown', variant: '' };
   }
 
+  /**
+   * A short "from 05.12." hint for resorts whose winter season has not started.
+   *
+   * Shown wherever the winter season is still ahead - both under a summer badge
+   * and under a plain closed one - because between the seasons the card is at its
+   * least informative and the date is the one thing a user actually wants.
+   */
+  private _winterTeaser(attrs: Record<string, unknown>): string | undefined {
+    const start = attrs.winter_season_start as string | undefined;
+    if (!start) return undefined;
+
+    const today = new Date().toISOString().slice(0, 10);
+    const end = attrs.winter_season_end as string | undefined;
+    // Nothing to tease once the season is running, or has run and not been updated.
+    if (start <= today && (!end || today <= end)) return undefined;
+    if (start <= today) return undefined;
+
+    const date = new Date(`${start}T00:00:00`);
+    if (Number.isNaN(date.getTime())) return undefined;
+
+    const formatted = new Intl.DateTimeFormat(this.hass.language, {
+      day: '2-digit',
+      month: '2-digit',
+    }).format(date);
+
+    return localize(this.hass, 'component.bergfex-card.card.status.season_from', { date: formatted });
+  }
+
   private _conditionText(state: string): string {
     return this._isNA(state) ? localize(this.hass, 'component.bergfex-card.card.status.unknown') : state;
   }
@@ -539,6 +567,7 @@ export class BergfexCard extends LitElement implements LovelaceCard {
             const statusRaw = (statusState?.state as string) ?? 'unknown';
             const status = statusRaw;
             const badge = this._statusBadge(statusRaw, statusState?.attributes ?? {});
+            const winterTeaser = this._winterTeaser(statusState?.attributes ?? {});
             const statusLabel = localize(this.hass, `component.bergfex-card.card.status.${badge.key}`) || status;
             const link = statusState?.attributes.link as string | undefined;
             const snow_valley = resort.snow_valley ? this.hass.states[resort.snow_valley] : undefined;
@@ -598,13 +627,16 @@ export class BergfexCard extends LitElement implements LovelaceCard {
               <div class="resort" tabindex="0" @click=${() => this._handleMoreInfo(primaryEntity)}>
                 <div class="resort-header">
                   <span class="resort-name">${resortName}</span>
-                  <span
-                    class=${classMap({
-                      'resort-status': true,
-                      [badge.variant]: Boolean(badge.variant),
-                    })}
-                    >${statusLabel}</span
-                  >
+                  <div class="resort-status-group">
+                    <span
+                      class=${classMap({
+                        'resort-status': true,
+                        [badge.variant]: Boolean(badge.variant),
+                      })}
+                      >${statusLabel}</span
+                    >
+                    ${winterTeaser ? html`<span class="season-teaser">${winterTeaser}</span>` : ''}
+                  </div>
                 </div>
 
                 <div class=${isCrossCountry ? 'details cross-country-details' : 'details'}>
@@ -1209,7 +1241,7 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                                             >
                                               <ha-icon icon="mdi:calendar-clock"></ha-icon>
                                               <div class="detail-item-value">
-                                                <span>${last_snowfall.state}</span>
+                                                <span>${this._conditionText(last_snowfall.state)}</span>
                                                 <span class="detail-item-label"
                                                   >${localize(
                                                     this.hass,

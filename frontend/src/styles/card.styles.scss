@@ -31,6 +31,19 @@
   font-weight: 500;
 }
 
+.resort-status-group {
+  align-items: flex-end;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.season-teaser {
+  color: var(--secondary-text-color);
+  font-size: 0.75em;
+  white-space: nowrap;
+}
+
 .resort-status {
   background-color: var(--divider-color);
   border-radius: 4px;
@@ -55,9 +68,11 @@
   }
 
   // Summer operation. Not a fault, and not the same as closed.
+  // The yellow badge is light in both themes, so the text has to be dark - the
+  // theme's primary text colour is white in dark mode and unreadable on it.
   &.summer-season {
     background-color: var(--label-badge-yellow);
-    color: var(--primary-text-color);
+    color: rgba(0, 0, 0, 0.87);
   }
 }
 
