@@ -397,6 +397,16 @@ export class BergfexCard extends LitElement implements LovelaceCard {
     return ['N/A', 'keine Meldung', 'unknown'].includes(state);
   }
 
+  /**
+   * Condition sensors carry free text from bergfex, but fall back to Home
+   * Assistant's own `unknown` when there is no report. That constant is not
+   * translatable, so printing the state verbatim showed English inside an
+   * otherwise localized card.
+   */
+  private _conditionText(state: string): string {
+    return this._isNA(state) ? localize(this.hass, 'component.bergfex-card.card.status.unknown') : state;
+  }
+
   private _isCrossCountryResort(resort: Resort): boolean {
     return !!(
       resort.is_cross_country ||
@@ -1026,7 +1036,7 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                                                     >
                                                       <ha-icon icon="mdi:weather-snowy"></ha-icon>
                                                       <div class="detail-item-value">
-                                                        <span>${snow_condition.state}</span>
+                                                        <span>${this._conditionText(snow_condition.state)}</span>
                                                         <span class="detail-item-label"
                                                           >${localize(
                                                             this.hass,
@@ -1055,7 +1065,7 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                                                     >
                                                       <ha-icon icon="mdi:ski"></ha-icon>
                                                       <div class="detail-item-value">
-                                                        <span>${slope_condition.state}</span>
+                                                        <span>${this._conditionText(slope_condition.state)}</span>
                                                         <span class="detail-item-label"
                                                           >${localize(
                                                             this.hass,
@@ -1087,7 +1097,7 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                                             >
                                               <ha-icon icon="mdi:alert"></ha-icon>
                                               <div class="detail-item-value">
-                                                <span>${avalanche_warning.state}</span>
+                                                <span>${this._conditionText(avalanche_warning.state)}</span>
                                                 <span class="detail-item-label"
                                                   >${localize(
                                                     this.hass,
@@ -1121,7 +1131,7 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                                                         >${unsafeSVG(classicCrossCountryIcon)}</span
                                                       >
                                                       <div class="detail-item-value">
-                                                        <span>${classical_condition.state}</span>
+                                                        <span>${this._conditionText(classical_condition.state)}</span>
                                                         <span class="detail-item-label"
                                                           >${localize(
                                                             this.hass,
@@ -1152,7 +1162,7 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                                                         >${unsafeSVG(skatingCrossCountryIcon)}</span
                                                       >
                                                       <div class="detail-item-value">
-                                                        <span>${skating_condition.state}</span>
+                                                        <span>${this._conditionText(skating_condition.state)}</span>
                                                         <span class="detail-item-label"
                                                           >${localize(
                                                             this.hass,
@@ -1211,7 +1221,7 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                                             >
                                               <ha-icon icon="mdi:information-outline"></ha-icon>
                                               <div class="detail-item-value">
-                                                <span>${operation_status.state}</span>
+                                                <span>${this._conditionText(operation_status.state)}</span>
                                                 <span class="detail-item-label"
                                                   >${localize(
                                                     this.hass,

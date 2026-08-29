@@ -500,6 +500,35 @@ describe('BergfexCard', () => {
     });
   });
 
+  describe('Condition values', () => {
+    it.each(['unknown', 'N/A', 'keine Meldung'])(
+      'localizes the placeholder %s instead of printing the raw state',
+      async (state) => {
+        const resort = createMockResort('ischgl', 'Ischgl', {
+          status: 'Open',
+          snow_condition: state,
+          slope_condition: state,
+        });
+        await setupCard({ show_conditions: true, conditions_default_open: true }, resort);
+
+        const text = element.shadowRoot?.textContent ?? '';
+        expect(text).toContain('Unknown');
+        expect(text).not.toContain('keine Meldung');
+        expect(text.match(/\bunknown\b/)).toBeNull();
+      },
+    );
+
+    it('leaves a real condition report untouched', async () => {
+      const resort = createMockResort('ischgl', 'Ischgl', {
+        status: 'Open',
+        snow_condition: 'Pulver',
+      });
+      await setupCard({ show_conditions: true, conditions_default_open: true }, resort);
+
+      expect(element.shadowRoot?.textContent).toContain('Pulver');
+    });
+  });
+
   describe('Filtering', () => {
     it('should hide closed resorts when hide_closed_resorts is true', async () => {
       const resort1 = createMockResort('resort1', 'Resort 1', { status: 'Open' });

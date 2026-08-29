@@ -62,7 +62,7 @@ class wt extends yt{}wt.directiveName="unsafeSVG",wt.resultType=2;const $t=gt(wt
       <div class="progress-bar-container">
         <div class="progress-bar-fill" style="width: ${s}%"></div>
       </div>
-    `}_isNA(t){return["N/A","keine Meldung","unknown"].includes(t)}_isCrossCountryResort(t){return!!(t.is_cross_country||t.classical_trails_open||t.skating_trails_open||t.classical_condition||t.skating_condition)}render(){if(!this._config||!this.hass)return W``;let t=Object.entries(this._getResorts(this.hass,this._config));this._config.hide_closed_resorts&&(t=t.filter(([,t])=>t.status&&"open"===this.hass.states[t.status].state.toLowerCase()));const e=this._config.sort_by;return e&&"none"!==e&&t.sort(([,t],[,s])=>{let i,o;switch(e){case"mountain":if(this._isCrossCountryResort(t)||this._isCrossCountryResort(s))break;i=t.snow_mountain?parseFloat(this.hass.states[t.snow_mountain].state):NaN,o=s.snow_mountain?parseFloat(this.hass.states[s.snow_mountain].state):NaN;break;case"valley":if(this._isCrossCountryResort(t)||this._isCrossCountryResort(s))break;i=t.snow_valley?parseFloat(this.hass.states[t.snow_valley].state):NaN,o=s.snow_valley?parseFloat(this.hass.states[s.snow_valley].state):NaN;break;case"new":if(this._isCrossCountryResort(t)||this._isCrossCountryResort(s))break;i=t.new_snow?parseFloat(this.hass.states[t.new_snow].state):NaN,o=s.new_snow?parseFloat(this.hass.states[s.new_snow].state):NaN;break;case"lift":if(this._isCrossCountryResort(t)||this._isCrossCountryResort(s))break;i=t.lifts_open?parseFloat(this.hass.states[t.lifts_open].state):NaN,o=s.lifts_open?parseFloat(this.hass.states[s.lifts_open].state):NaN;break;case"classical":i=t.classical_trails_open?parseFloat(this.hass.states[t.classical_trails_open].state):NaN,o=s.classical_trails_open?parseFloat(this.hass.states[s.classical_trails_open].state):NaN;break;case"skating":i=t.skating_trails_open?parseFloat(this.hass.states[t.skating_trails_open].state):NaN,o=s.skating_trails_open?parseFloat(this.hass.states[s.skating_trails_open].state):NaN;break;case"update":{const e=At(t.last_update?this.hass.states[t.last_update]?.state:void 0)?.getTime(),i=At(s.last_update?this.hass.states[s.last_update]?.state:void 0)?.getTime();return void 0===e&&void 0===i?0:void 0===e?1:void 0===i?-1:i-e}}if("number"==typeof i&&"number"==typeof o){const t=isNaN(i),e=isNaN(o);return t&&e?0:t?1:e?-1:o-i}return 0}),W`
+    `}_isNA(t){return["N/A","keine Meldung","unknown"].includes(t)}_conditionText(t){return this._isNA(t)?xt(this.hass,"component.bergfex-card.card.status.unknown"):t}_isCrossCountryResort(t){return!!(t.is_cross_country||t.classical_trails_open||t.skating_trails_open||t.classical_condition||t.skating_condition)}render(){if(!this._config||!this.hass)return W``;let t=Object.entries(this._getResorts(this.hass,this._config));this._config.hide_closed_resorts&&(t=t.filter(([,t])=>t.status&&"open"===this.hass.states[t.status].state.toLowerCase()));const e=this._config.sort_by;return e&&"none"!==e&&t.sort(([,t],[,s])=>{let i,o;switch(e){case"mountain":if(this._isCrossCountryResort(t)||this._isCrossCountryResort(s))break;i=t.snow_mountain?parseFloat(this.hass.states[t.snow_mountain].state):NaN,o=s.snow_mountain?parseFloat(this.hass.states[s.snow_mountain].state):NaN;break;case"valley":if(this._isCrossCountryResort(t)||this._isCrossCountryResort(s))break;i=t.snow_valley?parseFloat(this.hass.states[t.snow_valley].state):NaN,o=s.snow_valley?parseFloat(this.hass.states[s.snow_valley].state):NaN;break;case"new":if(this._isCrossCountryResort(t)||this._isCrossCountryResort(s))break;i=t.new_snow?parseFloat(this.hass.states[t.new_snow].state):NaN,o=s.new_snow?parseFloat(this.hass.states[s.new_snow].state):NaN;break;case"lift":if(this._isCrossCountryResort(t)||this._isCrossCountryResort(s))break;i=t.lifts_open?parseFloat(this.hass.states[t.lifts_open].state):NaN,o=s.lifts_open?parseFloat(this.hass.states[s.lifts_open].state):NaN;break;case"classical":i=t.classical_trails_open?parseFloat(this.hass.states[t.classical_trails_open].state):NaN,o=s.classical_trails_open?parseFloat(this.hass.states[s.classical_trails_open].state):NaN;break;case"skating":i=t.skating_trails_open?parseFloat(this.hass.states[t.skating_trails_open].state):NaN,o=s.skating_trails_open?parseFloat(this.hass.states[s.skating_trails_open].state):NaN;break;case"update":{const e=At(t.last_update?this.hass.states[t.last_update]?.state:void 0)?.getTime(),i=At(s.last_update?this.hass.states[s.last_update]?.state:void 0)?.getTime();return void 0===e&&void 0===i?0:void 0===e?1:void 0===i?-1:i-e}}if("number"==typeof i&&"number"==typeof o){const t=isNaN(i),e=isNaN(o);return t&&e?0:t?1:e?-1:o-i}return 0}),W`
       <ha-card .header=${this._config.title} tabindex="0">
         <div class="card-content">
           ${t.map(([t,e])=>{const s=e.status;if(!s)return W`
@@ -284,7 +284,7 @@ class wt extends yt{}wt.directiveName="unsafeSVG",wt.resultType=2;const $t=gt(wt
                                                     >
                                                       <ha-icon icon="mdi:weather-snowy"></ha-icon>
                                                       <div class="detail-item-value">
-                                                        <span>${y.state}</span>
+                                                        <span>${this._conditionText(y.state)}</span>
                                                         <span class="detail-item-label"
                                                           >${xt(this.hass,"component.bergfex-card.card.header.snow_condition")}</span
                                                         >
@@ -298,7 +298,7 @@ class wt extends yt{}wt.directiveName="unsafeSVG",wt.resultType=2;const $t=gt(wt
                                                     >
                                                       <ha-icon icon="mdi:ski"></ha-icon>
                                                       <div class="detail-item-value">
-                                                        <span>${w.state}</span>
+                                                        <span>${this._conditionText(w.state)}</span>
                                                         <span class="detail-item-label"
                                                           >${xt(this.hass,"component.bergfex-card.card.header.slope_condition")}</span
                                                         >
@@ -313,7 +313,7 @@ class wt extends yt{}wt.directiveName="unsafeSVG",wt.resultType=2;const $t=gt(wt
                                             >
                                               <ha-icon icon="mdi:alert"></ha-icon>
                                               <div class="detail-item-value">
-                                                <span>${b.state}</span>
+                                                <span>${this._conditionText(b.state)}</span>
                                                 <span class="detail-item-label"
                                                   >${xt(this.hass,"component.bergfex-card.card.header.avalanche_warning")}</span
                                                 >
@@ -330,7 +330,7 @@ class wt extends yt{}wt.directiveName="unsafeSVG",wt.resultType=2;const $t=gt(wt
                                                         >${$t(Et)}</span
                                                       >
                                                       <div class="detail-item-value">
-                                                        <span>${C.state}</span>
+                                                        <span>${this._conditionText(C.state)}</span>
                                                         <span class="detail-item-label"
                                                           >${xt(this.hass,"component.bergfex-card.card.header.classical_condition")}</span
                                                         >
@@ -346,7 +346,7 @@ class wt extends yt{}wt.directiveName="unsafeSVG",wt.resultType=2;const $t=gt(wt
                                                         >${$t(Pt)}</span
                                                       >
                                                       <div class="detail-item-value">
-                                                        <span>${E.state}</span>
+                                                        <span>${this._conditionText(E.state)}</span>
                                                         <span class="detail-item-label"
                                                           >${xt(this.hass,"component.bergfex-card.card.header.skating_condition")}</span
                                                         >
@@ -375,7 +375,7 @@ class wt extends yt{}wt.directiveName="unsafeSVG",wt.resultType=2;const $t=gt(wt
                                             >
                                               <ha-icon icon="mdi:information-outline"></ha-icon>
                                               <div class="detail-item-value">
-                                                <span>${n.state}</span>
+                                                <span>${this._conditionText(n.state)}</span>
                                                 <span class="detail-item-label"
                                                   >${xt(this.hass,"component.bergfex-card.card.header.operation_status")}</span
                                                 >
