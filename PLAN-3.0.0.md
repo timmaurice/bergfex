@@ -105,10 +105,11 @@ then retire `timmaurice/lovelace-bergfex-card` from HACS and archive the repo.
       muted — in season but not running right now) · **Summer season** (yellow) ·
       **Closed** (red, between the two periods). Resorts that publish no season at
       all fall back to the previous Open/Closed. Translated into all five languages.
-- [x] Tease the winter start under the badge ("ab 04.12.") wherever the season is
-      still ahead — under a summer badge and a plain closed one alike. Only shown
-      when the published start is in the future: most resorts still carry last
-      winter's dates in August, and bergfex fills in the new ones through autumn.
+- [x] Tease the winter start under the badge wherever the season is still ahead —
+      under a summer badge and a plain closed one alike. A published future date
+      reads "ab 04.12."; where bergfex still shows the finished season, the date is
+      quoted as an estimate ("letztes Jahr: 05.12.") rather than passed off as this
+      year's. Anything older than 18 months is dropped instead.
 
 ---
 

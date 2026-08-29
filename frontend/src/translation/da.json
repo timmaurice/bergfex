@@ -67,7 +67,8 @@
       "unknown": "Ukendt",
       "winter_season": "Vintersæson",
       "summer_season": "Sommersæson",
-      "season_from": "fra {date}"
+      "season_from": "fra {date}",
+      "season_last_year": "sidste år: {date}"
     }
   },
   "common": {

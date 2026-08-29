@@ -568,6 +568,40 @@ describe('BergfexCard', () => {
       expect(element.shadowRoot?.querySelector('.season-teaser')).not.toBeNull();
     });
 
+    it('quotes last season as an estimate when the new dates are not published', async () => {
+      // bergfex still shows the finished season through the summer.
+      const resort = createMockResort('warth', 'Warth', {
+        status: 'Closed',
+        season_attrs: { ...period('winter', day(-270), day(-140)), ...period('summer', day(-30), day(30)) },
+      });
+      await setupCard({}, resort);
+
+      const teaser = element.shadowRoot?.querySelector('.season-teaser')?.textContent ?? '';
+      expect(teaser).toContain('Season Last Year');
+    });
+
+    it('marks a future date as definite, not as an estimate', async () => {
+      const resort = createMockResort('serfaus', 'Serfaus', {
+        status: 'Closed',
+        season_attrs: period('winter', day(90), day(210)),
+      });
+      await setupCard({}, resort);
+
+      const teaser = element.shadowRoot?.querySelector('.season-teaser')?.textContent ?? '';
+      expect(teaser).toContain('Season From');
+      expect(teaser).not.toContain('Season Last Year');
+    });
+
+    it('drops a stale date rather than calling it last year', async () => {
+      // Nearly three years old: no longer a useful estimate.
+      const resort = createMockResort('stale', 'Stale', {
+        status: 'Closed',
+        season_attrs: period('winter', day(-1000), day(-900)),
+      });
+      await setupCard({}, resort);
+      expect(element.shadowRoot?.querySelector('.season-teaser')).toBeNull();
+    });
+
     it('drops the teaser once the winter season has started', async () => {
       const resort = createMockResort('ischgl', 'Ischgl', {
         status: 'Closed',

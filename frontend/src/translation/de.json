@@ -67,7 +67,8 @@
       "unknown": "Unbekannt",
       "winter_season": "Wintersaison",
       "summer_season": "Sommersaison",
-      "season_from": "ab {date}"
+      "season_from": "ab {date}",
+      "season_last_year": "letztes Jahr: {date}"
     }
   },
   "common": {

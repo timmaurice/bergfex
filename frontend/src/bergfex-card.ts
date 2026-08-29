@@ -440,9 +440,9 @@ export class BergfexCard extends LitElement implements LovelaceCard {
 
     const today = new Date().toISOString().slice(0, 10);
     const end = attrs.winter_season_end as string | undefined;
-    // Nothing to tease once the season is running, or has run and not been updated.
+
+    // Nothing to tease while the season is running.
     if (start <= today && (!end || today <= end)) return undefined;
-    if (start <= today) return undefined;
 
     const date = new Date(`${start}T00:00:00`);
     if (Number.isNaN(date.getTime())) return undefined;
@@ -452,7 +452,18 @@ export class BergfexCard extends LitElement implements LovelaceCard {
       month: '2-digit',
     }).format(date);
 
-    return localize(this.hass, 'component.bergfex-card.card.status.season_from', { date: formatted });
+    if (start > today) {
+      return localize(this.hass, 'component.bergfex-card.card.status.season_from', { date: formatted });
+    }
+
+    // The start has passed, which through summer means bergfex is still showing
+    // last season's dates - it publishes the new ones during autumn. Resorts open
+    // at close to the same date every year, so quoting it is useful, but it is an
+    // estimate and has to say so rather than pose as this year's date.
+    const monthsAgo = (Date.now() - date.getTime()) / (1000 * 60 * 60 * 24 * 30.44);
+    if (monthsAgo > 18) return undefined;
+
+    return localize(this.hass, 'component.bergfex-card.card.status.season_last_year', { date: formatted });
   }
 
   private _conditionText(state: string): string {
