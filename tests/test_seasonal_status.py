@@ -13,8 +13,9 @@ def test_parse_season_dates_open():
 
     html = f"""
     <h1 class="tw-text-4xl"><span>Ski resort</span><span>Test Resort</span></h1>
-    <dt>Saison:</dt>
-    <dd>13.12.{start_year} - 11.04.{end_year}</dd>
+    <div class="block" x-show="tab == 'winter'">
+      <h3>Saison</h3><p>13.12.{start_year} - 11.04.{end_year}</p>
+    </div>
     <dd>
       <div class="status-lifte" title="open lift"></div>
       5 von 10
@@ -22,8 +23,8 @@ def test_parse_season_dates_open():
     """
 
     data = parse_resort_page(html)
-    assert data["season_start"] == date(start_year, 12, 13)
-    assert data["season_end"] == date(end_year, 4, 11)
+    assert data["winter_season_start"] == date(start_year, 12, 13)
+    assert data["winter_season_end"] == date(end_year, 4, 11)
     assert data["lifts_open_count"] == 5
     assert data["status"] == "Open"
 
@@ -39,8 +40,9 @@ def test_parse_season_dates_en_dash():
     # Using en-dash (–) instead of hyphen (-)
     html = f"""
     <h1 class="tw-text-4xl"><span>Ski resort</span><span>Test Resort</span></h1>
-    <dt>Saison:</dt>
-    <dd>13.12.{start_year} – 11.04.{end_year}</dd>
+    <div class="block" x-show="tab == 'winter'">
+      <h3>Saison</h3><p>13.12.{start_year} – 11.04.{end_year}</p>
+    </div>
     <dd>
       <div class="status-lifte" title="open lift"></div>
       5 von 10
@@ -48,8 +50,8 @@ def test_parse_season_dates_en_dash():
     """
 
     data = parse_resort_page(html)
-    assert data["season_start"] == date(start_year, 12, 13)
-    assert data["season_end"] == date(end_year, 4, 11)
+    assert data["winter_season_start"] == date(start_year, 12, 13)
+    assert data["winter_season_end"] == date(end_year, 4, 11)
     assert data["status"] == "Open"
 
 
@@ -117,8 +119,9 @@ def test_parse_season_dates_closed():
 
     html = f"""
     <h1 class="tw-text-4xl"><span>Ski resort</span><span>Test Resort</span></h1>
-    <dt>Saison:</dt>
-    <dd>13.12.{start_year} - 11.04.{end_year}</dd>
+    <div class="block" x-show="tab == 'winter'">
+      <h3>Saison</h3><p>13.12.{start_year} - 11.04.{end_year}</p>
+    </div>
     <dd>
       <div class="status-lifte" title="open lift"></div>
       5 von 10
@@ -126,7 +129,7 @@ def test_parse_season_dates_closed():
     """
 
     data = parse_resort_page(html)
-    assert data["season_start"] == date(start_year, 12, 13)
-    assert data["season_end"] == date(end_year, 4, 11)
+    assert data["winter_season_start"] == date(start_year, 12, 13)
+    assert data["winter_season_end"] == date(end_year, 4, 11)
     # Lifts are open, but season is over, so status should be Closed.
     assert data["status"] == "Closed"

@@ -29,7 +29,7 @@ def mock_config_entry():
 async def test_async_update_data_resort_fallback(
     hass: HomeAssistant, mock_config_entry
 ):
-    """Test that main page is fetched and seasonal variables are copied when season_start is missing."""
+    """Test that the main page is fetched and the winter period is copied across."""
 
     # Setup mock HTMLs
     subpage_html = """
@@ -44,10 +44,12 @@ async def test_async_update_data_resort_fallback(
     main_page_html = """
     <dt>Tageskarte:</dt>
     <dd>€ 75,00</dd>
-    <dt>Stagione:</dt>
-    <dd>13.12.2025 - 11.04.2026</dd>
     <dt>Orario:</dt>
     <dd>09:00 - 16:45</dd>
+    <div class="block" x-show="tab == 'winter'">
+      <h3>Stagione</h3><p>13.12.2025 - 11.04.2026</p>
+      <h3>Orario</h3><p>09:00 - 16:45</p>
+    </div>
     <dd>
       <div class="status-lifte" title="open lift"></div>
       5 von 10
@@ -114,8 +116,8 @@ async def test_async_update_data_resort_fallback(
 
         assert area_data is not None
         assert area_data["status"] == "Closed"
-        assert area_data["season_start"] == date(2025, 12, 13)
-        assert area_data["season_end"] == date(2026, 4, 11)
+        assert area_data["winter_season_start"] == date(2025, 12, 13)
+        assert area_data["winter_season_end"] == date(2026, 4, 11)
         assert area_data["operating_hours_start"] == "09:00"
         assert area_data["operating_hours_end"] == "16:45"
 
@@ -139,10 +141,12 @@ async def test_async_update_data_resort_fallback_active_season(
     main_page_html = """
     <dt>Tageskarte:</dt>
     <dd>€ 75,00</dd>
-    <dt>Stagione:</dt>
-    <dd>13.12.2025 - 11.04.2026</dd>
     <dt>Orario:</dt>
     <dd>09:00 - 16:45</dd>
+    <div class="block" x-show="tab == 'winter'">
+      <h3>Stagione</h3><p>13.12.2025 - 11.04.2026</p>
+      <h3>Orario</h3><p>09:00 - 16:45</p>
+    </div>
     <dd>
       <div class="status-lifte" title="open lift"></div>
       5 von 10
@@ -209,7 +213,7 @@ async def test_async_update_data_resort_fallback_active_season(
 
         assert area_data is not None
         assert area_data["status"] == "Open"
-        assert area_data["season_start"] == date(2025, 12, 13)
-        assert area_data["season_end"] == date(2026, 4, 11)
+        assert area_data["winter_season_start"] == date(2025, 12, 13)
+        assert area_data["winter_season_end"] == date(2026, 4, 11)
         assert area_data["operating_hours_start"] == "09:00"
         assert area_data["operating_hours_end"] == "16:45"

@@ -93,13 +93,12 @@ then retire `timmaurice/lovelace-bergfex-card` from HACS and archive the repo.
       side by side, keyed by an Alpine.js `x-show` expression that is identical in
       every language. Exposed as `winter_season_*` / `summer_season_*` attributes on
       the status sensor, fetched once per resort per restart and cached.
-- [ ] **Fix the status semantics.** `season_start` / `season_end` follow whichever
-      period bergfex currently displays, which in summer is the hiking season, and
-      the status logic uses them. Today the test instance reports Warth, Feldberg and
-      Serfaus as **Open** on 30 August, because their summer operation is running.
-      For a snow-report card that is wrong. The winter dates now make the fix
-      possible; the semantics change needs a decision, since it moves every user's
-      status sensor.
+- [x] **Fix the status semantics.** `season_start` / `season_end` are removed; status
+      is judged against the winter season alone, and winter operating hours are
+      exposed alongside it. Verified in the test instance: Warth, Feldberg and
+      Serfaus flipped from **Open** to **Closed**, and no `season_start` attribute
+      remains. Resorts without an operating-hours panel (Les Saisies) now carry no
+      season data at all, which is better than carrying the summer one.
 - [ ] **Decide what the card should look like off-season.** This is a design call,
       not a test, and it blocks writing the test.
       Right now every snow field renders `N/A`: `airolo` shows six of six. That is
@@ -107,6 +106,8 @@ then retire `timmaurice/lovelace-bergfex-card` from HACS and archive the repo.
       every user sees — the state the card spends a quarter of the year in.
       Options worth weighing: - Drop the snow row entirely instead of filling it with `N/A`. - Render closed out-of-season resorts in a compact form. - Show the season start where it is known. The data is already there;
       `season_start` parses year-round (Serfaus: 2026-06-13 → 2026-10-11).
+      `winter_season_start` and `winter_operating_hours_*` are now on the status
+      sensor, so "closed, season starts 05.12." is available to render.
       Once decided, pin it down with a whole-card off-season test — the state is
       reproducible offline from the current sensor shape, no snow required.
 - [x] Add a regression test for the `_getResorts()` null-guard.

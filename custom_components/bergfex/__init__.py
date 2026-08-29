@@ -54,8 +54,12 @@ _SEASON_PANEL_CACHE: dict[str, dict[str, Any]] = {}
 _SEASON_PANEL_KEYS = (
     "winter_season_start",
     "winter_season_end",
+    "winter_operating_hours_start",
+    "winter_operating_hours_end",
     "summer_season_start",
     "summer_season_end",
+    "summer_operating_hours_start",
+    "summer_operating_hours_end",
 )
 
 CARD_FILENAME = "bergfex-card.js"
@@ -326,11 +330,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 if area_path in _SEASON_PANEL_CACHE:
                     parsed_data.update(_SEASON_PANEL_CACHE[area_path])
 
-                if (
-                    "price" not in parsed_data
-                    or "season_start" not in parsed_data
-                    or area_path not in _SEASON_PANEL_CACHE
-                ):
+                if "price" not in parsed_data or area_path not in _SEASON_PANEL_CACHE:
                     parts = area_path.strip("/").split("/")
                     # List of typical subpages that usually don't have the primary price block
                     subpages = [
@@ -360,8 +360,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                                         )
                                         for key in [
                                             "price",
-                                            "season_start",
-                                            "season_end",
                                             "operating_hours_start",
                                             "operating_hours_end",
                                             "operation_status",
@@ -399,23 +397,26 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                                         now_time_str = now_dt.strftime("%H:%M")
 
                                         if (
-                                            "season_start" in parsed_data
-                                            and "season_end" in parsed_data
+                                            "winter_season_start" in parsed_data
+                                            and "winter_season_end" in parsed_data
                                         ):
                                             season_ok = (
-                                                parsed_data["season_start"]
+                                                parsed_data["winter_season_start"]
                                                 <= today
-                                                <= parsed_data["season_end"]
+                                                <= parsed_data["winter_season_end"]
                                             )
 
-                                        if (
-                                            "operating_hours_start" in parsed_data
-                                            and "operating_hours_end" in parsed_data
-                                        ):
+                                        hours_start = parsed_data.get(
+                                            "winter_operating_hours_start",
+                                            parsed_data.get("operating_hours_start"),
+                                        )
+                                        hours_end = parsed_data.get(
+                                            "winter_operating_hours_end",
+                                            parsed_data.get("operating_hours_end"),
+                                        )
+                                        if hours_start and hours_end:
                                             time_ok = (
-                                                parsed_data["operating_hours_start"]
-                                                <= now_time_str
-                                                <= parsed_data["operating_hours_end"]
+                                                hours_start <= now_time_str <= hours_end
                                             )
 
                                         if lifts_ok and season_ok and time_ok:

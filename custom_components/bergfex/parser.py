@@ -268,6 +268,14 @@ def _parse_operating_period(soup: BeautifulSoup, tab: str) -> dict[str, Any]:
         return {}
 
     period = {}
+
+    hours = re.search(
+        r"(\d{1,2}:\d{2})\s*[-–—]\s*(\d{1,2}:\d{2})", block.get_text(" ", strip=True)
+    )
+    if hours:
+        period["hours_start"] = hours.group(1)
+        period["hours_end"] = hours.group(2)
+
     for name, raw in (("start", match.group(1)), ("end", match.group(2))):
         for fmt in ("%d.%m.%Y", "%d/%m/%Y"):
             try:
@@ -453,38 +461,18 @@ def parse_resort_page(
         if last_update_dt:
             area_data["last_update"] = last_update_dt
 
-    # Season dates (e.g., "13.12.2025 – 11.04.2026" or "13.12.2025 - 11.04.2026")
-    season_kw = keywords.get("season", "Saison")
-    season_text = get_text_from_dd(soup, season_kw)
-
-    if season_text:
-        # Expected format: start - end (handle different dash types: -, –, —)
-        parts = [p.strip() for p in re.split(r"[-–—]", season_text)]
-        if len(parts) == 2:
-            for fmt in ("%d.%m.%Y", "%d/%m/%Y"):
-                try:
-                    start = datetime.strptime(parts[0], fmt).date()
-                    end = datetime.strptime(parts[1], fmt).date()
-                    area_data["season_start"] = start
-                    area_data["season_end"] = end
-                    break
-                except ValueError:
-                    continue
-            else:
-                _LOGGER.debug("Failed to parse season dates: %s", season_text)
-
     # Winter season, read from the operating-hours panel rather than the headline
     # "Saison" field. In summer that headline carries the *summer* period, so a ski
     # resort reads as in-season in August.
-    winter = _parse_operating_period(soup, "winter")
-    if winter:
-        area_data["winter_season_start"] = winter["start"]
-        area_data["winter_season_end"] = winter["end"]
-
-    summer = _parse_operating_period(soup, "summer")
-    if summer:
-        area_data["summer_season_start"] = summer["start"]
-        area_data["summer_season_end"] = summer["end"]
+    for tab in ("winter", "summer"):
+        period = _parse_operating_period(soup, tab)
+        if not period:
+            continue
+        area_data[f"{tab}_season_start"] = period["start"]
+        area_data[f"{tab}_season_end"] = period["end"]
+        if "hours_start" in period:
+            area_data[f"{tab}_operating_hours_start"] = period["hours_start"]
+            area_data[f"{tab}_operating_hours_end"] = period["hours_end"]
 
     # Operating Hours (Betrieb)
     op_hours_kw = keywords.get("operating_hours", "Betrieb")
@@ -705,15 +693,22 @@ def parse_resort_page(
     today = now_dt.date()
     now_time_str = now_dt.strftime("%H:%M")
 
-    if "season_start" in area_data and "season_end" in area_data:
-        season_ok = area_data["season_start"] <= today <= area_data["season_end"]
-
-    if "operating_hours_start" in area_data and "operating_hours_end" in area_data:
-        time_ok = (
-            area_data["operating_hours_start"]
-            <= now_time_str
-            <= area_data["operating_hours_end"]
+    # Judged against the winter season only. The headline "Saison" field follows
+    # whichever period bergfex is currently showing, so using it reported ski
+    # resorts as Open in August, when their summer operation runs.
+    if "winter_season_start" in area_data and "winter_season_end" in area_data:
+        season_ok = (
+            area_data["winter_season_start"] <= today <= area_data["winter_season_end"]
         )
+
+    hours_start = area_data.get(
+        "winter_operating_hours_start", area_data.get("operating_hours_start")
+    )
+    hours_end = area_data.get(
+        "winter_operating_hours_end", area_data.get("operating_hours_end")
+    )
+    if hours_start and hours_end:
+        time_ok = hours_start <= now_time_str <= hours_end
 
     if lifts_ok and season_ok and time_ok:
         area_data["status"] = "Open"

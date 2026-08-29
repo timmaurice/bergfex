@@ -20,6 +20,13 @@ The `2.4.0` line was never released. Its three betas (`2.4.0b1`, `2.4.0b2`,
   itself; until you do, HACS keeps offering updates for a card you no longer use.
 - Automatic resource registration requires Lovelace in storage mode. In YAML mode
   the integration logs a warning and you add the resource yourself.
+- **The `season_start` and `season_end` attributes are gone.** They followed
+  whichever operating period bergfex was displaying, which outside winter is the
+  summer hiking season — so ski resorts reported as **Open** in August. They are
+  replaced by explicit `winter_season_start` / `winter_season_end` and
+  `summer_season_start` / `summer_season_end`. Automations and templates reading
+  the old attributes need updating; in almost every case `winter_season_*` is what
+  was meant. Status is now judged against the winter season alone.
 
 ### Added
 
@@ -29,8 +36,12 @@ The `2.4.0` line was never released. Its three betas (`2.4.0b1`, `2.4.0b2`,
   closed resorts.
 - **Smart operational status** (#21): the Status sensor weighs both seasonal
   dates and daily operating hours instead of lift counts alone.
-- **New status attributes**: `price`, `season_start`, `season_end`,
-  `operating_hours_start` and `operating_hours_end`.
+- **New status attributes**: `price`, `operating_hours_start`,
+  `operating_hours_end`, and the winter and summer operating periods —
+  `winter_season_start` / `_end`, `winter_operating_hours_start` / `_end` and the
+  `summer_*` equivalents. These are read from bergfex's operating-hours panel
+  structurally rather than by keyword, so they also work on domains where the
+  localized labels differ.
 - **Live-site validation scripts** (`check_live_site.py`, `e2e_report.py`) that
   detect structural changes on Bergfex before they break parsing.
 

@@ -337,18 +337,18 @@ class BergfexSensor(SensorEntity):
                 area_data = self.coordinator.data[self._area_path]
                 if "price" in area_data:
                     attrs["price"] = area_data["price"]
-                if "season_start" in area_data:
-                    attrs["season_start"] = area_data["season_start"]
-                if "season_end" in area_data:
-                    attrs["season_end"] = area_data["season_end"]
-                # Winter dates are exposed separately because season_start/_end
-                # follow whichever period bergfex currently shows, which in summer
-                # is the hiking season.
+                # Winter and summer are kept apart on purpose. A single "season"
+                # field followed whichever period bergfex was showing, so in
+                # August a ski resort looked like it was in season.
                 for key in (
                     "winter_season_start",
                     "winter_season_end",
+                    "winter_operating_hours_start",
+                    "winter_operating_hours_end",
                     "summer_season_start",
                     "summer_season_end",
+                    "summer_operating_hours_start",
+                    "summer_operating_hours_end",
                 ):
                     if key in area_data:
                         attrs[key] = area_data[key]
