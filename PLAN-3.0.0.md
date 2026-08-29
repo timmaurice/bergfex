@@ -5,9 +5,14 @@ then retire `timmaurice/lovelace-bergfex-card` from HACS and archive the repo.
 
 ## Context (as of 2026-08-29)
 
-- **No live data anywhere.** Even the Hintertux glacier snow report — the year-round
+- **No live _snow_ data.** Even the Hintertux glacier snow report — the year-round
   resort — currently renders **0** `<dt>` elements; the winter fixture `hintertux.html`
   has **20**. bergfex drops the snow-report block off-season.
+- **Everything else is live, though.** The test instance parses status, lift counts,
+  elevations, prices and season dates right now (Serfaus: `Open`, 11/11 lifts,
+  season 2026-06-13 → 2026-10-11). The card renders against that today, with the
+  snow columns showing N/A — so layout, sorting, badges and the accordion are all
+  verifiable before the season starts.
 - Everything below marked _(offline)_ is verifiable today via the 27 HTML fixtures
   in `custom_components/bergfex/tests/fixtures/` (58 pytest + 33 vitest, all green).
 - **Season anchors:**
@@ -66,8 +71,13 @@ then retire `timmaurice/lovelace-bergfex-card` from HACS and archive the repo.
 - [ ] Add a regression test for the `_getResorts()` null-guard.
 - [x] Get the Frontend workflow green: it failed on both `lint` and `check-format`
       before it had ever run.
-- [ ] Test the "both card versions installed" path in a live HA instance now that
-      B1/B2 have landed.
+- [x] Test the "both card versions installed" path in a live HA instance: seven
+      resources collapsed to three, the HACS and `/local/` leftovers and two duplicate
+      entries were removed, unrelated resources untouched, repair issue raised and
+      rendered, and a second bundle import warned instead of throwing.
+- [ ] Fix "Invalid Date" in the card footer. `airolo` parses with no `last_update` at
+      all, and the card formats the missing value instead of falling back. Guard the
+      card, and check whether the parser should be finding a timestamp there.
 - [ ] **Fixture-refresh canary:** a check that flags when a live bergfex page yields
       0 `<dt>` elements _during_ the season — today off-season emptiness and a site
       redesign are indistinguishable, so a summer restructure would only surface in November.
@@ -120,7 +130,10 @@ will flag the archived repo.
 
 ---
 
-## Blocked until data returns
+## Blocked until snow returns
 
-- Any visual sign-off on a populated card.
-- Parser changes driven by "what the page looks like now".
+- Sign-off on the snow columns, trend indicators and anything driven by snow depth.
+- Parser changes driven by "what the snow report looks like now".
+
+Everything else — layout, status badges, sorting, lifts, the editor — can be checked
+against the running test instance today.
