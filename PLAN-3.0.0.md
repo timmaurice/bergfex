@@ -55,14 +55,22 @@ then retire `timmaurice/lovelace-bergfex-card` from HACS and archive the repo.
 
 - [ ] Clean up stale releases on `timmaurice/bergfex`: draft `2.4.0b3`, pre-releases
       `2.4.0b2` / `2.4.0b1`. Either delete or fold their notes into 3.0.0.
-- [ ] CHANGELOG for 2.3.1 → 3.0.0 (the 2.4.0 line is being skipped — say so).
-- [ ] Verify `hacs.json` `zip_release` / `bergfex.zip` actually contains the built
-      `bergfex-card.js`.
+- [x] CHANGELOG for 2.3.1 → 3.0.0, with the 2.4.0 betas folded in and the skipped
+      version line called out.
+- [x] Verify `hacs.json` `zip_release` / `bergfex.zip` actually contains the built
+      `bergfex-card.js`. It did — but the archive also shipped the 27 test fixtures,
+      `__pycache__`, `.pytest_cache` and `.DS_Store` to every user: 56 of ~80 entries,
+      759 K instead of 60 K. Excluded in `release.yml`, with a CI guard that fails the
+      release if a required file is missing or junk creeps back in.
+- [ ] Decide whether `tests/` should move out of `custom_components/bergfex/`. The zip
+      is clean now, but the README's manual-install path still tells users to copy the
+      whole folder, fixtures and all (3.7 MB).
 - [x] Verify `.github/workflows/release.yml` runs the rollup build **before** zipping,
       so the bundle can never ship stale.
 - [ ] README rewrite: one-install story, card config reference, explicit
       "migrating from lovelace-bergfex-card" section.
-- [ ] Update `GEMINI.md` to describe the merged repo layout.
+- [ ] Document the merged repo layout for contributors. The local AI context file is
+      now `CLAUDE.md` and gitignored, so this needs a home in the README instead.
 
 ### Quality _(offline)_
 
@@ -113,17 +121,19 @@ will flag the archived repo.
 
 - [ ] Final `2.2.2` release on `lovelace-bergfex-card`: deprecation notice only.
 - [ ] README banner pointing at `timmaurice/bergfex`.
-- [ ] PR to `hacs/default`: - remove `"timmaurice/lovelace-bergfex-card"` from `plugin` (line 690) - add to `removed`:
-      `json
+- [ ] PR to `hacs/default`: remove `"timmaurice/lovelace-bergfex-card"` from `plugin`
+      (line 690) and add the entry below to `removed`. `replaced` is the established
+      type for this case — see `Bre77/myair`, `mattieha/slider-button-card`.
+
+```json
 {
-"repository": "timmaurice/lovelace-bergfex-card",
-"reason": "Card is now bundled with the Bergfex Snow Report integration",
-"removal_type": "replaced",
-"link": "https://github.com/timmaurice/bergfex"
+  "repository": "timmaurice/lovelace-bergfex-card",
+  "reason": "Card is now bundled with the Bergfex Snow Report integration",
+  "removal_type": "replaced",
+  "link": "https://github.com/timmaurice/bergfex"
 }
-`
-      (`replaced` is the established type for this case — see `Bre77/myair`,
-      `mattieha/slider-button-card`.)
+```
+
 - [ ] Wait for merge.
 - [ ] Then archive `timmaurice/lovelace-bergfex-card`.
 - [ ] Repoint any `documentation` / `issue_tracker` links that still reference the card repo.

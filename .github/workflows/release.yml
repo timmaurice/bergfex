@@ -32,15 +32,35 @@ jobs:
       - name: Build Lovelace card
         run: npm run build
 
-      # 4. Create ZIP in repo root (only bergfex folder, includes bergfex-card.js)
+      # 4. Create ZIP in repo root (bergfex folder only, minus anything users
+      #    should never receive: fixtures, caches and host-compiled bytecode)
       - name: Create zip archive for HACS
         run: |
           cd custom_components/bergfex
-          zip -r ../../bergfex.zip .
+          zip -r ../../bergfex.zip . \
+            -x "tests/*" \
+               "__pycache__/*" "*/__pycache__/*" "*.pyc" \
+               ".pytest_cache/*" \
+               ".DS_Store" "*/.DS_Store"
 
-      # 5. Verify ZIP exists
-      - name: List files
-        run: ls -l bergfex.zip
+      # 5. Verify the archive is complete and clean
+      - name: Verify zip contents
+        run: |
+          ls -l bergfex.zip
+          unzip -l bergfex.zip
+
+          for required in manifest.json __init__.py bergfex-card.js; do
+            if ! unzip -l bergfex.zip | grep -q "  $required$"; then
+              echo "::error::bergfex.zip is missing $required"
+              exit 1
+            fi
+          done
+
+          if unzip -l bergfex.zip | grep -qE "tests/|__pycache__|\.pytest_cache|\.DS_Store"; then
+            echo "::error::bergfex.zip contains files that must not ship"
+            unzip -l bergfex.zip | grep -E "tests/|__pycache__|\.pytest_cache|\.DS_Store"
+            exit 1
+          fi
 
       # 6. Create GitHub Release and attach ZIP
       - name: Create GitHub Release
