@@ -208,16 +208,80 @@ def test_merged_cross_country_parsing():
     assert parsed_data["skating_total_km"] == 30.0
 
 
-def test_parse_cross_country_cortina():
-    """Test parsing of cross-country page using the new Cortina d'Ampezzo tabular layout."""
+def test_parse_cross_country_cortina_reports_nothing_groomed():
+    """The Cortina fixture has no groomed trail at all.
+
+    Every row carries a bare "icon-status" (bergfex has no report) and "-" in both
+    open-kilometre columns. This test previously asserted 38.9 km open and a status
+    of Open - those are the sums of the *total* lengths, which is what the parser
+    used to report for an entire summer trail network.
+    """
     fixture_path = Path(__file__).parent / "fixtures" / "cortina_loipen.html"
     with open(fixture_path, "r") as f:
         html = f.read()
 
     data = parse_cross_country_resort_page(html, lang="en")
 
-    assert "classical_open_km" in data
-    assert "skating_open_km" in data
-    assert data["classical_open_km"] == 38.9
-    assert data["skating_open_km"] == 16.9
+    assert "classical_open_km" not in data
+    assert "skating_open_km" not in data
+    assert data["status"] == "Closed"
+
+
+def _trail_row(number, name, total, open_km, status_class):
+    return f"""
+    <tr>
+      <td class="loipen-icon-status status-icons">
+        <div class="icon-status {status_class}"></div>
+      </td>
+      <td class="loipen-kuerzel">{number}</td>
+      <td class="loipen-name"><a><span class="bold">{name}</span></a>
+        <div class="small">Classical/Skating</div></td>
+      <td class="nowrap desktop-only">{open_km}</td>
+      <td class="loipen-laenge nowrap">{total} km
+        <div class="desktop-hidden important">{open_km}</div></td>
+    </tr>
+    """
+
+
+def _trail_table(*rows):
+    return (
+        '<html><body><h1>Trail report Test</h1><table class="status-table">'
+        + "".join(rows)
+        + "</table></body></html>"
+    )
+
+
+def test_counts_only_trails_marked_open():
+    """icon-status1 and icon-status2 are open; 0 is closed and a bare class means
+    bergfex has no report, which must not be read as open."""
+    html = _trail_table(
+        _trail_row(1, "Loipe A Classical/Skating", "10", "10 km", "icon-status1"),
+        _trail_row(2, "Loipe B Classical/Skating", "20", "-", "icon-status0"),
+        _trail_row(3, "Loipe C Classical/Skating", "40", "-", ""),
+    )
+    data = parse_cross_country_resort_page(html, lang="en")
+
+    assert data["classical_open_km"] == 10.0
+    assert data["skating_open_km"] == 10.0
     assert data["status"] == "Open"
+
+
+def test_uses_the_groomed_length_not_the_total():
+    """A trail can be open with only part of it prepared."""
+    html = _trail_table(
+        _trail_row(1, "Loipe A Classical/Skating", "12.5", "4.5 km", "icon-status1"),
+    )
+    data = parse_cross_country_resort_page(html, lang="en")
+
+    assert data["classical_open_km"] == 4.5
+
+
+def test_open_trail_without_a_groomed_figure_counts_as_zero():
+    """An explicit "-" means nothing prepared, even on a trail flagged open."""
+    html = _trail_table(
+        _trail_row(1, "Loipe A Classical/Skating", "12.5", "-", "icon-status1"),
+    )
+    data = parse_cross_country_resort_page(html, lang="en")
+
+    assert "classical_open_km" not in data
+    assert data["status"] == "Closed"

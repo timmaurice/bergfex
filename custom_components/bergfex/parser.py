@@ -718,6 +718,30 @@ def parse_resort_page(
     return {k: v for k, v in area_data.items() if v not in ("-", "")}
 
 
+def _parse_open_trail_km(row, len_td) -> float:
+    """Read a trail row's *groomed* length, not its total length.
+
+    The length cell holds both: the total as its own text ("4.5 km") and the
+    currently prepared kilometres in a nested element, shown as "-" when none are.
+    Summing the totals reported every trail in the area as groomed.
+    """
+    open_cell = row.find("td", class_="desktop-only") or len_td.find("div")
+    for cell in (open_cell, len_td):
+        if cell is None:
+            continue
+        match = re.search(r"(\d+(?:[.,]\d+)?)", cell.get_text(" ", strip=True))
+        if match:
+            try:
+                return float(match.group(1).replace(",", "."))
+            except ValueError:
+                pass
+        # Only fall through to the total when the open column is missing entirely;
+        # an explicit "-" means nothing is groomed.
+        if cell is open_cell:
+            return 0.0
+    return 0.0
+
+
 def parse_cross_country_resort_page(html: str, lang: str = "at") -> dict[str, Any]:
     """Parse the HTML of a single cross country skiing page."""
     soup = BeautifulSoup(html, "lxml")
@@ -856,15 +880,12 @@ def parse_cross_country_resort_page(html: str, lang: str = "at") -> dict[str, An
             s_keywords = ["skating", "skate", "scivolare"]
 
             for row in table.find_all("tr"):
-                # Check status: open trails usually have icon-status1 or icon-status2. Closed have icon-status0
-                status_icon = row.find("i", class_=re.compile(r"icon-status[012]"))
-                is_open = True
-                if status_icon:
-                    classes = status_icon.get("class", [])
-                    if "icon-status0" in classes:
-                        is_open = False
-
-                if not is_open:
+                # Trail state is carried by a numeric class suffix: 1 and 2 are
+                # open, 0 is closed, and a bare "icon-status" means bergfex has no
+                # report at all (the "?" marker). Only an explicit open counts -
+                # treating "no report" as open reported a summer trail network as
+                # fully groomed.
+                if not row.select_one(".icon-status1, .icon-status2"):
                     continue
 
                 name_td = row.find("td", class_="loipen-name")
@@ -872,15 +893,7 @@ def parse_cross_country_resort_page(html: str, lang: str = "at") -> dict[str, An
 
                 if name_td and len_td:
                     name_text = name_td.text.lower()
-                    len_text = len_td.text.strip()
-
-                    match = re.search(r"(\d+(?:[\.,]\d+)?)", len_text)
-                    km = 0.0
-                    if match:
-                        try:
-                            km = float(match.group(1).replace(",", "."))
-                        except ValueError:
-                            pass
+                    km = _parse_open_trail_km(row, len_td)
 
                     if any(kw in name_text for kw in c_keywords):
                         c_km += km
