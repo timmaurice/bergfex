@@ -8,14 +8,14 @@ then retire `timmaurice/lovelace-bergfex-card` from HACS and archive the repo.
 - **No live data anywhere.** Even the Hintertux glacier snow report — the year-round
   resort — currently renders **0** `<dt>` elements; the winter fixture `hintertux.html`
   has **20**. bergfex drops the snow-report block off-season.
-- Everything below marked *(offline)* is verifiable today via the 27 HTML fixtures
+- Everything below marked _(offline)_ is verifiable today via the 27 HTML fixtures
   in `custom_components/bergfex/tests/fixtures/` (58 pytest + 33 vitest, all green).
 - **Season anchors:**
-  | Resort | Opening |
-  |---|---|
-  | Hintertuxer Gletscher | partly year-round, regular season mid/late Sept 2026 |
-  | Schnalstaler Gletscher | 18 Sept 2026 |
-  | Pitztaler Gletscher | 26 Sept 2026 |
+  | Resort                 | Opening                                              |
+  | ---------------------- | ---------------------------------------------------- |
+  | Hintertuxer Gletscher  | partly year-round, regular season mid/late Sept 2026 |
+  | Schnalstaler Gletscher | 18 Sept 2026                                         |
+  | Pitztaler Gletscher    | 26 Sept 2026                                         |
 - **Repos:** integration `timmaurice/bergfex` (19★, latest release 2.3.1),
   card `timmaurice/lovelace-bergfex-card` (10★, latest release 2.2.1; the local clone's
   remote `bergfex-card` is a rename redirect). HACS default lists the card at
@@ -38,7 +38,7 @@ then retire `timmaurice/lovelace-bergfex-card` from HACS and archive the repo.
       Both bundles use `@customElement(ELEMENT_NAME)` → `bergfex-card`
       (`frontend/src/bergfex-card.ts:63`, plus `bergfex-card-editor` in `editor.ts:39`).
       The second `customElements.define` throws at module scope, killing whichever
-      copy loads second — card *and* editor. Wrap in a `customElements.get(...)` check
+      copy loads second — card _and_ editor. Wrap in a `customElements.get(...)` check
       so a leftover HACS copy degrades instead of exploding.
 - [ ] **B3 — Decide the migration UX.** Options: silent cleanup (B1), a repair issue
       telling the user to uninstall the HACS card, or both. Recommend B1 + repair issue.
@@ -46,7 +46,7 @@ then retire `timmaurice/lovelace-bergfex-card` from HACS and archive the repo.
       `../bergfex-card/src/` (card 2.2.1, last commit `fb516f7` "classical and skating
       trails detection") and confirm nothing was left behind in the move.
 
-### Release hygiene *(offline)*
+### Release hygiene _(offline)_
 
 - [ ] Clean up stale releases on `timmaurice/bergfex`: draft `2.4.0b3`, pre-releases
       `2.4.0b2` / `2.4.0b1`. Either delete or fold their notes into 3.0.0.
@@ -59,14 +59,14 @@ then retire `timmaurice/lovelace-bergfex-card` from HACS and archive the repo.
       "migrating from lovelace-bergfex-card" section.
 - [ ] Update `GEMINI.md` to describe the merged repo layout.
 
-### Quality *(offline)*
+### Quality _(offline)_
 
 - [ ] Card: fixture-driven visual states — loading, off-season, missing sensor,
       partial data, cross-country.
 - [ ] Add a regression test for the `_getResorts()` null-guard.
 - [ ] Test the "both card versions installed" path once B1/B2 land.
 - [ ] **Fixture-refresh canary:** a check that flags when a live bergfex page yields
-      0 `<dt>` elements *during* the season — today off-season emptiness and a site
+      0 `<dt>` elements _during_ the season — today off-season emptiness and a site
       redesign are indistinguishable, so a summer restructure would only surface in November.
 
 ---
@@ -95,24 +95,22 @@ then retire `timmaurice/lovelace-bergfex-card` from HACS and archive the repo.
 
 ## Phase 3 — Retire the card (mid/late Oct, gated on Phase 2)
 
-**Order matters — remove from HACS default *before* archiving,** or hacs/default CI
+**Order matters — remove from HACS default _before_ archiving,** or hacs/default CI
 will flag the archived repo.
 
 - [ ] Final `2.2.2` release on `lovelace-bergfex-card`: deprecation notice only.
 - [ ] README banner pointing at `timmaurice/bergfex`.
-- [ ] PR to `hacs/default`:
-      - remove `"timmaurice/lovelace-bergfex-card"` from `plugin` (line 690)
-      - add to `removed`:
-        ```json
-        {
-          "repository": "timmaurice/lovelace-bergfex-card",
-          "reason": "Card is now bundled with the Bergfex Snow Report integration",
-          "removal_type": "replaced",
-          "link": "https://github.com/timmaurice/bergfex"
-        }
-        ```
-        (`replaced` is the established type for this case — see `Bre77/myair`,
-        `mattieha/slider-button-card`.)
+- [ ] PR to `hacs/default`: - remove `"timmaurice/lovelace-bergfex-card"` from `plugin` (line 690) - add to `removed`:
+      `json
+{
+"repository": "timmaurice/lovelace-bergfex-card",
+"reason": "Card is now bundled with the Bergfex Snow Report integration",
+"removal_type": "replaced",
+"link": "https://github.com/timmaurice/bergfex"
+}
+`
+      (`replaced` is the established type for this case — see `Bre77/myair`,
+      `mattieha/slider-button-card`.)
 - [ ] Wait for merge.
 - [ ] Then archive `timmaurice/lovelace-bergfex-card`.
 - [ ] Repoint any `documentation` / `issue_tracker` links that still reference the card repo.
