@@ -143,13 +143,13 @@ class wt extends yt{}wt.directiveName="unsafeSVG",wt.resultType=2;const $t=gt(wt
                                     <span class="custom-icon fill">${$t(Ct)}</span>
                                     <div class="detail-item-value">
                                       ${S&&!isNaN(parseFloat(S.state))?(()=>{const t=parseFloat(S.state),e=S.attributes.unit_of_measurement??"km",s=P?parseFloat(String(P)):NaN;return isNaN(s)?W`<div class="value-row">
-                                              <span>${S.state} ${e}</span>
-                                              ${this._renderTrend(S.entity_id,S.state)}
-                                            </div>`:W`<div class="value-row">
-                                                  <span>${t}/${s} ${e}</span>
-                                                  ${this._renderTrend(S.entity_id,S.state)}
-                                                </div>
-                                                ${this._renderProgressBar(t,s)}`})():W`<span>N/A</span>`}
+                                                <span>${S.state} ${e}</span>
+                                                ${this._renderTrend(S.entity_id,S.state)}
+                                              </div>`:W`<div class="value-row">
+                                                    <span>${t}/${s} ${e}</span>
+                                                    ${this._renderTrend(S.entity_id,S.state)}
+                                                  </div>
+                                                  ${this._renderProgressBar(t,s)}`})():W`<span>N/A</span>`}
                                       <span class="detail-item-label"
                                         >${xt(this.hass,"component.bergfex-card.card.header.classical_trails")}</span
                                       >
@@ -164,13 +164,13 @@ class wt extends yt{}wt.directiveName="unsafeSVG",wt.resultType=2;const $t=gt(wt
                                     <span class="custom-icon fill">${$t(Et)}</span>
                                     <div class="detail-item-value">
                                       ${A&&!isNaN(parseFloat(A.state))?(()=>{const t=parseFloat(A.state),e=A.attributes.unit_of_measurement??"km",s=T?parseFloat(String(T)):NaN;return isNaN(s)?W`<div class="value-row">
-                                              <span>${A.state} ${e}</span>
-                                              ${this._renderTrend(A.entity_id,A.state)}
-                                            </div>`:W`<div class="value-row">
-                                                  <span>${t}/${s} ${e}</span>
-                                                  ${this._renderTrend(A.entity_id,A.state)}
-                                                </div>
-                                                ${this._renderProgressBar(t,s)}`})():W`<span>N/A</span>`}
+                                                <span>${A.state} ${e}</span>
+                                                ${this._renderTrend(A.entity_id,A.state)}
+                                              </div>`:W`<div class="value-row">
+                                                    <span>${t}/${s} ${e}</span>
+                                                    ${this._renderTrend(A.entity_id,A.state)}
+                                                  </div>
+                                                  ${this._renderProgressBar(t,s)}`})():W`<span>N/A</span>`}
                                       <span class="detail-item-label"
                                         >${xt(this.hass,"component.bergfex-card.card.header.skating_trails")}</span
                                       >
@@ -186,13 +186,13 @@ class wt extends yt{}wt.directiveName="unsafeSVG",wt.resultType=2;const $t=gt(wt
                                     <ha-icon icon="mdi:gondola"></ha-icon>
                                     <div class="detail-item-value">
                                       ${g&&!isNaN(parseFloat(g.state))?(()=>{const t=parseFloat(g.state),e=M?parseFloat(String(M)):NaN;return isNaN(e)?W`<div class="value-row">
-                                              <span>${g.state}</span>
-                                              ${this._renderTrend(g.entity_id,g.state)}
-                                            </div>`:W`<div class="value-row">
-                                                  <span>${t}/${e}</span>
-                                                  ${this._renderTrend(g.entity_id,g.state)}
-                                                </div>
-                                                ${this._renderProgressBar(t,e)}`})():W`<span>N/A</span>`}
+                                                <span>${g.state}</span>
+                                                ${this._renderTrend(g.entity_id,g.state)}
+                                              </div>`:W`<div class="value-row">
+                                                    <span>${t}/${e}</span>
+                                                    ${this._renderTrend(g.entity_id,g.state)}
+                                                  </div>
+                                                  ${this._renderProgressBar(t,e)}`})():W`<span>N/A</span>`}
                                       <span class="detail-item-label"
                                         >${xt(this.hass,"component.bergfex-card.card.lifts_open")}</span
                                       >
@@ -201,66 +201,66 @@ class wt extends yt{}wt.directiveName="unsafeSVG",wt.resultType=2;const $t=gt(wt
                                 `:""}
                           ${this._config.show_lifts_slopes&&(b||x)?W`
                                   ${b?W`
-                                        <div
-                                          class=${vt({"detail-item":!0,"n-a":!b||isNaN(parseFloat(b.state))})}
-                                          @click=${t=>{t.stopPropagation(),b&&this._handleMoreInfo(b.entity_id)}}
-                                        >
-                                          <span class="custom-icon stroke">
-                                            <ha-icon icon="mdi:slope-downhill"></ha-icon>
-                                          </span>
-                                          <div class="detail-item-value">
-                                            ${b&&!isNaN(parseFloat(b.state))?(()=>{const t=parseFloat(b.state),e=O?parseFloat(String(O)):NaN,s=b.attributes.unit_of_measurement??"km";return isNaN(e)?W`<div class="value-row">
-                                                    <span>${b.state} ${s}</span>
-                                                    ${this._renderTrend(b.entity_id,b.state)}
-                                                  </div>`:W`<div class="value-row">
-                                                        <span>${t}/${e} ${s}</span>
-                                                        ${this._renderTrend(b.entity_id,b.state)}
-                                                      </div>
-                                                      ${this._renderProgressBar(t,e)}`})():W`<span>N/A</span>`}
-                                            <span class="detail-item-label"
-                                              >${xt(this.hass,"component.bergfex-card.card.header.slopes_info_km")}</span
-                                            >
-                                          </div>
-                                        </div>
-                                      `:""}
-                                  ${x&&z?W`
-                                        <div
-                                          class=${vt({"detail-item":!0,"n-a":!x||isNaN(parseFloat(x.state))||isNaN(parseFloat(String(z??NaN)))})}
-                                          @click=${t=>{t.stopPropagation(),x&&this._handleMoreInfo(x.entity_id)}}
-                                        >
-                                          <ha-icon icon="mdi:counter"></ha-icon>
-                                          <div class="detail-item-value">
-                                            ${x&&!isNaN(parseFloat(x.state))?(()=>{const t=parseFloat(x.state),e=z?parseFloat(String(z)):NaN;return isNaN(e)?W`<div class="value-row">
-                                                    <span>${x.state}</span>
-                                                    ${this._renderTrend(x.entity_id,x.state)}
-                                                  </div>`:W`<div class="value-row">
-                                                        <span>${t}/${e}</span>
-                                                        ${this._renderTrend(x.entity_id,x.state)}
-                                                      </div>
-                                                      ${this._renderProgressBar(t,e)}`})():W`<span>N/A</span>`}
-                                            <span class="detail-item-label"
-                                              >${xt(this.hass,"component.bergfex-card.card.header.slopes_info")}
-                                              (${xt(this.hass,"component.bergfex-card.card.header.slopes_total")})</span
-                                            >
-                                          </div>
-                                        </div>
-                                      `:x?W`
                                           <div
-                                            class=${vt({"detail-item":!0,"n-a":!x||isNaN(parseFloat(x.state))})}
-                                            @click=${t=>{t.stopPropagation(),x&&this._handleMoreInfo(x.entity_id)}}
+                                            class=${vt({"detail-item":!0,"n-a":!b||isNaN(parseFloat(b.state))})}
+                                            @click=${t=>{t.stopPropagation(),b&&this._handleMoreInfo(b.entity_id)}}
                                           >
-                                            <ha-icon icon="mdi:counter"></ha-icon>
+                                            <span class="custom-icon stroke">
+                                              <ha-icon icon="mdi:slope-downhill"></ha-icon>
+                                            </span>
                                             <div class="detail-item-value">
-                                              ${x&&!isNaN(parseFloat(x.state))?W`<div class="value-row">
-                                                    <span>${x.state}</span>
-                                                    ${this._renderTrend(x.entity_id,x.state)}
-                                                  </div>`:W`<span>N/A</span>`}
+                                              ${b&&!isNaN(parseFloat(b.state))?(()=>{const t=parseFloat(b.state),e=O?parseFloat(String(O)):NaN,s=b.attributes.unit_of_measurement??"km";return isNaN(e)?W`<div class="value-row">
+                                                        <span>${b.state} ${s}</span>
+                                                        ${this._renderTrend(b.entity_id,b.state)}
+                                                      </div>`:W`<div class="value-row">
+                                                            <span>${t}/${e} ${s}</span>
+                                                            ${this._renderTrend(b.entity_id,b.state)}
+                                                          </div>
+                                                          ${this._renderProgressBar(t,e)}`})():W`<span>N/A</span>`}
                                               <span class="detail-item-label"
-                                                >${xt(this.hass,"component.bergfex-card.card.header.slopes_info")}</span
+                                                >${xt(this.hass,"component.bergfex-card.card.header.slopes_info_km")}</span
                                               >
                                             </div>
                                           </div>
                                         `:""}
+                                  ${x&&z?W`
+                                          <div
+                                            class=${vt({"detail-item":!0,"n-a":!x||isNaN(parseFloat(x.state))||isNaN(parseFloat(String(z??NaN)))})}
+                                            @click=${t=>{t.stopPropagation(),x&&this._handleMoreInfo(x.entity_id)}}
+                                          >
+                                            <ha-icon icon="mdi:counter"></ha-icon>
+                                            <div class="detail-item-value">
+                                              ${x&&!isNaN(parseFloat(x.state))?(()=>{const t=parseFloat(x.state),e=z?parseFloat(String(z)):NaN;return isNaN(e)?W`<div class="value-row">
+                                                        <span>${x.state}</span>
+                                                        ${this._renderTrend(x.entity_id,x.state)}
+                                                      </div>`:W`<div class="value-row">
+                                                            <span>${t}/${e}</span>
+                                                            ${this._renderTrend(x.entity_id,x.state)}
+                                                          </div>
+                                                          ${this._renderProgressBar(t,e)}`})():W`<span>N/A</span>`}
+                                              <span class="detail-item-label"
+                                                >${xt(this.hass,"component.bergfex-card.card.header.slopes_info")}
+                                                (${xt(this.hass,"component.bergfex-card.card.header.slopes_total")})</span
+                                              >
+                                            </div>
+                                          </div>
+                                        `:x?W`
+                                            <div
+                                              class=${vt({"detail-item":!0,"n-a":!x||isNaN(parseFloat(x.state))})}
+                                              @click=${t=>{t.stopPropagation(),x&&this._handleMoreInfo(x.entity_id)}}
+                                            >
+                                              <ha-icon icon="mdi:counter"></ha-icon>
+                                              <div class="detail-item-value">
+                                                ${x&&!isNaN(parseFloat(x.state))?W`<div class="value-row">
+                                                        <span>${x.state}</span>
+                                                        ${this._renderTrend(x.entity_id,x.state)}
+                                                      </div>`:W`<span>N/A</span>`}
+                                                <span class="detail-item-label"
+                                                  >${xt(this.hass,"component.bergfex-card.card.header.slopes_info")}</span
+                                                >
+                                              </div>
+                                            </div>
+                                          `:""}
                                 `:""}
                         `}
                 </div>
@@ -277,111 +277,111 @@ class wt extends yt{}wt.directiveName="unsafeSVG",wt.resultType=2;const $t=gt(wt
                           ${j?W`
                                   <div class="accordion-content details">
                                     ${this._config.show_conditions&&(v||y)&&!E?W`
-                                          ${v?W`
-                                                <div
-                                                  class=${vt({"detail-item":!0,"n-a":this._isNA(v.state)})}
-                                                  @click=${t=>{t.stopPropagation(),v&&this._handleMoreInfo(v.entity_id)}}
-                                                >
-                                                  <ha-icon icon="mdi:weather-snowy"></ha-icon>
-                                                  <div class="detail-item-value">
-                                                    <span>${v.state}</span>
-                                                    <span class="detail-item-label"
-                                                      >${xt(this.hass,"component.bergfex-card.card.header.snow_condition")}</span
+                                            ${v?W`
+                                                    <div
+                                                      class=${vt({"detail-item":!0,"n-a":this._isNA(v.state)})}
+                                                      @click=${t=>{t.stopPropagation(),v&&this._handleMoreInfo(v.entity_id)}}
                                                     >
-                                                  </div>
-                                                </div>
-                                              `:""}
-                                          ${y?W`
-                                                <div
-                                                  class=${vt({"detail-item":!0,"n-a":this._isNA(y.state)})}
-                                                  @click=${t=>{t.stopPropagation(),y&&this._handleMoreInfo(y.entity_id)}}
-                                                >
-                                                  <ha-icon icon="mdi:ski"></ha-icon>
-                                                  <div class="detail-item-value">
-                                                    <span>${y.state}</span>
-                                                    <span class="detail-item-label"
-                                                      >${xt(this.hass,"component.bergfex-card.card.header.slope_condition")}</span
+                                                      <ha-icon icon="mdi:weather-snowy"></ha-icon>
+                                                      <div class="detail-item-value">
+                                                        <span>${v.state}</span>
+                                                        <span class="detail-item-label"
+                                                          >${xt(this.hass,"component.bergfex-card.card.header.snow_condition")}</span
+                                                        >
+                                                      </div>
+                                                    </div>
+                                                  `:""}
+                                            ${y?W`
+                                                    <div
+                                                      class=${vt({"detail-item":!0,"n-a":this._isNA(y.state)})}
+                                                      @click=${t=>{t.stopPropagation(),y&&this._handleMoreInfo(y.entity_id)}}
                                                     >
-                                                  </div>
-                                                </div>
-                                              `:""}
-                                        `:""}
+                                                      <ha-icon icon="mdi:ski"></ha-icon>
+                                                      <div class="detail-item-value">
+                                                        <span>${y.state}</span>
+                                                        <span class="detail-item-label"
+                                                          >${xt(this.hass,"component.bergfex-card.card.header.slope_condition")}</span
+                                                        >
+                                                      </div>
+                                                    </div>
+                                                  `:""}
+                                          `:""}
                                     ${this._config.show_conditions&&$&&!E?W`
-                                          <div
-                                            class=${vt({"detail-item":!0,"n-a":this._isNA($.state)})}
-                                            @click=${t=>{t.stopPropagation(),$&&this._handleMoreInfo($.entity_id)}}
-                                          >
-                                            <ha-icon icon="mdi:alert"></ha-icon>
-                                            <div class="detail-item-value">
-                                              <span>${$.state}</span>
-                                              <span class="detail-item-label"
-                                                >${xt(this.hass,"component.bergfex-card.card.header.avalanche_warning")}</span
-                                              >
+                                            <div
+                                              class=${vt({"detail-item":!0,"n-a":this._isNA($.state)})}
+                                              @click=${t=>{t.stopPropagation(),$&&this._handleMoreInfo($.entity_id)}}
+                                            >
+                                              <ha-icon icon="mdi:alert"></ha-icon>
+                                              <div class="detail-item-value">
+                                                <span>${$.state}</span>
+                                                <span class="detail-item-label"
+                                                  >${xt(this.hass,"component.bergfex-card.card.header.avalanche_warning")}</span
+                                                >
+                                              </div>
                                             </div>
-                                          </div>
-                                        `:""}
+                                          `:""}
                                     ${this._config.show_conditions&&(N||C)?W`
-                                          ${N?W`
-                                                <div
-                                                  class=${vt({"detail-item":!0,"n-a":this._isNA(N.state)})}
-                                                  @click=${t=>{t.stopPropagation(),N&&this._handleMoreInfo(N.entity_id)}}
-                                                >
-                                                  <span class="custom-icon fill"
-                                                    >${$t(Ct)}</span
-                                                  >
-                                                  <div class="detail-item-value">
-                                                    <span>${N.state}</span>
-                                                    <span class="detail-item-label"
-                                                      >${xt(this.hass,"component.bergfex-card.card.header.classical_condition")}</span
+                                            ${N?W`
+                                                    <div
+                                                      class=${vt({"detail-item":!0,"n-a":this._isNA(N.state)})}
+                                                      @click=${t=>{t.stopPropagation(),N&&this._handleMoreInfo(N.entity_id)}}
                                                     >
-                                                  </div>
-                                                </div>
-                                              `:""}
-                                          ${C?W`
-                                                <div
-                                                  class=${vt({"detail-item":!0,"n-a":this._isNA(C.state)})}
-                                                  @click=${t=>{t.stopPropagation(),C&&this._handleMoreInfo(C.entity_id)}}
-                                                >
-                                                  <span class="custom-icon fill"
-                                                    >${$t(Et)}</span
-                                                  >
-                                                  <div class="detail-item-value">
-                                                    <span>${C.state}</span>
-                                                    <span class="detail-item-label"
-                                                      >${xt(this.hass,"component.bergfex-card.card.header.skating_condition")}</span
+                                                      <span class="custom-icon fill"
+                                                        >${$t(Ct)}</span
+                                                      >
+                                                      <div class="detail-item-value">
+                                                        <span>${N.state}</span>
+                                                        <span class="detail-item-label"
+                                                          >${xt(this.hass,"component.bergfex-card.card.header.classical_condition")}</span
+                                                        >
+                                                      </div>
+                                                    </div>
+                                                  `:""}
+                                            ${C?W`
+                                                    <div
+                                                      class=${vt({"detail-item":!0,"n-a":this._isNA(C.state)})}
+                                                      @click=${t=>{t.stopPropagation(),C&&this._handleMoreInfo(C.entity_id)}}
                                                     >
-                                                  </div>
-                                                </div>
-                                              `:""}
-                                        `:""}
+                                                      <span class="custom-icon fill"
+                                                        >${$t(Et)}</span
+                                                      >
+                                                      <div class="detail-item-value">
+                                                        <span>${C.state}</span>
+                                                        <span class="detail-item-label"
+                                                          >${xt(this.hass,"component.bergfex-card.card.header.skating_condition")}</span
+                                                        >
+                                                      </div>
+                                                    </div>
+                                                  `:""}
+                                          `:""}
                                     ${w?W`
-                                          <div
-                                            class=${vt({"detail-item":!0,"n-a":this._isNA(w.state)})}
-                                            @click=${t=>{t.stopPropagation(),this._handleMoreInfo(w.entity_id)}}
-                                          >
-                                            <ha-icon icon="mdi:calendar-clock"></ha-icon>
-                                            <div class="detail-item-value">
-                                              <span>${w.state}</span>
-                                              <span class="detail-item-label"
-                                                >${xt(this.hass,"component.bergfex-card.card.header.last_snowfall")}</span
-                                              >
+                                            <div
+                                              class=${vt({"detail-item":!0,"n-a":this._isNA(w.state)})}
+                                              @click=${t=>{t.stopPropagation(),this._handleMoreInfo(w.entity_id)}}
+                                            >
+                                              <ha-icon icon="mdi:calendar-clock"></ha-icon>
+                                              <div class="detail-item-value">
+                                                <span>${w.state}</span>
+                                                <span class="detail-item-label"
+                                                  >${xt(this.hass,"component.bergfex-card.card.header.last_snowfall")}</span
+                                                >
+                                              </div>
                                             </div>
-                                          </div>
-                                        `:""}
+                                          `:""}
                                     ${this._config.show_conditions&&n?W`
-                                          <div
-                                            class=${vt({"detail-item":!0,"n-a":this._isNA(n.state)})}
-                                            @click=${t=>{t.stopPropagation(),n&&this._handleMoreInfo(n.entity_id)}}
-                                          >
-                                            <ha-icon icon="mdi:information-outline"></ha-icon>
-                                            <div class="detail-item-value">
-                                              <span>${n.state}</span>
-                                              <span class="detail-item-label"
-                                                >${xt(this.hass,"component.bergfex-card.card.header.operation_status")}</span
-                                              >
+                                            <div
+                                              class=${vt({"detail-item":!0,"n-a":this._isNA(n.state)})}
+                                              @click=${t=>{t.stopPropagation(),n&&this._handleMoreInfo(n.entity_id)}}
+                                            >
+                                              <ha-icon icon="mdi:information-outline"></ha-icon>
+                                              <div class="detail-item-value">
+                                                <span>${n.state}</span>
+                                                <span class="detail-item-label"
+                                                  >${xt(this.hass,"component.bergfex-card.card.header.operation_status")}</span
+                                                >
+                                              </div>
                                             </div>
-                                          </div>
-                                        `:""}
+                                          `:""}
                                   </div>
                                 `:""}
                         </div>
@@ -420,12 +420,12 @@ class wt extends yt{}wt.directiveName="unsafeSVG",wt.resultType=2;const $t=gt(wt
                                   ${(()=>{const s=this._forecastState[t]?.tab||"daily",i="daily"===s?e.forecast_days:e.forecast_summaries,o=this._forecastState[t]?.index||0;if(!i||0===i.length)return W``;const n=i[o],a=this.hass.states[n],r=a?.attributes.entity_picture;let l;if("daily"===s){const t=n.match(/day_(\d+)/),e=t?parseInt(t[1],10):o;l=this._formatForecastDate(e)}else{const t=n.match(/summary_image_(\d+)h/),e=t?t[1]:"";l=xt(this.hass,"component.bergfex-card.card.forecast.hour",{hours:e})}return W`
                                       <div class="forecast-image-container">
                                         ${r?W`<img
-                                              src="${r}"
-                                              class="forecast-image"
-                                              alt="${l}"
-                                              @click=${t=>{t.stopPropagation(),this._handleMoreInfo(n)}}
-                                              style="cursor: pointer;"
-                                            />`:W`<span>Image not available</span>`}
+                                                src="${r}"
+                                                class="forecast-image"
+                                                alt="${l}"
+                                                @click=${t=>{t.stopPropagation(),this._handleMoreInfo(n)}}
+                                                style="cursor: pointer;"
+                                              />`:W`<span>Image not available</span>`}
                                       </div>
                                       <div class="carousel-controls">
                                         <button

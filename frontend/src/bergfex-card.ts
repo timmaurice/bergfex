@@ -901,18 +901,18 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                                                         return html`<div class="value-row">
                                                             <span>${openVal}/${totalVal}</span>
                                                             ${this._renderTrend(
-                                                            slopes_open_entity.entity_id,
-                                                            slopes_open_entity.state,
-                                                          )}
+                                                              slopes_open_entity.entity_id,
+                                                              slopes_open_entity.state,
+                                                            )}
                                                           </div>
                                                           ${this._renderProgressBar(openVal, totalVal)}`;
                                                       }
                                                       return html`<div class="value-row">
                                                         <span>${slopes_open_entity.state}</span>
                                                         ${this._renderTrend(
-                                                        slopes_open_entity.entity_id,
-                                                        slopes_open_entity.state,
-                                                      )}
+                                                          slopes_open_entity.entity_id,
+                                                          slopes_open_entity.state,
+                                                        )}
                                                       </div>`;
                                                     })()
                                                   : html`<span>N/A</span>`
@@ -949,9 +949,9 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                                                     ? html`<div class="value-row">
                                                         <span>${slopes_open_entity.state}</span>
                                                         ${this._renderTrend(
-                                                        slopes_open_entity.entity_id,
-                                                        slopes_open_entity.state,
-                                                      )}
+                                                          slopes_open_entity.entity_id,
+                                                          slopes_open_entity.state,
+                                                        )}
                                                       </div>`
                                                     : html`<span>N/A</span>`
                                                 }
@@ -1005,24 +1005,24 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                                                 ? html`
                                                     <div
                                                       class=${classMap({
-                                                      'detail-item': true,
-                                                      'n-a': this._isNA(snow_condition.state),
-                                                    })}
+                                                        'detail-item': true,
+                                                        'n-a': this._isNA(snow_condition.state),
+                                                      })}
                                                       @click=${(e: Event) => {
-                                                      e.stopPropagation();
-                                                      if (snow_condition) {
-                                                        this._handleMoreInfo(snow_condition.entity_id);
-                                                      }
-                                                    }}
+                                                        e.stopPropagation();
+                                                        if (snow_condition) {
+                                                          this._handleMoreInfo(snow_condition.entity_id);
+                                                        }
+                                                      }}
                                                     >
                                                       <ha-icon icon="mdi:weather-snowy"></ha-icon>
                                                       <div class="detail-item-value">
                                                         <span>${snow_condition.state}</span>
                                                         <span class="detail-item-label"
                                                           >${localize(
-                                                          this.hass,
-                                                          'component.bergfex-card.card.header.snow_condition',
-                                                        )}</span
+                                                            this.hass,
+                                                            'component.bergfex-card.card.header.snow_condition',
+                                                          )}</span
                                                         >
                                                       </div>
                                                     </div>
@@ -1034,24 +1034,24 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                                                 ? html`
                                                     <div
                                                       class=${classMap({
-                                                      'detail-item': true,
-                                                      'n-a': this._isNA(slope_condition.state),
-                                                    })}
+                                                        'detail-item': true,
+                                                        'n-a': this._isNA(slope_condition.state),
+                                                      })}
                                                       @click=${(e: Event) => {
-                                                      e.stopPropagation();
-                                                      if (slope_condition) {
-                                                        this._handleMoreInfo(slope_condition.entity_id);
-                                                      }
-                                                    }}
+                                                        e.stopPropagation();
+                                                        if (slope_condition) {
+                                                          this._handleMoreInfo(slope_condition.entity_id);
+                                                        }
+                                                      }}
                                                     >
                                                       <ha-icon icon="mdi:ski"></ha-icon>
                                                       <div class="detail-item-value">
                                                         <span>${slope_condition.state}</span>
                                                         <span class="detail-item-label"
                                                           >${localize(
-                                                          this.hass,
-                                                          'component.bergfex-card.card.header.slope_condition',
-                                                        )}</span
+                                                            this.hass,
+                                                            'component.bergfex-card.card.header.slope_condition',
+                                                          )}</span
                                                         >
                                                       </div>
                                                     </div>
@@ -1098,15 +1098,15 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                                                 ? html`
                                                     <div
                                                       class=${classMap({
-                                                      'detail-item': true,
-                                                      'n-a': this._isNA(classical_condition.state),
-                                                    })}
+                                                        'detail-item': true,
+                                                        'n-a': this._isNA(classical_condition.state),
+                                                      })}
                                                       @click=${(e: Event) => {
-                                                      e.stopPropagation();
-                                                      if (classical_condition) {
-                                                        this._handleMoreInfo(classical_condition.entity_id);
-                                                      }
-                                                    }}
+                                                        e.stopPropagation();
+                                                        if (classical_condition) {
+                                                          this._handleMoreInfo(classical_condition.entity_id);
+                                                        }
+                                                      }}
                                                     >
                                                       <span class="custom-icon fill"
                                                         >${unsafeSVG(classicCrossCountryIcon)}</span
@@ -1115,9 +1115,9 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                                                         <span>${classical_condition.state}</span>
                                                         <span class="detail-item-label"
                                                           >${localize(
-                                                          this.hass,
-                                                          'component.bergfex-card.card.header.classical_condition',
-                                                        )}</span
+                                                            this.hass,
+                                                            'component.bergfex-card.card.header.classical_condition',
+                                                          )}</span
                                                         >
                                                       </div>
                                                     </div>
@@ -1129,15 +1129,15 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                                                 ? html`
                                                     <div
                                                       class=${classMap({
-                                                      'detail-item': true,
-                                                      'n-a': this._isNA(skating_condition.state),
-                                                    })}
+                                                        'detail-item': true,
+                                                        'n-a': this._isNA(skating_condition.state),
+                                                      })}
                                                       @click=${(e: Event) => {
-                                                      e.stopPropagation();
-                                                      if (skating_condition) {
-                                                        this._handleMoreInfo(skating_condition.entity_id);
-                                                      }
-                                                    }}
+                                                        e.stopPropagation();
+                                                        if (skating_condition) {
+                                                          this._handleMoreInfo(skating_condition.entity_id);
+                                                        }
+                                                      }}
                                                     >
                                                       <span class="custom-icon fill"
                                                         >${unsafeSVG(skatingCrossCountryIcon)}</span
@@ -1146,9 +1146,9 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                                                         <span>${skating_condition.state}</span>
                                                         <span class="detail-item-label"
                                                           >${localize(
-                                                          this.hass,
-                                                          'component.bergfex-card.card.header.skating_condition',
-                                                        )}</span
+                                                            this.hass,
+                                                            'component.bergfex-card.card.header.skating_condition',
+                                                          )}</span
                                                         >
                                                       </div>
                                                     </div>
