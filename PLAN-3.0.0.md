@@ -70,8 +70,6 @@ then retire `timmaurice/lovelace-bergfex-card` from HACS and archive the repo.
       so the bundle can never ship stale.
 - [x] README rewrite: one-install story, card config reference, explicit
       "migrating from lovelace-bergfex-card" section.
-- [ ] Document the merged repo layout for contributors. The local AI context file is
-      now `CLAUDE.md` and gitignored, so this needs a home in the README instead.
 
 ### Quality _(offline)_
 
@@ -91,6 +89,17 @@ then retire `timmaurice/lovelace-bergfex-card` from HACS and archive the repo.
 - [ ] Card: cover the two remaining degraded states, which are pure test work. - **loading** — `hass` is set but the coordinator has not delivered yet.
       Nothing asserts what the card renders in that window. - **partial data** — some sensors carry values while others are `unknown`,
       within the same resort row. Only covered field by field, never as a row.
+- [x] Parse the winter season. bergfex publishes winter and summer operating periods
+      side by side, keyed by an Alpine.js `x-show` expression that is identical in
+      every language. Exposed as `winter_season_*` / `summer_season_*` attributes on
+      the status sensor, fetched once per resort per restart and cached.
+- [ ] **Fix the status semantics.** `season_start` / `season_end` follow whichever
+      period bergfex currently displays, which in summer is the hiking season, and
+      the status logic uses them. Today the test instance reports Warth, Feldberg and
+      Serfaus as **Open** on 30 August, because their summer operation is running.
+      For a snow-report card that is wrong. The winter dates now make the fix
+      possible; the semantics change needs a decision, since it moves every user's
+      status sensor.
 - [ ] **Decide what the card should look like off-season.** This is a design call,
       not a test, and it blocks writing the test.
       Right now every snow field renders `N/A`: `airolo` shows six of six. That is
@@ -133,6 +142,14 @@ then retire `timmaurice/lovelace-bergfex-card` from HACS and archive the repo.
 - [ ] Fix whatever the season's markup broke.
 - [ ] Full end-to-end in the `ha-bergfex-test` docker instance (port 8124) with a
       real, populated resort — the first honest visual verification since spring.
+
+---
+
+## Not blocking the release
+
+- [ ] Document the merged repo layout for contributors, in its own `CONTRIBUTING.md`
+      rather than the README. The local AI context file is now `CLAUDE.md` and
+      gitignored, so it no longer serves that purpose.
 
 ---
 

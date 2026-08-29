@@ -341,6 +341,17 @@ class BergfexSensor(SensorEntity):
                     attrs["season_start"] = area_data["season_start"]
                 if "season_end" in area_data:
                     attrs["season_end"] = area_data["season_end"]
+                # Winter dates are exposed separately because season_start/_end
+                # follow whichever period bergfex currently shows, which in summer
+                # is the hiking season.
+                for key in (
+                    "winter_season_start",
+                    "winter_season_end",
+                    "summer_season_start",
+                    "summer_season_end",
+                ):
+                    if key in area_data:
+                        attrs[key] = area_data[key]
                 if "operation_status" in area_data:
                     attrs["operation_status"] = area_data["operation_status"]
                 if "operating_hours_start" in area_data:

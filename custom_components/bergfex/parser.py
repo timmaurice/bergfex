@@ -244,6 +244,44 @@ def get_text_from_dd(soup: BeautifulSoup, text: str) -> str | None:
     return None
 
 
+_SEASON_RANGE_RE = re.compile(
+    r"(\d{1,2}[./]\d{1,2}[./]\d{4})\s*[-–—]\s*(\d{1,2}[./]\d{1,2}[./]\d{4})"
+)
+
+
+def _parse_operating_period(soup: BeautifulSoup, tab: str) -> dict[str, Any]:
+    """Read one tab of the "Betriebszeiten" panel.
+
+    bergfex publishes the winter and summer operating periods side by side, each in
+    a block toggled by an Alpine.js expression. The expression is identical in every
+    language, unlike the visible labels ("Saison" / "Season" / "Saison"), so it is
+    the reliable way in.
+
+    Only the main resort page carries this panel; subpages return an empty dict.
+    """
+    block = soup.find("div", attrs={"x-show": f"tab == '{tab}'"})
+    if not block:
+        return {}
+
+    match = _SEASON_RANGE_RE.search(block.get_text(" ", strip=True))
+    if not match:
+        return {}
+
+    period = {}
+    for name, raw in (("start", match.group(1)), ("end", match.group(2))):
+        for fmt in ("%d.%m.%Y", "%d/%m/%Y"):
+            try:
+                period[name] = datetime.strptime(raw, fmt).date()
+                break
+            except ValueError:
+                continue
+
+    if "start" not in period or "end" not in period:
+        _LOGGER.debug("Failed to parse %s season dates: %s", tab, match.group(0))
+        return {}
+    return period
+
+
 def parse_resort_page(
     html: str, area_path: str | None = None, lang: str = "at"
 ) -> dict[str, Any]:
@@ -434,6 +472,19 @@ def parse_resort_page(
                     continue
             else:
                 _LOGGER.debug("Failed to parse season dates: %s", season_text)
+
+    # Winter season, read from the operating-hours panel rather than the headline
+    # "Saison" field. In summer that headline carries the *summer* period, so a ski
+    # resort reads as in-season in August.
+    winter = _parse_operating_period(soup, "winter")
+    if winter:
+        area_data["winter_season_start"] = winter["start"]
+        area_data["winter_season_end"] = winter["end"]
+
+    summer = _parse_operating_period(soup, "summer")
+    if summer:
+        area_data["summer_season_start"] = summer["start"]
+        area_data["summer_season_end"] = summer["end"]
 
     # Operating Hours (Betrieb)
     op_hours_kw = keywords.get("operating_hours", "Betrieb")

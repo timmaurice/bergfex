@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from typing import Any
 from datetime import timedelta, datetime
 from urllib.parse import urljoin, urlparse
 
@@ -44,6 +45,18 @@ from .parser import (
 
 PLATFORMS = ["sensor", "image"]
 _LOGGER = logging.getLogger(__name__)
+
+# Winter and summer operating periods live only on a resort's main page, and they
+# change at most once a season. Caching them keeps this from costing an extra
+# request on every poll - bergfex rate-limits, and the subpage is fetched anyway.
+_SEASON_PANEL_CACHE: dict[str, dict[str, Any]] = {}
+
+_SEASON_PANEL_KEYS = (
+    "winter_season_start",
+    "winter_season_end",
+    "summer_season_start",
+    "summer_season_end",
+)
 
 CARD_FILENAME = "bergfex-card.js"
 CARD_URL_BASE = "/bergfex_frontend"
@@ -310,7 +323,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
                 # Fetch main resort page if price or season is missing and we are on a known subpage
                 # e.g. /meribel/schneebericht/ -> /meribel/
-                if "price" not in parsed_data or "season_start" not in parsed_data:
+                if area_path in _SEASON_PANEL_CACHE:
+                    parsed_data.update(_SEASON_PANEL_CACHE[area_path])
+
+                if (
+                    "price" not in parsed_data
+                    or "season_start" not in parsed_data
+                    or area_path not in _SEASON_PANEL_CACHE
+                ):
                     parts = area_path.strip("/").split("/")
                     # List of typical subpages that usually don't have the primary price block
                     subpages = [
@@ -345,6 +365,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                                             "operating_hours_start",
                                             "operating_hours_end",
                                             "operation_status",
+                                            *_SEASON_PANEL_KEYS,
                                         ]:
                                             if (
                                                 key in main_data
@@ -356,6 +377,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                                                     key,
                                                     parsed_data[key],
                                                 )
+
+                                        panel = {
+                                            k: main_data[k]
+                                            for k in _SEASON_PANEL_KEYS
+                                            if k in main_data
+                                        }
+                                        # Store even when empty: a resort that
+                                        # publishes no panel must not be re-fetched
+                                        # on every single poll.
+                                        _SEASON_PANEL_CACHE[area_path] = panel
 
                                         # Re-evaluate status since we might have new seasonal boundaries
                                         lifts_ok = (
