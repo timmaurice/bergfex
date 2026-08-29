@@ -334,3 +334,32 @@ def test_parse_overview_data_robust():
     assert results["/resort2/"]["snow_mountain"] == "80"
     assert results["/resort2/"]["new_snow"] == "10"
     assert results["/resort2/"]["status"] == "Closed"
+
+
+def test_resort_name_without_the_tailwind_class_prefix():
+    """bergfex dropped the `tw-` prefix from its CSS classes.
+
+    The heading splits the page label and the resort name into two spans. When the
+    class no longer matched, the fallback concatenated both into
+    "SchneeberichtSerfaus - Fiss - Ladis".
+    """
+    html = """
+    <html><body>
+      <h1 class="text-4xl"><span>Schneebericht</span><span>Serfaus - Fiss - Ladis</span></h1>
+    </body></html>
+    """
+    assert parse_resort_page(html, "at")["resort_name"] == "Serfaus - Fiss - Ladis"
+
+
+def test_resort_name_still_works_with_the_old_prefixed_class():
+    html = """
+    <html><body>
+      <h1 class="tw-text-4xl"><span>Schneebericht</span><span>Serfaus - Fiss - Ladis</span></h1>
+    </body></html>
+    """
+    assert parse_resort_page(html, "at")["resort_name"] == "Serfaus - Fiss - Ladis"
+
+
+def test_resort_name_falls_back_for_a_single_span_heading():
+    html = '<html><body><h1 class="text-4xl"><span>Axamer Lizum</span></h1></body></html>'
+    assert parse_resort_page(html, "at")["resort_name"] == "Axamer Lizum"

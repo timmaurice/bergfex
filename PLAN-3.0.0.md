@@ -78,6 +78,13 @@ then retire `timmaurice/lovelace-bergfex-card` from HACS and archive the repo.
 - [x] Fix the visual editor showing `[object Object]` / "Unknown device selected" for
       every resort written in the `{ device, name }` form, and silently dropping custom
       resort names on save.
+- [x] Chase down what the canary found: bergfex has dropped the Tailwind `tw-` class
+      prefix site-wide. `tw-text-4xl` and `tw-text-2xl` no longer appear at all, so
+      the parser's resort-name branch never fired and names came out as
+      `SchneeberichtSerfaus - Fiss - Ladis`. Both spellings are accepted now. Worth a
+      wider sweep during the Phase 1 fixture refresh — other `tw-` selectors may be
+      dead too, and the winter fixtures still carry the old markup, so the test suite
+      cannot see it.
 - [ ] Card: fixture-driven visual states — loading, off-season, missing sensor,
       partial data, cross-country.
 - [x] Add a regression test for the `_getResorts()` null-guard.
@@ -91,14 +98,15 @@ then retire `timmaurice/lovelace-bergfex-card` from HACS and archive the repo.
       all. Fixed in the card via `parseDate()`; the footer row now hides when there is
       no timestamp. Whether the parser _should_ find one for `airolo` is still open —
       worth a look during the Phase 1 fixture refresh.
-- [ ] **Make the daily live check honest.** The canary already exists — it just never
-      goes off. `scripts/check_live_site.py:270` appends a _string_ when a selector
-      matches nothing, but the exit code only counts _dict_ errors
-      (`failed_structurally`), so "no elements at all" exits 0 and prints
-      "Validation Successful!". The last five scheduled runs are green _because_
-      the snow-report block is missing, not despite it. A bergfex restructure — the
-      worst case for this integration — would be reported as success. - Separate three outcomes: ok / structural mismatch / structure absent. - Never print "Validation Successful!" when the structure is absent. - Make absence season-dependent: a warning off-season, a failure during it. - While in there: `failed_fetch` is computed but never used and its condition
-      is self-contradictory, and the summary prints `passed + 1` (off-by-one).
+- [x] **Make the daily live check honest.** `scripts/check_live_site.py` had three
+      paths that exited 0 while finding nothing: a selector matching nothing was
+      recorded as a string and never counted, keys missing from the AT baseline were
+      skipped for all 18 languages with only a printed warning, and "no baseline at
+      all" returned instead of exiting non-zero. - Absence is now a structured outcome, split into seasonal (snow report, which
+      bergfex removes every summer) and year-round (season dates, prices, operating
+      hours, which it does not). - Year-round absence fails whenever it happens; snow-report absence fails only
+      from December to March, deliberately narrow so autumn — when only the glaciers
+      report — cannot produce false alarms. - "Validation successful" is printed only when every tracked structure was found. - `BERGFEX_FORCE_SEASON` overrides the calendar; 24 tests cover the verdict.
 
 ---
 
