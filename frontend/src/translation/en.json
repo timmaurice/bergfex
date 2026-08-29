@@ -66,7 +66,8 @@
       "closed": "Closed",
       "unknown": "Unknown",
       "winter_season": "Winter season",
-      "summer_season": "Summer season"
+      "summer_season": "Summer season",
+      "season_from": "from {date}"
     }
   },
   "common": {
