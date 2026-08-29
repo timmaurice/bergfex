@@ -88,9 +88,14 @@ then retire `timmaurice/lovelace-bergfex-card` from HACS and archive the repo.
       all. Fixed in the card via `parseDate()`; the footer row now hides when there is
       no timestamp. Whether the parser _should_ find one for `airolo` is still open —
       worth a look during the Phase 1 fixture refresh.
-- [ ] **Fixture-refresh canary:** a check that flags when a live bergfex page yields
-      0 `<dt>` elements _during_ the season — today off-season emptiness and a site
-      redesign are indistinguishable, so a summer restructure would only surface in November.
+- [ ] **Make the daily live check honest.** The canary already exists — it just never
+      goes off. `scripts/check_live_site.py:270` appends a _string_ when a selector
+      matches nothing, but the exit code only counts _dict_ errors
+      (`failed_structurally`), so "no elements at all" exits 0 and prints
+      "Validation Successful!". The last five scheduled runs are green _because_
+      the snow-report block is missing, not despite it. A bergfex restructure — the
+      worst case for this integration — would be reported as success. - Separate three outcomes: ok / structural mismatch / structure absent. - Never print "Validation Successful!" when the structure is absent. - Make absence season-dependent: a warning off-season, a failure during it. - While in there: `failed_fetch` is computed but never used and its condition
+      is self-contradictory, and the summary prints `passed + 1` (off-by-one).
 
 ---
 
