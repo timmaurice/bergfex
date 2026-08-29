@@ -1,5 +1,5 @@
 import { LitElement, html, css, TemplateResult, unsafeCSS } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
+import { property, state } from 'lit/decorators.js';
 import { HomeAssistant, LovelaceCardEditor, BergfexCardConfig } from './types';
 import { localize } from './localize';
 import { fireEvent } from './utils';
@@ -36,7 +36,8 @@ const SCHEMA = [
   },
 ];
 
-@customElement('bergfex-card-editor')
+const EDITOR_ELEMENT_NAME = 'bergfex-card-editor';
+
 export class BergfexCardEditor extends LitElement implements LovelaceCardEditor {
   @property({ attribute: false }) public hass!: HomeAssistant;
   @state() private _config!: BergfexCardConfig;
@@ -134,4 +135,10 @@ export class BergfexCardEditor extends LitElement implements LovelaceCardEditor 
   static styles = css`
     ${unsafeCSS(editorStyles)}
   `;
+}
+
+// Guarded for the same reason as the card itself: a stale standalone bundle may already
+// have registered this element.
+if (!customElements.get(EDITOR_ELEMENT_NAME)) {
+  customElements.define(EDITOR_ELEMENT_NAME, BergfexCardEditor);
 }

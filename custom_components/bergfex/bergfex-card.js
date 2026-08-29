@@ -26,17 +26,12 @@ const x=globalThis,S=t=>t,A=x.trustedTypes,N=A?A.createPolicy("lit-html",{create
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const dt=t=>(e,s)=>{void 0!==s?s.addInitializer(()=>{customElements.define(t,e)}):customElements.define(t,e)},ht={attribute:!0,type:String,converter:w,reflect:!1,hasChanged:$},pt=(t=ht,e,s)=>{const{kind:i,metadata:o}=s;let n=globalThis.litPropertyMetadata.get(o);if(void 0===n&&globalThis.litPropertyMetadata.set(o,n=new Map),"setter"===i&&((t=Object.create(t)).wrapped=!0),n.set(s.name,t),"accessor"===i){const{name:i}=s;return{set(s){const o=e.get.call(this);e.set.call(this,s),this.requestUpdate(i,o,t,!0,s)},init(e){return void 0!==e&&this.C(i,void 0,t,e),e}}}if("setter"===i){const{name:i}=s;return function(s){const o=this[i];e.call(this,s),this.requestUpdate(i,o,t,!0,s)}}throw Error("Unsupported decorator location: "+i)};
+const dt={attribute:!0,type:String,converter:w,reflect:!1,hasChanged:$},ht=(t=dt,e,s)=>{const{kind:i,metadata:o}=s;let n=globalThis.litPropertyMetadata.get(o);if(void 0===n&&globalThis.litPropertyMetadata.set(o,n=new Map),"setter"===i&&((t=Object.create(t)).wrapped=!0),n.set(s.name,t),"accessor"===i){const{name:i}=s;return{set(s){const o=e.get.call(this);e.set.call(this,s),this.requestUpdate(i,o,t,!0,s)},init(e){return void 0!==e&&this.C(i,void 0,t,e),e}}}if("setter"===i){const{name:i}=s;return function(s){const o=this[i];e.call(this,s),this.requestUpdate(i,o,t,!0,s)}}throw Error("Unsupported decorator location: "+i)};function pt(t){return(e,s)=>"object"==typeof s?ht(t,e,s):((t,e,s)=>{const i=e.hasOwnProperty(s);return e.constructor.createProperty(s,t),i?Object.getOwnPropertyDescriptor(e,s):void 0})(t,e,s)}
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
- */function _t(t){return(e,s)=>"object"==typeof s?pt(t,e,s):((t,e,s)=>{const i=e.hasOwnProperty(s);return e.constructor.createProperty(s,t),i?Object.getOwnPropertyDescriptor(e,s):void 0})(t,e,s)}
-/**
- * @license
- * Copyright 2017 Google LLC
- * SPDX-License-Identifier: BSD-3-Clause
- */function ut(t){return _t({...t,state:!0,attribute:!1})}
+ */function _t(t){return pt({...t,state:!0,attribute:!1})}
 /**
  * @license
  * Copyright 2017 Google LLC
@@ -47,23 +42,23 @@ const dt=t=>(e,s)=>{void 0!==s?s.addInitializer(()=>{customElements.define(t,e)}
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const ft=1,gt=2,mt=t=>(...e)=>({_$litDirective$:t,values:e});class vt{constructor(t){}get _$AU(){return this._$AM._$AU}_$AT(t,e,s){this._$Ct=t,this._$AM=e,this._$Ci=s}_$AS(t,e){return this.update(t,e)}update(t,e){return this.render(...e)}}
+const ut=1,ft=2,gt=t=>(...e)=>({_$litDirective$:t,values:e});class mt{constructor(t){}get _$AU(){return this._$AM._$AU}_$AT(t,e,s){this._$Ct=t,this._$AM=e,this._$Ci=s}_$AS(t,e){return this.update(t,e)}update(t,e){return this.render(...e)}}
 /**
  * @license
  * Copyright 2018 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
- */const yt=mt(class extends vt{constructor(t){if(super(t),t.type!==ft||"class"!==t.name||t.strings?.length>2)throw Error("`classMap()` can only be used in the `class` attribute and must be the only part in the attribute.")}render(t){return" "+Object.keys(t).filter(e=>t[e]).join(" ")+" "}update(t,[e]){if(void 0===this.st){this.st=new Set,void 0!==t.strings&&(this.nt=new Set(t.strings.join(" ").split(/\s/).filter(t=>""!==t)));for(const t in e)e[t]&&!this.nt?.has(t)&&this.st.add(t);return this.render(e)}const s=t.element.classList;for(const t of this.st)t in e||(s.remove(t),this.st.delete(t));for(const t in e){const i=!!e[t];i===this.st.has(t)||this.nt?.has(t)||(i?(s.add(t),this.st.add(t)):(s.remove(t),this.st.delete(t)))}return V}});
+ */const vt=gt(class extends mt{constructor(t){if(super(t),t.type!==ut||"class"!==t.name||t.strings?.length>2)throw Error("`classMap()` can only be used in the `class` attribute and must be the only part in the attribute.")}render(t){return" "+Object.keys(t).filter(e=>t[e]).join(" ")+" "}update(t,[e]){if(void 0===this.st){this.st=new Set,void 0!==t.strings&&(this.nt=new Set(t.strings.join(" ").split(/\s/).filter(t=>""!==t)));for(const t in e)e[t]&&!this.nt?.has(t)&&this.st.add(t);return this.render(e)}const s=t.element.classList;for(const t of this.st)t in e||(s.remove(t),this.st.delete(t));for(const t in e){const i=!!e[t];i===this.st.has(t)||this.nt?.has(t)||(i?(s.add(t),this.st.add(t)):(s.remove(t),this.st.delete(t)))}return V}});
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
- */class wt extends vt{constructor(t){if(super(t),this.it=q,t.type!==gt)throw Error(this.constructor.directiveName+"() can only be used in child bindings")}render(t){if(t===q||null==t)return this._t=void 0,this.it=t;if(t===V)return t;if("string"!=typeof t)throw Error(this.constructor.directiveName+"() called with a non-string value");if(t===this.it)return this._t;this.it=t;const e=[t];return e.raw=e,this._t={_$litType$:this.constructor.resultType,strings:e,values:[]}}}wt.directiveName="unsafeHTML",wt.resultType=1;
+ */class yt extends mt{constructor(t){if(super(t),this.it=q,t.type!==ft)throw Error(this.constructor.directiveName+"() can only be used in child bindings")}render(t){if(t===q||null==t)return this._t=void 0,this.it=t;if(t===V)return t;if("string"!=typeof t)throw Error(this.constructor.directiveName+"() called with a non-string value");if(t===this.it)return this._t;this.it=t;const e=[t];return e.raw=e,this._t={_$litType$:this.constructor.resultType,strings:e,values:[]}}}yt.directiveName="unsafeHTML",yt.resultType=1;
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-class $t extends wt{}$t.directiveName="unsafeSVG",$t.resultType=2;const bt=mt($t);const kt={da:{editor:{groups:{core:"Kerne Konfiguration",display:"Visning",ski_only:"Skiområde muligheder"},title:"Title (Valgfri)",resorts:"Område enheder",show_snow:"Vis sne information",show_lifts_slopes:"Vis lift & piste statistik",show_conditions:"Vis forholds sektion",conditions_default_open:"Forholds sektion udvidet som standard",show_forecast:"Vis sne udsigt",forecast_default_open:"Sne udsigt udvidet som standard",show_trend:"Vis trend indikatorer (24h)",show_last_updated:"Vis sidst opdateret",show_link:"Vis link ikon",hide_closed_resorts:"Skjul lukkede områder",sort_by:"Sorter efter",sort_by_options:{mountain:"Sne (Bjerg)",valley:"Sne (Dal)",new:"Ny sne",lift:"Lifter åbne",classical:"Klassiske stier",skating:"Skate stier",update:"Sidste opdatering"}},card:{resort_not_found:"Områder ikke fundet: {resort}",lifts_open:"Lifter",header:{snow_mountain:"Bjerg",snow_valley:"Dal",new_snow:"Ny",snow_condition:"Sne forhold",slope_condition:"Piste forhold",avalanche_warning:"Lavine advarsel",last_snowfall:"Sidste snefald",slopes_info:"Pister",slopes_info_km:"Pister (km)",slopes_open_km:"Åben",slopes_total:"Total",classical_trails:"Klassiske stier",skating_trails:"Skate stier",classical_condition:"Klassisk forhold",skating_condition:"Skate forhold",operation_status:"Driftsstatus",link_title:"Åben {resortName} detaljeret side på bergfex"},forecast:{daily:"Daglig",summary:"Opsummeret",hour:"{hours} Timer",today:"I dag",tomorrow:"I morgen"},accordion:{conditions:"Forhold",forecast:"Sne udsigt"},status:{open:"Åben",closed:"Lukket",unknown:"Ukendt"}},common:{errors:{no_resorts:"Du skal definere mindst én feriestedsenhed."}}},de:{editor:{groups:{core:"Grundeinstellungen",display:"Anzeige",ski_only:"Optionen für Skigebiete"},title:"Titel (Optional)",resorts:"Skigebiete",show_snow:"Schneeinformationen anzeigen",show_lifts_slopes:"Lift- & Pistenstatistiken anzeigen",show_conditions:"Bedingungen anzeigen",conditions_default_open:"Bedingungen standardmäßig ausgeklappt",show_forecast:"Schneevorhersage anzeigen",forecast_default_open:"Schneevorhersage standardmäßig ausgeklappt",show_trend:"Trend-Indikatoren anzeigen (24h)",show_last_updated:"Zuletzt aktualisiert anzeigen",show_link:"Link-Symbol anzeigen",hide_closed_resorts:"Geschlossene Skigebiete ausblenden",sort_by:"Sortieren nach",sort_by_options:{mountain:"Schnee (Berg)",valley:"Schnee (Tal)",new:"Neuschnee",lift:"Offene Lifte",classical:"Klassische Loipen",skating:"Skating-Loipen",update:"Letzte Aktualisierung"}},card:{resort_not_found:"Skigebiet nicht gefunden: {resort}",lifts_open:"Lifte",header:{snow_mountain:"Berg",snow_valley:"Tal",new_snow:"Neu",snow_condition:"Schneezustand",slope_condition:"Pistenzustand",avalanche_warning:"Lawinenwarnstufe",last_snowfall:"Letzter Schneefall",slopes_info:"Pisten",slopes_info_km:"Pisten (km)",slopes_open_km:"Offen",slopes_total:"Gesamt",classical_trails:"Klassische Loipen",skating_trails:"Skating-Loipen",classical_condition:"Klassischer Zustand",skating_condition:"Skating-Zustand",operation_status:"Betriebsstatus",link_title:"{resortName} Detailseite auf bergfex öffnen"},forecast:{daily:"Täglich",summary:"Zusammenfassung",hour:"{hours} Stunden",today:"Heute",tomorrow:"Morgen"},accordion:{conditions:"Bedingungen",forecast:"Schneevorhersage"},status:{open:"Offen",closed:"Geschlossen",unknown:"Unbekannt"}},common:{errors:{no_resorts:"Sie müssen mindestens ein Skigebiet definieren."}}},en:{editor:{groups:{core:"Core Configuration",display:"Display",ski_only:"Ski Resort Options"},title:"Title (Optional)",resorts:"Resort Entities",show_snow:"Show snow information",show_lifts_slopes:"Show lift & slope statistics",show_conditions:"Show conditions section",conditions_default_open:"Conditions section expanded by default",show_forecast:"Show snow forecast",forecast_default_open:"Snow forecast expanded by default",show_trend:"Show trend indicators (24h)",show_last_updated:"Show last updated",show_link:"Show link icon",hide_closed_resorts:"Hide closed resorts",sort_by:"Sort by",sort_by_options:{mountain:"Snow (Mountain)",valley:"Snow (Valley)",new:"New Snow",lift:"Lifts Open",classical:"Classical Trails",skating:"Skating Trails",update:"Last Update"}},card:{resort_not_found:"Resort not found: {resort}",lifts_open:"Lifts",header:{snow_mountain:"Mountain",snow_valley:"Valley",new_snow:"New",snow_condition:"Snow Condition",slope_condition:"Slope Condition",avalanche_warning:"Avalanche Warning",last_snowfall:"Last Snowfall",slopes_info:"Slopes",slopes_info_km:"Slopes (km)",slopes_open_km:"Open",slopes_total:"Total",classical_trails:"Classical Trails",skating_trails:"Skating Trails",classical_condition:"Classical Condition",skating_condition:"Skating Condition",operation_status:"Operation Status",link_title:"Open {resortName} detail page on bergfex"},forecast:{daily:"Daily",summary:"Summary",hour:"{hours} Hours",today:"Today",tomorrow:"Tomorrow"},accordion:{conditions:"Conditions",forecast:"Snow Forecast"},status:{open:"Open",closed:"Closed",unknown:"Unknown"}},common:{errors:{no_resorts:"You need to define at least one resort entity."}}},fr:{editor:{groups:{core:"Configuration",display:"Affichage",ski_only:"Options station de ski"},title:"Titre (optionnel)",resorts:"Stations de ski",show_snow:"Afficher les info sur la neige",show_lifts_slopes:"Afficher statistiques remontées & pistes",show_conditions:"Afficher la section des conditions",conditions_default_open:"Section conditions développée par défaut",show_forecast:"Afficher les prévisions de neige",forecast_default_open:"Prévisions de neige développées par défaut",show_trend:"Afficher les tendances (24 h)",show_last_updated:"Afficher la dernière mise à jour",show_link:"Afficher le lien",hide_closed_resorts:"Masquer les stations fermées",sort_by:"Trier par",sort_by_options:{mountain:"Neige (au sommet)",valley:"Neige (dans la vallée)",new:"Dernière chute de neige",lift:"Remontées ouvertes",classical:"Pistes classiques",skating:"Back-country",update:"Dernière mise à jour"}},card:{resort_not_found:"Station non trouvée : {resort}",lifts_open:"Remontées ouvertes",header:{snow_mountain:"Sommet",snow_valley:"Vallée",new_snow:"Dernière chute de neige",snow_condition:"État de la neige",slope_condition:"État des pistes",avalanche_warning:"Risque avalanche",last_snowfall:"Dernière chute de neige",slopes_info:"Pistes",slopes_info_km:"Pistes (km)",slopes_open_km:"Ouvertes",slopes_total:"Total",classical_trails:"Pistes classiques",skating_trails:"Pistes de skating",classical_condition:"État classique",skating_condition:"État backcountry",operation_status:"Statut",link_title:"Ouvrir la page bergfex de {resortName}"},forecast:{daily:"Quotidien",summary:"Résumé",hour:"{hours} heure(s)",today:"Aujourd’hui",tomorrow:"Demain"},accordion:{conditions:"Conditions",forecast:"Prévisions de neige"},status:{open:"Ouvert",closed:"Fermé",unknown:"Inconnu"}},common:{errors:{no_resorts:"Vous devez définir au moins une station de ski."}}},pl:{editor:{groups:{core:"Główna konfiguracja",display:"Wyświetlacz",ski_only:"Opcje kurortu narciarskiego"},title:"Tytuł (opcjonalnie)",resorts:"Wpisy kurortu",show_snow:"Pokaż informację o śniegu",show_lifts_slopes:"Pokaż statystyki wyciągów i stoków",show_conditions:"Pokaż sekcję warunków",conditions_default_open:"Sekcja warunków domyślnie rozwinięta",show_forecast:"Pokaż prognozę śniegu",forecast_default_open:"Prognoza śniegu domyślnie rozwinięta",show_trend:"Pokaż indykator trendu (24g)",show_last_updated:"Pokaż ostatnio aktualizowane",show_link:"Pokaż ikonę linku",hide_closed_resorts:"Ukryj zamknięte kurorty",sort_by:"Posortuj",sort_by_options:{mountain:"Śnieg (szczyt)",valley:"Śnieg (dolina)",new:"Nowy śnieg",lift:"Otwarte wyciągi",classical:"Trasy klasyczne",skating:"Trasy łyżwiarskie",update:"Ostatnio aktualizowane"}},card:{resort_not_found:"Nie znaleziono resortu: {resort}",lifts_open:"Wyciągi",header:{snow_mountain:"Szczyt",snow_valley:"Dolina",new_snow:"Nowy opad",snow_condition:"Warunki śniegowe",slope_condition:"Warunki na stoku",avalanche_warning:"Ostrzeżenie lawinowe",last_snowfall:"Ostatni opad",slopes_info:"Trasy",slopes_info_km:"Trasy (km)",slopes_open_km:"Otwarte",slopes_total:"Całkowite",classical_trails:"Trasy klasyczne",skating_trails:"Trasy łyżwiarskie",classical_condition:"Stan tras klasycznych",skating_condition:"Stan tras łyżwiarskich",operation_status:"Status działania",link_title:"Otwórz informację o  {resortName} na stronie Bergfex"},forecast:{daily:"Dzienna",summary:"Podsumowanie",hour:"{hours} godziny",today:"Dziś",tomorrow:"Jutro"},accordion:{conditions:"Warunki",forecast:"Prognoza opadów"},status:{open:"Otwarte",closed:"Zamknięte",unknown:"Nieznany"}},common:{errors:{no_resorts:"Musisz zdefiniować przynajmniej jeden wpis o resorcie."}}}};function xt(t,e){let s=kt[t];for(const t of e){if("object"!=typeof s||null===s)return;s=s[t]}return"string"==typeof s?s:void 0}function St(t,e,s={}){const i=t.language||"en",o=e.replace("component.bergfex-card.","").split("."),n=xt(i,o)??xt("en",o);if("string"==typeof n){let t=n;for(const e in s)t=t.replace(`{${e}}`,String(s[e]));return t}return e}const At=(t,e,s,i)=>{const o=new CustomEvent(e,{bubbles:!0,cancelable:!1,composed:!0,...i,detail:s});t.dispatchEvent(o)};function Nt(t,e){const s=new Date(t),i=new Date,o=Math.round((i.getTime()-s.getTime())/1e3);try{const t=new Intl.RelativeTimeFormat(e.language,{numeric:"auto"});if(o<60)return t.format(-o,"second");const s=Math.round(o/60);if(s<60)return t.format(-s,"minute");const i=Math.round(s/60);if(i<24)return t.format(-i,"hour");const n=Math.round(i/24);return t.format(-n,"day")}catch{return function(t,e){const s=new Date(t),i=new Date,o={hour:"numeric",minute:"2-digit"};return s.getDate()===i.getDate()&&s.getMonth()===i.getMonth()&&s.getFullYear()===i.getFullYear()||Object.assign(o,{year:"numeric",month:"short",day:"2-digit"}),"12"===e.locale?.time_format&&(o.hour12=!0),s.toLocaleString(e.language,o)}(t,e)}}const Ct=r`:host ::slotted(.card-content),.card-content{display:flex;flex-direction:column;gap:12px;padding:16px}.resort{border:1px solid var(--divider-color);border-radius:var(--ha-card-border-radius, 12px);cursor:pointer;display:flex;flex-direction:column;padding:12px;transition:background-color .2s ease-in-out}.resort:hover{background-color:rgba(var(--rgb-primary-text-color), 0.05)}.resort-header{align-items:center;display:flex;justify-content:space-between}.resort-name{font-size:1.2em;font-weight:500}.resort-status{background-color:var(--divider-color);border-radius:4px;color:var(--primary-text-color);font-size:.9em;font-weight:500;padding:2px 6px;text-transform:uppercase}.resort-status.open{background-color:var(--label-badge-green)}.resort-status.closed{background-color:var(--label-badge-red)}.details{display:grid;gap:8px;grid-template-columns:repeat(3, minmax(0, 1fr));padding-top:12px}.details.cross-country-details{grid-template-columns:repeat(2, minmax(0, 1fr))}.detail-item{--mdc-icon-size: 24px;align-items:center;cursor:pointer;display:flex;gap:8px}.detail-item ha-icon{color:var(--secondary-text-color)}.detail-item svg,.custom-icon{align-items:center;display:flex;height:var(--mdc-icon-size, 24px);justify-content:center;width:var(--mdc-icon-size, 24px)}.detail-item svg svg,.custom-icon svg{height:100%;width:100%}.detail-item svg.stroke svg,.custom-icon.stroke svg{stroke:var(--secondary-text-color)}.detail-item svg.fill svg,.custom-icon.fill svg{fill:var(--secondary-text-color)}.detail-item-value{align-items:flex-start;display:flex;flex-direction:column;font-size:1.1em;width:calc(100% - 32px)}.detail-item-label{color:var(--secondary-text-color);font-size:.8em}.detail-item.n-a{opacity:.5}.value-row{align-items:center;display:flex;justify-content:space-between;width:100%}.trend-icon{--mdc-icon-size: 18px;display:inline-block;margin-left:4px;vertical-align:middle}.trend-icon.up{color:var(--label-badge-green, #4caf50)}.trend-icon.down{color:var(--label-badge-red, #f44336)}.trend-icon.same{color:var(--secondary-text-color);opacity:.5}.resort-footer{align-items:center;border-top:1px solid var(--divider-color);display:flex;justify-content:space-between;padding:12px 0 0}.link-icon{color:var(--secondary-text-color);display:flex;text-decoration:none}.last-updated{align-items:center;color:var(--secondary-text-color);cursor:pointer;display:flex;font-size:.8em;gap:4px;justify-content:flex-end}.warning{color:var(--error-color)}.progress-bar-container{background-color:var(--divider-color);border-radius:2px;height:4px;margin-top:4px;overflow:hidden;width:100%}.progress-bar-fill{background-color:var(--primary-color);border-radius:2px;height:100%;transition:width .3s ease-in-out}.accordion-container{border-top:1px solid var(--divider-color);margin-top:12px}.accordion-container+.accordion-container{margin-top:0}.accordion-header{align-items:center;color:var(--primary-text-color);cursor:pointer;display:flex;font-weight:500;justify-content:space-between;padding:12px 0}.accordion-header:hover{background-color:rgba(var(--rgb-primary-text-color), 0.02)}.accordion-content{padding-bottom:12px}.accordion-content.details{grid-template-columns:repeat(2, minmax(0, 1fr))}.forecast-tabs{border-bottom:1px solid var(--divider-color);display:flex;gap:16px;margin-bottom:12px}.forecast-tab{border-bottom:2px solid rgba(0,0,0,0);color:var(--secondary-text-color);cursor:pointer;font-weight:500;padding:8px 12px;transition:all .2s ease}.forecast-tab:hover{color:var(--primary-text-color)}.forecast-tab.active{border-bottom-color:var(--primary-color);color:var(--primary-color)}.forecast-carousel{align-items:center;display:flex;flex-direction:column;gap:8px;position:relative}.forecast-image-container{align-items:center;aspect-ratio:16/9;background-color:rgba(0,0,0,.05);border-radius:8px;display:flex;justify-content:center;overflow:hidden;position:relative;width:100%}.forecast-image{height:100%;object-fit:contain;width:100%}.carousel-controls{align-items:center;display:flex;justify-content:space-between;margin-top:8px;width:100%}.carousel-btn{align-items:center;background:none;border:none;border-radius:50%;color:var(--primary-text-color);cursor:pointer;display:flex;justify-content:center;padding:8px;transition:background-color .2s}.carousel-btn:hover{background-color:rgba(var(--rgb-primary-text-color), 0.1)}.carousel-btn:disabled{color:var(--disabled-text-color);cursor:not-allowed}.carousel-label{font-size:1.1em;font-weight:500}`;var Et='<svg height="5.485163mm" viewBox="0 0 5.8208332 5.4851627" width="5.820833mm"\n    xmlns="http://www.w3.org/2000/svg">\n    <g transform="matrix(1.4664468 0 0 1.4664092 -91.591331 -91.904945)">\n        <path\n            d="m65.27 62.689c.183-.037.29-.008.375.088.075.085.084.24.037.339-.053.113-.215.169-.339.157-.104-.01-.229-.082-.256-.183-.038-.142.025-.365.183-.401z" />\n        <path\n            d="m64.248 63.2s.552-.094.803 0c.242.091.585.511.585.511l.365-.365s.139-.043.182 0 0 .183 0 .183l-.365.365-.123.151-.133.032-.365-.292c-.213.103-.45.351-.505.612 0 0 .371.185.483.349.03.043.039.153.039.153l-.093.226-.129.412-.16.512-.256-.182.146-.439.146-.486-.62-.354-.366.438-.384.021-.748-.021v-.292l.895.009.42-.703.511-.584-.234-.034-.569.631s-.097-.012-.124-.047c-.038-.049-.023-.185-.023-.185l.475-.548z" />\n        <path d="m66.06 63.401.129.053-.882 2.595h-.22v-.11z" />\n        <path\n            d="m62.486 63.941 1.199-.077c.042.001.059.003.041.147l-1.241.064c-.042-.003-.017.01.001-.134z" />\n        <path\n            d="m62.494 64.88.677.64s.167.22.332.333c.075.051.27-.023.27-.023.06.146-.023.309-.206.26 0 0-.092-.011-.123-.041-.318-.303-.986-.986-.986-.986z" />\n        <path d="m66.293 65.976c.128-.041.165.02.109.182l-.072.184-.183.072h-2.922l-.11-.219h2.959z" />\n    </g>\n</svg>',Pt='<svg height="5.816813mm" viewBox="0 0 5.8207846 5.8168125" width="5.820785mm"\n    xmlns="http://www.w3.org/2000/svg">\n    <path\n        d="m146.23391 74.101876c-1.14758-.322091-2.11388-.608331-2.14733-.636091-.0334-.02776-.0608-.108614-.0608-.179677v-.129205l.0961-.06298.0961-.06298.25793.06981.25792.06982.56924-.595103.56924-.595102.27313-.597014c.15023-.328357.29373-.623828.31889-.656601.0252-.03277.21474-.194992.42129-.360486.20655-.165495.37555-.303341.37556-.306325.00001-.003-.091.000688-.20221.0082l-.20224.01358-.33813.251109c-.18597.13811-.36251.285922-.39232.328472-.0298.04255-.10067.08247-.1575.0887-.0568.0062-.14399-.0072-.19371-.02985-.0497-.02265-.10401-.081-.12064-.129668-.0179-.05241-.35705-.333699-.83186-.689982l-.80161-.601501.012-.08403c.007-.04622.0433-.08999.0815-.09727.0428-.0082.35783.203155.82082.550577.41325.310099.77461.572734.80301.583633.0284.0109.26239-.137376.51998-.329498l.46835-.349314h.75066.75066l.10905.05639c.06.03101.15375.109522.20839.17446.0546.06494.11078.17897.12474.253405.0167.08913.003.19368-.0399.306229l-.0653.170892-.4208.334698c-.23143.184083-.42079.347695-.42079.36358 0 .01589.0834.121276.18544.234202.102.112924.21466.248173.25036.300551l.0649.09523v.588443.588443h.70737.70737l.10149.07983c.0598.04707.10148.118197.10148.173327 0 .05142-.0347.128162-.077.170531l-.077.07703h-1.14378-1.14378l-.59912-.156269c-.32951-.08595-.66539-.173625-.7464-.194837l-.14728-.03857.0461-.05552.0461-.05552h.8662.8662l-.0221-.12518c-.0122-.06885-.0424-.281174-.0673-.471834-.0249-.190659-.0645-.36743-.0881-.392826-.0236-.02539-.17114-.116473-.32784-.202393l-.2849-.156218-.52395.533504c-.28817.293428-.65979.658876-.82581.812106-.16602.153231-.29601.283727-.28888.28999.007.0063.74095.212729 1.6307.45881l1.61771.44742.0674.08163c.0371.04489.0674.11437.0674.154392 0 .04002-.0347.107432-.077.149801-.043.04303-.12379.0752-.18296.07288-.0583-.0023-1.04485-.267685-2.19243-.589775zm2.8867-4.068706c-.0683-.01447-.16944-.05594-.2247-.09215-.0553-.03621-.13332-.138153-.17345-.226536-.0401-.08838-.0733-.202887-.0738-.254455-.00052-.05157.0341-.164231.0768-.25036.0427-.08613.1238-.190098.18027-.231041.0587-.04252.18642-.0807.29795-.08903l.19527-.01459.13481.07378c.0741.04058.17352.141311.22084.223843.0473.08253.0863.210993.0867.285469.00027.07448-.0315.195246-.0707.268379-.0392.07313-.11422.16501-.16667.20417-.0525.03916-.15469.08417-.2272.100019-.0725.01585-.18772.01698-.25604.0025z"\n        stroke-width=".052895" transform="translate(-144.02094 -68.875018)" />\n</svg>';const Tt="bergfex-card",Mt=`${Tt}-editor`;let Ot=class extends lt{constructor(){super(...arguments),this._forecastState={},this._accordionState={},this._historyState={}}setConfig(t){if(!t||!t.resorts||!Array.isArray(t.resorts)||0===t.resorts.length)throw new Error(St(this.hass,"common.errors.no_resorts"));this._config={show_snow:!0,show_lifts_slopes:!0,show_last_updated:!0,hide_closed_resorts:!1,show_link:!0,show_conditions:!0,show_avalanche:!0,show_slopes:!0,show_trend:!1,conditions_default_open:!1,forecast_default_open:!1,...t},this._config.show_trend&&this._fetchHistory()}static async getConfigElement(){const t=await window.loadCardHelpers(),e=await t.createCardElement({type:"entities",entities:[]}),s=e?.constructor;return s?.getConfigElement&&await s.getConfigElement(),await Promise.resolve().then(function(){return Lt}),document.createElement(Mt)}static getStubConfig(){return{title:"Bergfex",resorts:[]}}getCardSize(){return 3}_getResorts(t,e){const s={},i=Object.values(t.states);return e.resorts.forEach(e=>{if(!e)return;const o="string"==typeof e?e:e.device,n="object"==typeof e?e.name:void 0,a=i.filter(e=>t.entities[e.entity_id]?.device_id===o&&(e.entity_id.startsWith("sensor.")||e.entity_id.startsWith("image.")));if(0!==a.length&&(s[o]||(s[o]={forecast_days:[],forecast_summaries:[]}),n&&(s[o].name=n),a.forEach(t=>{const e=t.entity_id;if(e.endsWith("_operation_status"))s[o].operation_status=e;else if(e.endsWith("_status")){s[o].status=e;const i=t.attributes?.link,n=t.attributes?.icon;(i&&i.includes("/langlaufen/")||"mdi:ski-cross-country"===n||"mdi:ski-cross-country-skating"===n)&&(s[o].is_cross_country=!0)}e.endsWith("_snow_valley")&&(s[o].snow_valley=e),e.endsWith("_snow_mountain")&&(s[o].snow_mountain=e),e.endsWith("_new_snow")&&(s[o].new_snow=e),e.endsWith("_lifts_open_count")?s[o].lifts_open_count=e:e.endsWith("_lifts_open")&&!s[o].lifts_open_count&&(s[o].lifts_open=e),e.endsWith("_last_update")&&(s[o].last_update=e),e.endsWith("_snow_condition")&&(s[o].snow_condition=e),e.endsWith("_last_snowfall")&&(s[o].last_snowfall=e),e.endsWith("_avalanche_warning")&&(s[o].avalanche_warning=e),e.endsWith("_slopes_open_km")&&(s[o].slopes_open_km=e),e.endsWith("_slopes_open_count")?s[o].slopes_open_count=e:e.endsWith("_slopes_open")&&!s[o].slopes_open_count&&(s[o].slopes_open=e),e.endsWith("_slope_condition")&&(s[o].slope_condition=e),e.endsWith("_classical_open_km")&&(s[o].classical_trails_open=e),e.endsWith("_skating_open_km")&&(s[o].skating_trails_open=e),e.endsWith("_classical_condition")&&(s[o].classical_condition=e),e.endsWith("_skating_condition")&&(s[o].skating_condition=e),e.includes("_forecast_image_day_")&&s[o].forecast_days?.push(e),e.includes("_summary_image_")&&s[o].forecast_summaries?.push(e)}),s[o].forecast_days?.sort(),s[o].forecast_summaries?.sort((t,e)=>{const s=t=>{const e=t.match(/summary_(\d+)h/);return e?parseInt(e[1],10):0};return s(t)-s(e)}),!(s[o].forecast_days&&0!==s[o].forecast_days.length||s[o].forecast_summaries&&0!==s[o].forecast_summaries.length))){const t=s[o].status;if(t){const e=t.match(/^sensor\.(.+)_status$/);if(e){const t=`image.${e[1]}_snow_forecast`;i.forEach(e=>{e.entity_id.startsWith(t)&&(e.entity_id.includes("_day_")?s[o].forecast_days?.push(e.entity_id):e.entity_id.includes("_summary_")&&s[o].forecast_summaries?.push(e.entity_id))}),s[o].forecast_days?.sort(),s[o].forecast_summaries?.sort((t,e)=>{const s=t=>{const e=t.match(/summary_(\d+)h/);return e?parseInt(e[1],10):0};return s(t)-s(e)})}}}}),s}shouldUpdate(t){if(t.has("_config"))return!0;const e=t.get("hass");if(e){const s=this._getResorts(this.hass,this._config),i=Object.values(s).flatMap(t=>Object.values(t)),o=i.some(t=>t&&e.states[t]!==this.hass.states[t]);return this.getOldConfig(t)?.show_trend!==this._config.show_trend&&this._config.show_trend&&this._fetchHistory(),o||e.language!==this.hass.language||t.has("_historyState")}return!0}getOldConfig(t){return t.get("_config")}async _fetchHistory(){if(!this.hass||!this._config.resorts)return;const t=this._getResorts(this.hass,this._config),e=Object.values(t).flatMap(t=>[t.snow_mountain,t.snow_valley,t.new_snow,t.lifts_open_count,t.lifts_open,t.slopes_open_km,t.slopes_open_count,t.slopes_open,t.classical_trails_open,t.skating_trails_open]).filter(Boolean);0!==e.length&&(this._historyState=await async function(t,e,s){if(0===e.length)return{};const i=new Date;i.setHours(i.getHours()-s);try{const s=await t.callWS({type:"history/history_during_period",start_time:i.toISOString(),end_time:i.toISOString(),entity_ids:e,no_attributes:!0}),o={};return Object.entries(s).forEach(([t,e])=>{Array.isArray(e)&&e.length>0&&(o[t]=e[0].s)}),o}catch(t){return console.error(`Error fetching history for ${e.join(", ")}:`,t),{}}}(this.hass,e,24))}_renderTrend(t,e){if(!this._config.show_trend)return W``;const s=this._historyState[t];if(void 0===s||this._isNA(e)||this._isNA(s))return W``;const i=parseFloat(e),o=parseFloat(s);return isNaN(i)||isNaN(o)?W``:i>o?W`<ha-icon class="trend-icon up" icon="mdi:trending-up"></ha-icon>`:i<o?W`<ha-icon class="trend-icon down" icon="mdi:trending-down"></ha-icon>`:W`<ha-icon class="trend-icon same" icon="mdi:trending-neutral"></ha-icon>`}_handleMoreInfo(t){At(this,"hass-more-info",{entityId:t})}_handleTabChange(t,e,s){s.stopPropagation(),this._forecastState={...this._forecastState,[t]:{...this._forecastState[t],tab:e,index:0}}}_handleCarouselChange(t,e,s,i){i.stopPropagation();const o=this._forecastState[t]||{tab:"daily",index:0};let n=o.index+("next"===e?1:-1);n<0&&(n=s-1),n>=s&&(n=0),this._forecastState={...this._forecastState,[t]:{...o,index:n}}}_toggleAccordion(t,e,s){s.stopPropagation();const i=this._accordionState[t]||{},o=i[e]??this._config[`${e}_default_open`]??!1;this._accordionState={...this._accordionState,[t]:{...i,[e]:!o}}}_formatForecastDate(t){const e=new Date;if(e.setDate(e.getDate()+t),0===t)return St(this.hass,"component.bergfex-card.card.forecast.today");if(1===t)return St(this.hass,"component.bergfex-card.card.forecast.tomorrow");{const t=this.hass.locale?.language||this.hass.language||"de";return`${e.toLocaleDateString(t,{weekday:"short"})}, ${e.getDate().toString().padStart(2,"0")}.${(e.getMonth()+1).toString().padStart(2,"0")}.`}}_renderProgressBar(t,e){const s=Math.min(100,Math.max(0,t/e*100));return W`
+class wt extends yt{}wt.directiveName="unsafeSVG",wt.resultType=2;const $t=gt(wt);const bt={da:{editor:{groups:{core:"Kerne Konfiguration",display:"Visning",ski_only:"Skiområde muligheder"},title:"Title (Valgfri)",resorts:"Område enheder",show_snow:"Vis sne information",show_lifts_slopes:"Vis lift & piste statistik",show_conditions:"Vis forholds sektion",conditions_default_open:"Forholds sektion udvidet som standard",show_forecast:"Vis sne udsigt",forecast_default_open:"Sne udsigt udvidet som standard",show_trend:"Vis trend indikatorer (24h)",show_last_updated:"Vis sidst opdateret",show_link:"Vis link ikon",hide_closed_resorts:"Skjul lukkede områder",sort_by:"Sorter efter",sort_by_options:{mountain:"Sne (Bjerg)",valley:"Sne (Dal)",new:"Ny sne",lift:"Lifter åbne",classical:"Klassiske stier",skating:"Skate stier",update:"Sidste opdatering"}},card:{resort_not_found:"Områder ikke fundet: {resort}",lifts_open:"Lifter",header:{snow_mountain:"Bjerg",snow_valley:"Dal",new_snow:"Ny",snow_condition:"Sne forhold",slope_condition:"Piste forhold",avalanche_warning:"Lavine advarsel",last_snowfall:"Sidste snefald",slopes_info:"Pister",slopes_info_km:"Pister (km)",slopes_open_km:"Åben",slopes_total:"Total",classical_trails:"Klassiske stier",skating_trails:"Skate stier",classical_condition:"Klassisk forhold",skating_condition:"Skate forhold",operation_status:"Driftsstatus",link_title:"Åben {resortName} detaljeret side på bergfex"},forecast:{daily:"Daglig",summary:"Opsummeret",hour:"{hours} Timer",today:"I dag",tomorrow:"I morgen"},accordion:{conditions:"Forhold",forecast:"Sne udsigt"},status:{open:"Åben",closed:"Lukket",unknown:"Ukendt"}},common:{errors:{no_resorts:"Du skal definere mindst én feriestedsenhed."}}},de:{editor:{groups:{core:"Grundeinstellungen",display:"Anzeige",ski_only:"Optionen für Skigebiete"},title:"Titel (Optional)",resorts:"Skigebiete",show_snow:"Schneeinformationen anzeigen",show_lifts_slopes:"Lift- & Pistenstatistiken anzeigen",show_conditions:"Bedingungen anzeigen",conditions_default_open:"Bedingungen standardmäßig ausgeklappt",show_forecast:"Schneevorhersage anzeigen",forecast_default_open:"Schneevorhersage standardmäßig ausgeklappt",show_trend:"Trend-Indikatoren anzeigen (24h)",show_last_updated:"Zuletzt aktualisiert anzeigen",show_link:"Link-Symbol anzeigen",hide_closed_resorts:"Geschlossene Skigebiete ausblenden",sort_by:"Sortieren nach",sort_by_options:{mountain:"Schnee (Berg)",valley:"Schnee (Tal)",new:"Neuschnee",lift:"Offene Lifte",classical:"Klassische Loipen",skating:"Skating-Loipen",update:"Letzte Aktualisierung"}},card:{resort_not_found:"Skigebiet nicht gefunden: {resort}",lifts_open:"Lifte",header:{snow_mountain:"Berg",snow_valley:"Tal",new_snow:"Neu",snow_condition:"Schneezustand",slope_condition:"Pistenzustand",avalanche_warning:"Lawinenwarnstufe",last_snowfall:"Letzter Schneefall",slopes_info:"Pisten",slopes_info_km:"Pisten (km)",slopes_open_km:"Offen",slopes_total:"Gesamt",classical_trails:"Klassische Loipen",skating_trails:"Skating-Loipen",classical_condition:"Klassischer Zustand",skating_condition:"Skating-Zustand",operation_status:"Betriebsstatus",link_title:"{resortName} Detailseite auf bergfex öffnen"},forecast:{daily:"Täglich",summary:"Zusammenfassung",hour:"{hours} Stunden",today:"Heute",tomorrow:"Morgen"},accordion:{conditions:"Bedingungen",forecast:"Schneevorhersage"},status:{open:"Offen",closed:"Geschlossen",unknown:"Unbekannt"}},common:{errors:{no_resorts:"Sie müssen mindestens ein Skigebiet definieren."}}},en:{editor:{groups:{core:"Core Configuration",display:"Display",ski_only:"Ski Resort Options"},title:"Title (Optional)",resorts:"Resort Entities",show_snow:"Show snow information",show_lifts_slopes:"Show lift & slope statistics",show_conditions:"Show conditions section",conditions_default_open:"Conditions section expanded by default",show_forecast:"Show snow forecast",forecast_default_open:"Snow forecast expanded by default",show_trend:"Show trend indicators (24h)",show_last_updated:"Show last updated",show_link:"Show link icon",hide_closed_resorts:"Hide closed resorts",sort_by:"Sort by",sort_by_options:{mountain:"Snow (Mountain)",valley:"Snow (Valley)",new:"New Snow",lift:"Lifts Open",classical:"Classical Trails",skating:"Skating Trails",update:"Last Update"}},card:{resort_not_found:"Resort not found: {resort}",lifts_open:"Lifts",header:{snow_mountain:"Mountain",snow_valley:"Valley",new_snow:"New",snow_condition:"Snow Condition",slope_condition:"Slope Condition",avalanche_warning:"Avalanche Warning",last_snowfall:"Last Snowfall",slopes_info:"Slopes",slopes_info_km:"Slopes (km)",slopes_open_km:"Open",slopes_total:"Total",classical_trails:"Classical Trails",skating_trails:"Skating Trails",classical_condition:"Classical Condition",skating_condition:"Skating Condition",operation_status:"Operation Status",link_title:"Open {resortName} detail page on bergfex"},forecast:{daily:"Daily",summary:"Summary",hour:"{hours} Hours",today:"Today",tomorrow:"Tomorrow"},accordion:{conditions:"Conditions",forecast:"Snow Forecast"},status:{open:"Open",closed:"Closed",unknown:"Unknown"}},common:{errors:{no_resorts:"You need to define at least one resort entity."}}},fr:{editor:{groups:{core:"Configuration",display:"Affichage",ski_only:"Options station de ski"},title:"Titre (optionnel)",resorts:"Stations de ski",show_snow:"Afficher les info sur la neige",show_lifts_slopes:"Afficher statistiques remontées & pistes",show_conditions:"Afficher la section des conditions",conditions_default_open:"Section conditions développée par défaut",show_forecast:"Afficher les prévisions de neige",forecast_default_open:"Prévisions de neige développées par défaut",show_trend:"Afficher les tendances (24 h)",show_last_updated:"Afficher la dernière mise à jour",show_link:"Afficher le lien",hide_closed_resorts:"Masquer les stations fermées",sort_by:"Trier par",sort_by_options:{mountain:"Neige (au sommet)",valley:"Neige (dans la vallée)",new:"Dernière chute de neige",lift:"Remontées ouvertes",classical:"Pistes classiques",skating:"Back-country",update:"Dernière mise à jour"}},card:{resort_not_found:"Station non trouvée : {resort}",lifts_open:"Remontées ouvertes",header:{snow_mountain:"Sommet",snow_valley:"Vallée",new_snow:"Dernière chute de neige",snow_condition:"État de la neige",slope_condition:"État des pistes",avalanche_warning:"Risque avalanche",last_snowfall:"Dernière chute de neige",slopes_info:"Pistes",slopes_info_km:"Pistes (km)",slopes_open_km:"Ouvertes",slopes_total:"Total",classical_trails:"Pistes classiques",skating_trails:"Pistes de skating",classical_condition:"État classique",skating_condition:"État backcountry",operation_status:"Statut",link_title:"Ouvrir la page bergfex de {resortName}"},forecast:{daily:"Quotidien",summary:"Résumé",hour:"{hours} heure(s)",today:"Aujourd’hui",tomorrow:"Demain"},accordion:{conditions:"Conditions",forecast:"Prévisions de neige"},status:{open:"Ouvert",closed:"Fermé",unknown:"Inconnu"}},common:{errors:{no_resorts:"Vous devez définir au moins une station de ski."}}},pl:{editor:{groups:{core:"Główna konfiguracja",display:"Wyświetlacz",ski_only:"Opcje kurortu narciarskiego"},title:"Tytuł (opcjonalnie)",resorts:"Wpisy kurortu",show_snow:"Pokaż informację o śniegu",show_lifts_slopes:"Pokaż statystyki wyciągów i stoków",show_conditions:"Pokaż sekcję warunków",conditions_default_open:"Sekcja warunków domyślnie rozwinięta",show_forecast:"Pokaż prognozę śniegu",forecast_default_open:"Prognoza śniegu domyślnie rozwinięta",show_trend:"Pokaż indykator trendu (24g)",show_last_updated:"Pokaż ostatnio aktualizowane",show_link:"Pokaż ikonę linku",hide_closed_resorts:"Ukryj zamknięte kurorty",sort_by:"Posortuj",sort_by_options:{mountain:"Śnieg (szczyt)",valley:"Śnieg (dolina)",new:"Nowy śnieg",lift:"Otwarte wyciągi",classical:"Trasy klasyczne",skating:"Trasy łyżwiarskie",update:"Ostatnio aktualizowane"}},card:{resort_not_found:"Nie znaleziono resortu: {resort}",lifts_open:"Wyciągi",header:{snow_mountain:"Szczyt",snow_valley:"Dolina",new_snow:"Nowy opad",snow_condition:"Warunki śniegowe",slope_condition:"Warunki na stoku",avalanche_warning:"Ostrzeżenie lawinowe",last_snowfall:"Ostatni opad",slopes_info:"Trasy",slopes_info_km:"Trasy (km)",slopes_open_km:"Otwarte",slopes_total:"Całkowite",classical_trails:"Trasy klasyczne",skating_trails:"Trasy łyżwiarskie",classical_condition:"Stan tras klasycznych",skating_condition:"Stan tras łyżwiarskich",operation_status:"Status działania",link_title:"Otwórz informację o  {resortName} na stronie Bergfex"},forecast:{daily:"Dzienna",summary:"Podsumowanie",hour:"{hours} godziny",today:"Dziś",tomorrow:"Jutro"},accordion:{conditions:"Warunki",forecast:"Prognoza opadów"},status:{open:"Otwarte",closed:"Zamknięte",unknown:"Nieznany"}},common:{errors:{no_resorts:"Musisz zdefiniować przynajmniej jeden wpis o resorcie."}}}};function kt(t,e){let s=bt[t];for(const t of e){if("object"!=typeof s||null===s)return;s=s[t]}return"string"==typeof s?s:void 0}function xt(t,e,s={}){const i=t.language||"en",o=e.replace("component.bergfex-card.","").split("."),n=kt(i,o)??kt("en",o);if("string"==typeof n){let t=n;for(const e in s)t=t.replace(`{${e}}`,String(s[e]));return t}return e}const St=(t,e,s,i)=>{const o=new CustomEvent(e,{bubbles:!0,cancelable:!1,composed:!0,...i,detail:s});t.dispatchEvent(o)};function At(t,e){const s=new Date(t),i=new Date,o=Math.round((i.getTime()-s.getTime())/1e3);try{const t=new Intl.RelativeTimeFormat(e.language,{numeric:"auto"});if(o<60)return t.format(-o,"second");const s=Math.round(o/60);if(s<60)return t.format(-s,"minute");const i=Math.round(s/60);if(i<24)return t.format(-i,"hour");const n=Math.round(i/24);return t.format(-n,"day")}catch{return function(t,e){const s=new Date(t),i=new Date,o={hour:"numeric",minute:"2-digit"};return s.getDate()===i.getDate()&&s.getMonth()===i.getMonth()&&s.getFullYear()===i.getFullYear()||Object.assign(o,{year:"numeric",month:"short",day:"2-digit"}),"12"===e.locale?.time_format&&(o.hour12=!0),s.toLocaleString(e.language,o)}(t,e)}}const Nt=r`:host ::slotted(.card-content),.card-content{display:flex;flex-direction:column;gap:12px;padding:16px}.resort{border:1px solid var(--divider-color);border-radius:var(--ha-card-border-radius, 12px);cursor:pointer;display:flex;flex-direction:column;padding:12px;transition:background-color .2s ease-in-out}.resort:hover{background-color:rgba(var(--rgb-primary-text-color), 0.05)}.resort-header{align-items:center;display:flex;justify-content:space-between}.resort-name{font-size:1.2em;font-weight:500}.resort-status{background-color:var(--divider-color);border-radius:4px;color:var(--primary-text-color);font-size:.9em;font-weight:500;padding:2px 6px;text-transform:uppercase}.resort-status.open{background-color:var(--label-badge-green)}.resort-status.closed{background-color:var(--label-badge-red)}.details{display:grid;gap:8px;grid-template-columns:repeat(3, minmax(0, 1fr));padding-top:12px}.details.cross-country-details{grid-template-columns:repeat(2, minmax(0, 1fr))}.detail-item{--mdc-icon-size: 24px;align-items:center;cursor:pointer;display:flex;gap:8px}.detail-item ha-icon{color:var(--secondary-text-color)}.detail-item svg,.custom-icon{align-items:center;display:flex;height:var(--mdc-icon-size, 24px);justify-content:center;width:var(--mdc-icon-size, 24px)}.detail-item svg svg,.custom-icon svg{height:100%;width:100%}.detail-item svg.stroke svg,.custom-icon.stroke svg{stroke:var(--secondary-text-color)}.detail-item svg.fill svg,.custom-icon.fill svg{fill:var(--secondary-text-color)}.detail-item-value{align-items:flex-start;display:flex;flex-direction:column;font-size:1.1em;width:calc(100% - 32px)}.detail-item-label{color:var(--secondary-text-color);font-size:.8em}.detail-item.n-a{opacity:.5}.value-row{align-items:center;display:flex;justify-content:space-between;width:100%}.trend-icon{--mdc-icon-size: 18px;display:inline-block;margin-left:4px;vertical-align:middle}.trend-icon.up{color:var(--label-badge-green, #4caf50)}.trend-icon.down{color:var(--label-badge-red, #f44336)}.trend-icon.same{color:var(--secondary-text-color);opacity:.5}.resort-footer{align-items:center;border-top:1px solid var(--divider-color);display:flex;justify-content:space-between;padding:12px 0 0}.link-icon{color:var(--secondary-text-color);display:flex;text-decoration:none}.last-updated{align-items:center;color:var(--secondary-text-color);cursor:pointer;display:flex;font-size:.8em;gap:4px;justify-content:flex-end}.warning{color:var(--error-color)}.progress-bar-container{background-color:var(--divider-color);border-radius:2px;height:4px;margin-top:4px;overflow:hidden;width:100%}.progress-bar-fill{background-color:var(--primary-color);border-radius:2px;height:100%;transition:width .3s ease-in-out}.accordion-container{border-top:1px solid var(--divider-color);margin-top:12px}.accordion-container+.accordion-container{margin-top:0}.accordion-header{align-items:center;color:var(--primary-text-color);cursor:pointer;display:flex;font-weight:500;justify-content:space-between;padding:12px 0}.accordion-header:hover{background-color:rgba(var(--rgb-primary-text-color), 0.02)}.accordion-content{padding-bottom:12px}.accordion-content.details{grid-template-columns:repeat(2, minmax(0, 1fr))}.forecast-tabs{border-bottom:1px solid var(--divider-color);display:flex;gap:16px;margin-bottom:12px}.forecast-tab{border-bottom:2px solid rgba(0,0,0,0);color:var(--secondary-text-color);cursor:pointer;font-weight:500;padding:8px 12px;transition:all .2s ease}.forecast-tab:hover{color:var(--primary-text-color)}.forecast-tab.active{border-bottom-color:var(--primary-color);color:var(--primary-color)}.forecast-carousel{align-items:center;display:flex;flex-direction:column;gap:8px;position:relative}.forecast-image-container{align-items:center;aspect-ratio:16/9;background-color:rgba(0,0,0,.05);border-radius:8px;display:flex;justify-content:center;overflow:hidden;position:relative;width:100%}.forecast-image{height:100%;object-fit:contain;width:100%}.carousel-controls{align-items:center;display:flex;justify-content:space-between;margin-top:8px;width:100%}.carousel-btn{align-items:center;background:none;border:none;border-radius:50%;color:var(--primary-text-color);cursor:pointer;display:flex;justify-content:center;padding:8px;transition:background-color .2s}.carousel-btn:hover{background-color:rgba(var(--rgb-primary-text-color), 0.1)}.carousel-btn:disabled{color:var(--disabled-text-color);cursor:not-allowed}.carousel-label{font-size:1.1em;font-weight:500}`;var Ct='<svg height="5.485163mm" viewBox="0 0 5.8208332 5.4851627" width="5.820833mm"\n    xmlns="http://www.w3.org/2000/svg">\n    <g transform="matrix(1.4664468 0 0 1.4664092 -91.591331 -91.904945)">\n        <path\n            d="m65.27 62.689c.183-.037.29-.008.375.088.075.085.084.24.037.339-.053.113-.215.169-.339.157-.104-.01-.229-.082-.256-.183-.038-.142.025-.365.183-.401z" />\n        <path\n            d="m64.248 63.2s.552-.094.803 0c.242.091.585.511.585.511l.365-.365s.139-.043.182 0 0 .183 0 .183l-.365.365-.123.151-.133.032-.365-.292c-.213.103-.45.351-.505.612 0 0 .371.185.483.349.03.043.039.153.039.153l-.093.226-.129.412-.16.512-.256-.182.146-.439.146-.486-.62-.354-.366.438-.384.021-.748-.021v-.292l.895.009.42-.703.511-.584-.234-.034-.569.631s-.097-.012-.124-.047c-.038-.049-.023-.185-.023-.185l.475-.548z" />\n        <path d="m66.06 63.401.129.053-.882 2.595h-.22v-.11z" />\n        <path\n            d="m62.486 63.941 1.199-.077c.042.001.059.003.041.147l-1.241.064c-.042-.003-.017.01.001-.134z" />\n        <path\n            d="m62.494 64.88.677.64s.167.22.332.333c.075.051.27-.023.27-.023.06.146-.023.309-.206.26 0 0-.092-.011-.123-.041-.318-.303-.986-.986-.986-.986z" />\n        <path d="m66.293 65.976c.128-.041.165.02.109.182l-.072.184-.183.072h-2.922l-.11-.219h2.959z" />\n    </g>\n</svg>',Et='<svg height="5.816813mm" viewBox="0 0 5.8207846 5.8168125" width="5.820785mm"\n    xmlns="http://www.w3.org/2000/svg">\n    <path\n        d="m146.23391 74.101876c-1.14758-.322091-2.11388-.608331-2.14733-.636091-.0334-.02776-.0608-.108614-.0608-.179677v-.129205l.0961-.06298.0961-.06298.25793.06981.25792.06982.56924-.595103.56924-.595102.27313-.597014c.15023-.328357.29373-.623828.31889-.656601.0252-.03277.21474-.194992.42129-.360486.20655-.165495.37555-.303341.37556-.306325.00001-.003-.091.000688-.20221.0082l-.20224.01358-.33813.251109c-.18597.13811-.36251.285922-.39232.328472-.0298.04255-.10067.08247-.1575.0887-.0568.0062-.14399-.0072-.19371-.02985-.0497-.02265-.10401-.081-.12064-.129668-.0179-.05241-.35705-.333699-.83186-.689982l-.80161-.601501.012-.08403c.007-.04622.0433-.08999.0815-.09727.0428-.0082.35783.203155.82082.550577.41325.310099.77461.572734.80301.583633.0284.0109.26239-.137376.51998-.329498l.46835-.349314h.75066.75066l.10905.05639c.06.03101.15375.109522.20839.17446.0546.06494.11078.17897.12474.253405.0167.08913.003.19368-.0399.306229l-.0653.170892-.4208.334698c-.23143.184083-.42079.347695-.42079.36358 0 .01589.0834.121276.18544.234202.102.112924.21466.248173.25036.300551l.0649.09523v.588443.588443h.70737.70737l.10149.07983c.0598.04707.10148.118197.10148.173327 0 .05142-.0347.128162-.077.170531l-.077.07703h-1.14378-1.14378l-.59912-.156269c-.32951-.08595-.66539-.173625-.7464-.194837l-.14728-.03857.0461-.05552.0461-.05552h.8662.8662l-.0221-.12518c-.0122-.06885-.0424-.281174-.0673-.471834-.0249-.190659-.0645-.36743-.0881-.392826-.0236-.02539-.17114-.116473-.32784-.202393l-.2849-.156218-.52395.533504c-.28817.293428-.65979.658876-.82581.812106-.16602.153231-.29601.283727-.28888.28999.007.0063.74095.212729 1.6307.45881l1.61771.44742.0674.08163c.0371.04489.0674.11437.0674.154392 0 .04002-.0347.107432-.077.149801-.043.04303-.12379.0752-.18296.07288-.0583-.0023-1.04485-.267685-2.19243-.589775zm2.8867-4.068706c-.0683-.01447-.16944-.05594-.2247-.09215-.0553-.03621-.13332-.138153-.17345-.226536-.0401-.08838-.0733-.202887-.0738-.254455-.00052-.05157.0341-.164231.0768-.25036.0427-.08613.1238-.190098.18027-.231041.0587-.04252.18642-.0807.29795-.08903l.19527-.01459.13481.07378c.0741.04058.17352.141311.22084.223843.0473.08253.0863.210993.0867.285469.00027.07448-.0315.195246-.0707.268379-.0392.07313-.11422.16501-.16667.20417-.0525.03916-.15469.08417-.2272.100019-.0725.01585-.18772.01698-.25604.0025z"\n        stroke-width=".052895" transform="translate(-144.02094 -68.875018)" />\n</svg>';const Pt="bergfex-card",Tt=`${Pt}-editor`;class Mt extends lt{constructor(){super(...arguments),this._forecastState={},this._accordionState={},this._historyState={}}setConfig(t){if(!t||!t.resorts||!Array.isArray(t.resorts)||0===t.resorts.length)throw new Error(xt(this.hass,"common.errors.no_resorts"));this._config={show_snow:!0,show_lifts_slopes:!0,show_last_updated:!0,hide_closed_resorts:!1,show_link:!0,show_conditions:!0,show_avalanche:!0,show_slopes:!0,show_trend:!1,conditions_default_open:!1,forecast_default_open:!1,...t},this._config.show_trend&&this._fetchHistory()}static async getConfigElement(){const t=await window.loadCardHelpers(),e=await t.createCardElement({type:"entities",entities:[]}),s=e?.constructor;return s?.getConfigElement&&await s.getConfigElement(),await Promise.resolve().then(function(){return Lt}),document.createElement(Tt)}static getStubConfig(){return{title:"Bergfex",resorts:[]}}getCardSize(){return 3}_getResorts(t,e){const s={},i=Object.values(t.states);return e.resorts.forEach(e=>{if(!e)return;const o="string"==typeof e?e:e.device,n="object"==typeof e?e.name:void 0,a=i.filter(e=>t.entities[e.entity_id]?.device_id===o&&(e.entity_id.startsWith("sensor.")||e.entity_id.startsWith("image.")));if(0!==a.length&&(s[o]||(s[o]={forecast_days:[],forecast_summaries:[]}),n&&(s[o].name=n),a.forEach(t=>{const e=t.entity_id;if(e.endsWith("_operation_status"))s[o].operation_status=e;else if(e.endsWith("_status")){s[o].status=e;const i=t.attributes?.link,n=t.attributes?.icon;(i&&i.includes("/langlaufen/")||"mdi:ski-cross-country"===n||"mdi:ski-cross-country-skating"===n)&&(s[o].is_cross_country=!0)}e.endsWith("_snow_valley")&&(s[o].snow_valley=e),e.endsWith("_snow_mountain")&&(s[o].snow_mountain=e),e.endsWith("_new_snow")&&(s[o].new_snow=e),e.endsWith("_lifts_open_count")?s[o].lifts_open_count=e:e.endsWith("_lifts_open")&&!s[o].lifts_open_count&&(s[o].lifts_open=e),e.endsWith("_last_update")&&(s[o].last_update=e),e.endsWith("_snow_condition")&&(s[o].snow_condition=e),e.endsWith("_last_snowfall")&&(s[o].last_snowfall=e),e.endsWith("_avalanche_warning")&&(s[o].avalanche_warning=e),e.endsWith("_slopes_open_km")&&(s[o].slopes_open_km=e),e.endsWith("_slopes_open_count")?s[o].slopes_open_count=e:e.endsWith("_slopes_open")&&!s[o].slopes_open_count&&(s[o].slopes_open=e),e.endsWith("_slope_condition")&&(s[o].slope_condition=e),e.endsWith("_classical_open_km")&&(s[o].classical_trails_open=e),e.endsWith("_skating_open_km")&&(s[o].skating_trails_open=e),e.endsWith("_classical_condition")&&(s[o].classical_condition=e),e.endsWith("_skating_condition")&&(s[o].skating_condition=e),e.includes("_forecast_image_day_")&&s[o].forecast_days?.push(e),e.includes("_summary_image_")&&s[o].forecast_summaries?.push(e)}),s[o].forecast_days?.sort(),s[o].forecast_summaries?.sort((t,e)=>{const s=t=>{const e=t.match(/summary_(\d+)h/);return e?parseInt(e[1],10):0};return s(t)-s(e)}),!(s[o].forecast_days&&0!==s[o].forecast_days.length||s[o].forecast_summaries&&0!==s[o].forecast_summaries.length))){const t=s[o].status;if(t){const e=t.match(/^sensor\.(.+)_status$/);if(e){const t=`image.${e[1]}_snow_forecast`;i.forEach(e=>{e.entity_id.startsWith(t)&&(e.entity_id.includes("_day_")?s[o].forecast_days?.push(e.entity_id):e.entity_id.includes("_summary_")&&s[o].forecast_summaries?.push(e.entity_id))}),s[o].forecast_days?.sort(),s[o].forecast_summaries?.sort((t,e)=>{const s=t=>{const e=t.match(/summary_(\d+)h/);return e?parseInt(e[1],10):0};return s(t)-s(e)})}}}}),s}shouldUpdate(t){if(t.has("_config"))return!0;const e=t.get("hass");if(e){const s=this._getResorts(this.hass,this._config),i=Object.values(s).flatMap(t=>Object.values(t)),o=i.some(t=>t&&e.states[t]!==this.hass.states[t]);return this.getOldConfig(t)?.show_trend!==this._config.show_trend&&this._config.show_trend&&this._fetchHistory(),o||e.language!==this.hass.language||t.has("_historyState")}return!0}getOldConfig(t){return t.get("_config")}async _fetchHistory(){if(!this.hass||!this._config.resorts)return;const t=this._getResorts(this.hass,this._config),e=Object.values(t).flatMap(t=>[t.snow_mountain,t.snow_valley,t.new_snow,t.lifts_open_count,t.lifts_open,t.slopes_open_km,t.slopes_open_count,t.slopes_open,t.classical_trails_open,t.skating_trails_open]).filter(Boolean);0!==e.length&&(this._historyState=await async function(t,e,s){if(0===e.length)return{};const i=new Date;i.setHours(i.getHours()-s);try{const s=await t.callWS({type:"history/history_during_period",start_time:i.toISOString(),end_time:i.toISOString(),entity_ids:e,no_attributes:!0}),o={};return Object.entries(s).forEach(([t,e])=>{Array.isArray(e)&&e.length>0&&(o[t]=e[0].s)}),o}catch(t){return console.error(`Error fetching history for ${e.join(", ")}:`,t),{}}}(this.hass,e,24))}_renderTrend(t,e){if(!this._config.show_trend)return W``;const s=this._historyState[t];if(void 0===s||this._isNA(e)||this._isNA(s))return W``;const i=parseFloat(e),o=parseFloat(s);return isNaN(i)||isNaN(o)?W``:i>o?W`<ha-icon class="trend-icon up" icon="mdi:trending-up"></ha-icon>`:i<o?W`<ha-icon class="trend-icon down" icon="mdi:trending-down"></ha-icon>`:W`<ha-icon class="trend-icon same" icon="mdi:trending-neutral"></ha-icon>`}_handleMoreInfo(t){St(this,"hass-more-info",{entityId:t})}_handleTabChange(t,e,s){s.stopPropagation(),this._forecastState={...this._forecastState,[t]:{...this._forecastState[t],tab:e,index:0}}}_handleCarouselChange(t,e,s,i){i.stopPropagation();const o=this._forecastState[t]||{tab:"daily",index:0};let n=o.index+("next"===e?1:-1);n<0&&(n=s-1),n>=s&&(n=0),this._forecastState={...this._forecastState,[t]:{...o,index:n}}}_toggleAccordion(t,e,s){s.stopPropagation();const i=this._accordionState[t]||{},o=i[e]??this._config[`${e}_default_open`]??!1;this._accordionState={...this._accordionState,[t]:{...i,[e]:!o}}}_formatForecastDate(t){const e=new Date;if(e.setDate(e.getDate()+t),0===t)return xt(this.hass,"component.bergfex-card.card.forecast.today");if(1===t)return xt(this.hass,"component.bergfex-card.card.forecast.tomorrow");{const t=this.hass.locale?.language||this.hass.language||"de";return`${e.toLocaleDateString(t,{weekday:"short"})}, ${e.getDate().toString().padStart(2,"0")}.${(e.getMonth()+1).toString().padStart(2,"0")}.`}}_renderProgressBar(t,e){const s=Math.min(100,Math.max(0,t/e*100));return W`
       <div class="progress-bar-container">
         <div class="progress-bar-fill" style="width: ${s}%"></div>
       </div>
@@ -72,433 +67,436 @@ class $t extends wt{}$t.directiveName="unsafeSVG",$t.resultType=2;const bt=mt($t
         <div class="card-content">
           ${t.map(([t,e])=>{const s=e.status;if(!s)return W`
                 <div class="warning">
-                  ${St(this.hass,"component.bergfex-card.card.resort_not_found",{resort:t})}
+                  ${xt(this.hass,"component.bergfex-card.card.resort_not_found",{resort:t})}
                 </div>
-              `;const i=this.hass.devices[t],o=e.name||i?.name_by_user||i?.name||"Unknown Resort",n=e.operation_status?this.hass.states[e.operation_status]:void 0,a=e.status?this.hass.states[e.status]:void 0,r=a?.state??"unknown",l=r,c=r&&"open"===r.toLowerCase()?"open":r&&"closed"===r.toLowerCase()?"closed":"unknown",d=St(this.hass,`component.bergfex-card.card.status.${c}`)||l,h=a?.attributes.link,p=e.snow_valley?this.hass.states[e.snow_valley]:void 0,_=e.snow_mountain?this.hass.states[e.snow_mountain]:void 0,u=e.new_snow?this.hass.states[e.new_snow]:void 0,f=e.lifts_open_count?this.hass.states[e.lifts_open_count]:void 0,g=f||(e.lifts_open?this.hass.states[e.lifts_open]:void 0),m=e.last_update?this.hass.states[e.last_update]:void 0,v=e.snow_condition?this.hass.states[e.snow_condition]:void 0,y=e.slope_condition?this.hass.states[e.slope_condition]:void 0,w=e.last_snowfall?this.hass.states[e.last_snowfall]:void 0,$=e.avalanche_warning?this.hass.states[e.avalanche_warning]:void 0,b=e.slopes_open_km?this.hass.states[e.slopes_open_km]:void 0,k=e.slopes_open_count?this.hass.states[e.slopes_open_count]:void 0,x=k||(e.slopes_open?this.hass.states[e.slopes_open]:void 0),S=e.classical_trails_open?this.hass.states[e.classical_trails_open]:void 0,A=e.skating_trails_open?this.hass.states[e.skating_trails_open]:void 0,N=e.classical_condition?this.hass.states[e.classical_condition]:void 0,C=e.skating_condition?this.hass.states[e.skating_condition]:void 0,E=this._isCrossCountryResort(e),P=S?.attributes?.total,T=A?.attributes?.total,M=g?.attributes?.total,O=b?.attributes?.total,z=x?.attributes?.total,j=this._accordionState[t]?.conditions??this._config.conditions_default_open,R=this._accordionState[t]?.forecast??this._config.forecast_default_open;return W`
+              `;const i=this.hass.devices[t],o=e.name||i?.name_by_user||i?.name||"Unknown Resort",n=e.operation_status?this.hass.states[e.operation_status]:void 0,a=e.status?this.hass.states[e.status]:void 0,r=a?.state??"unknown",l=r,c=r&&"open"===r.toLowerCase()?"open":r&&"closed"===r.toLowerCase()?"closed":"unknown",d=xt(this.hass,`component.bergfex-card.card.status.${c}`)||l,h=a?.attributes.link,p=e.snow_valley?this.hass.states[e.snow_valley]:void 0,_=e.snow_mountain?this.hass.states[e.snow_mountain]:void 0,u=e.new_snow?this.hass.states[e.new_snow]:void 0,f=e.lifts_open_count?this.hass.states[e.lifts_open_count]:void 0,g=f||(e.lifts_open?this.hass.states[e.lifts_open]:void 0),m=e.last_update?this.hass.states[e.last_update]:void 0,v=e.snow_condition?this.hass.states[e.snow_condition]:void 0,y=e.slope_condition?this.hass.states[e.slope_condition]:void 0,w=e.last_snowfall?this.hass.states[e.last_snowfall]:void 0,$=e.avalanche_warning?this.hass.states[e.avalanche_warning]:void 0,b=e.slopes_open_km?this.hass.states[e.slopes_open_km]:void 0,k=e.slopes_open_count?this.hass.states[e.slopes_open_count]:void 0,x=k||(e.slopes_open?this.hass.states[e.slopes_open]:void 0),S=e.classical_trails_open?this.hass.states[e.classical_trails_open]:void 0,A=e.skating_trails_open?this.hass.states[e.skating_trails_open]:void 0,N=e.classical_condition?this.hass.states[e.classical_condition]:void 0,C=e.skating_condition?this.hass.states[e.skating_condition]:void 0,E=this._isCrossCountryResort(e),P=S?.attributes?.total,T=A?.attributes?.total,M=g?.attributes?.total,O=b?.attributes?.total,z=x?.attributes?.total,j=this._accordionState[t]?.conditions??this._config.conditions_default_open,R=this._accordionState[t]?.forecast??this._config.forecast_default_open;return W`
               <div class="resort" tabindex="0" @click=${()=>this._handleMoreInfo(s)}>
                 <div class="resort-header">
                   <span class="resort-name">${o}</span>
                   <span
-                    class=${yt({"resort-status":!0,open:"open"===(l||"").toLowerCase(),closed:"closed"===(l||"").toLowerCase()})}
+                    class=${vt({"resort-status":!0,open:"open"===(l||"").toLowerCase(),closed:"closed"===(l||"").toLowerCase()})}
                     >${d}</span
                   >
                 </div>
 
                 <div class=${E?"details cross-country-details":"details"}>
                   ${this._config.show_snow&&!E?W`
-                        <div
-                          class=${yt({"detail-item":!0,"n-a":!_||isNaN(parseFloat(_.state))})}
-                          @click=${t=>{t.stopPropagation(),_&&this._handleMoreInfo(_.entity_id)}}
-                        >
-                          <span class="custom-icon stroke">${bt('<?xml version="1.0" encoding="utf-8"?>\n\x3c!-- License: MIT. Made by Lucide Contributors: https://lucide.dev/ --\x3e\n<svg \n  xmlns="http://www.w3.org/2000/svg"\n  width="24"\n  height="24"\n  viewBox="0 0 24 24"\n  fill="none"\n  stroke="#000000"\n  stroke-width="2"\n  stroke-linecap="round"\n  stroke-linejoin="round"\n>\n  \x3c!-- Mountain --\x3e\n  <path d="M8 3l4 8 5-5 5 15H2L8 3z" />\n  <path d="M4.14 15.08c2.62-1.57 5.24-1.43 7.86.42 2.74 1.94 5.49 2 8.23.19" />\n\n  \x3c!-- Left-pointing arrow further right from first peak --\x3e\n  <g stroke-width="1">\n    <line x1="15" y1="3" x2="10" y2="3" />\n    <polyline points="12,1 10,3 12,5" />\n  </g>\n</svg>')}</span>
-                          <div class="detail-item-value">
-                            ${_&&!isNaN(parseFloat(_.state))?W`<div class="value-row">
-                                  <span
-                                    >${_.state} ${_.attributes.unit_of_measurement??""}</span
-                                  >
-                                  ${this._renderTrend(_.entity_id,_.state)}
-                                </div>`:W`<span>N/A</span>`}
-                            <span class="detail-item-label"
-                              >${St(this.hass,"component.bergfex-card.card.header.snow_mountain")}
-                              ${_?.attributes.elevation?`(${_.attributes.elevation}m)`:""}</span
-                            >
-                          </div>
-                        </div>
-                        <div
-                          class=${yt({"detail-item":!0,"n-a":!p||isNaN(parseFloat(p.state))})}
-                          @click=${t=>{t.stopPropagation(),p&&this._handleMoreInfo(p.entity_id);const e=t.currentTarget;e.classList.add("clicked"),setTimeout(()=>{e.classList.remove("clicked")},500)}}
-                        >
-                          <span class="custom-icon stroke">${bt('<?xml version="1.0" encoding="utf-8"?>\n\x3c!-- License: MIT. Made by Lucide Contributors: https://lucide.dev/ --\x3e\n<svg \n  xmlns="http://www.w3.org/2000/svg"\n  width="24"\n  height="24"\n  viewBox="0 0 24 24"\n  fill="none"\n  stroke="#000000"\n  stroke-width="2"\n  stroke-linecap="round"\n  stroke-linejoin="round"\n>\n  <path d="M8 3l4 8 5-5 5 15H2L8 3z" />\n  <path d="M4.14 15.08c2.62-1.57 5.24-1.43 7.86.42 2.74 1.94 5.49 2 8.23.19" />\n\n  <g stroke-width="1">\n    <line x1="5" y1="17.5" x2="10" y2="17.5" />\n    <polyline points="8,15.5 5,17.5 8,19.5" />\n  </g>\n</svg>')}</span>
-                          <div class="detail-item-value">
-                            ${p&&!isNaN(parseFloat(p.state))?W`<div class="value-row">
-                                  <span>${p.state} ${p.attributes.unit_of_measurement??""}</span>
-                                  ${this._renderTrend(p.entity_id,p.state)}
-                                </div>`:W`<span>N/A</span>`}
-                            <span class="detail-item-label"
-                              >${St(this.hass,"component.bergfex-card.card.header.snow_valley")}
-                              ${p?.attributes.elevation?`(${p.attributes.elevation}m)`:""}</span
-                            >
-                          </div>
-                        </div>
-                        <div
-                          class=${yt({"detail-item":!0,"n-a":!u||isNaN(parseFloat(u.state))})}
-                          @click=${t=>{t.stopPropagation(),u&&this._handleMoreInfo(u.entity_id)}}
-                        >
-                          <ha-icon icon="mdi:weather-snowy-heavy"></ha-icon>
-                          <div class="detail-item-value">
-                            ${u&&!isNaN(parseFloat(u.state))?W`<div class="value-row">
-                                  <span>${u.state} ${u.attributes.unit_of_measurement??""}</span>
-                                  ${this._renderTrend(u.entity_id,u.state)}
-                                </div>`:W`<span>N/A</span>`}
-                            <span class="detail-item-label"
-                              >${St(this.hass,"component.bergfex-card.card.header.new_snow")}</span
-                            >
-                          </div>
-                        </div>
-                      `:""}
-                  ${E?W`
-                        ${S?W`
-                              <div
-                                class=${yt({"detail-item":!0,"n-a":!S||isNaN(parseFloat(S.state))})}
-                                @click=${t=>{t.stopPropagation(),S&&this._handleMoreInfo(S.entity_id)}}
-                              >
-                                <span class="custom-icon fill">${bt(Et)}</span>
-                                <div class="detail-item-value">
-                                  ${S&&!isNaN(parseFloat(S.state))?(()=>{const t=parseFloat(S.state),e=S.attributes.unit_of_measurement??"km",s=P?parseFloat(String(P)):NaN;return isNaN(s)?W`<div class="value-row">
-                                          <span>${S.state} ${e}</span>
-                                          ${this._renderTrend(S.entity_id,S.state)}
-                                        </div>`:W`<div class="value-row">
-                                              <span>${t}/${s} ${e}</span>
-                                              ${this._renderTrend(S.entity_id,S.state)}
-                                            </div>
-                                            ${this._renderProgressBar(t,s)}`})():W`<span>N/A</span>`}
-                                  <span class="detail-item-label"
-                                    >${St(this.hass,"component.bergfex-card.card.header.classical_trails")}</span
-                                  >
-                                </div>
-                              </div>
-                            `:""}
-                        ${A?W`
-                              <div
-                                class=${yt({"detail-item":!0,"n-a":!A||isNaN(parseFloat(A.state))})}
-                                @click=${t=>{t.stopPropagation(),A&&this._handleMoreInfo(A.entity_id)}}
-                              >
-                                <span class="custom-icon fill">${bt(Pt)}</span>
-                                <div class="detail-item-value">
-                                  ${A&&!isNaN(parseFloat(A.state))?(()=>{const t=parseFloat(A.state),e=A.attributes.unit_of_measurement??"km",s=T?parseFloat(String(T)):NaN;return isNaN(s)?W`<div class="value-row">
-                                          <span>${A.state} ${e}</span>
-                                          ${this._renderTrend(A.entity_id,A.state)}
-                                        </div>`:W`<div class="value-row">
-                                              <span>${t}/${s} ${e}</span>
-                                              ${this._renderTrend(A.entity_id,A.state)}
-                                            </div>
-                                            ${this._renderProgressBar(t,s)}`})():W`<span>N/A</span>`}
-                                  <span class="detail-item-label"
-                                    >${St(this.hass,"component.bergfex-card.card.header.skating_trails")}</span
-                                  >
-                                </div>
-                              </div>
-                            `:""}
-                      `:W`
-                        ${this._config.show_lifts_slopes&&g?W`
-                              <div
-                                class=${yt({"detail-item":!0,"n-a":!g||isNaN(parseFloat(g.state))})}
-                                @click=${t=>{t.stopPropagation(),g&&this._handleMoreInfo(g.entity_id)}}
-                              >
-                                <ha-icon icon="mdi:gondola"></ha-icon>
-                                <div class="detail-item-value">
-                                  ${g&&!isNaN(parseFloat(g.state))?(()=>{const t=parseFloat(g.state),e=M?parseFloat(String(M)):NaN;return isNaN(e)?W`<div class="value-row">
-                                          <span>${g.state}</span>
-                                          ${this._renderTrend(g.entity_id,g.state)}
-                                        </div>`:W`<div class="value-row">
-                                              <span>${t}/${e}</span>
-                                              ${this._renderTrend(g.entity_id,g.state)}
-                                            </div>
-                                            ${this._renderProgressBar(t,e)}`})():W`<span>N/A</span>`}
-                                  <span class="detail-item-label"
-                                    >${St(this.hass,"component.bergfex-card.card.lifts_open")}</span
-                                  >
-                                </div>
-                              </div>
-                            `:""}
-                        ${this._config.show_lifts_slopes&&(b||x)?W`
-                              ${b?W`
-                                    <div
-                                      class=${yt({"detail-item":!0,"n-a":!b||isNaN(parseFloat(b.state))})}
-                                      @click=${t=>{t.stopPropagation(),b&&this._handleMoreInfo(b.entity_id)}}
-                                    >
-                                      <span class="custom-icon stroke">
-                                        <ha-icon icon="mdi:slope-downhill"></ha-icon>
-                                      </span>
-                                      <div class="detail-item-value">
-                                        ${b&&!isNaN(parseFloat(b.state))?(()=>{const t=parseFloat(b.state),e=O?parseFloat(String(O)):NaN,s=b.attributes.unit_of_measurement??"km";return isNaN(e)?W`<div class="value-row">
-                                                <span>${b.state} ${s}</span>
-                                                ${this._renderTrend(b.entity_id,b.state)}
-                                              </div>`:W`<div class="value-row">
-                                                    <span>${t}/${e} ${s}</span>
-                                                    ${this._renderTrend(b.entity_id,b.state)}
-                                                  </div>
-                                                  ${this._renderProgressBar(t,e)}`})():W`<span>N/A</span>`}
-                                        <span class="detail-item-label"
-                                          >${St(this.hass,"component.bergfex-card.card.header.slopes_info_km")}</span
-                                        >
-                                      </div>
-                                    </div>
-                                  `:""}
-                              ${x&&z?W`
-                                    <div
-                                      class=${yt({"detail-item":!0,"n-a":!x||isNaN(parseFloat(x.state))||isNaN(parseFloat(String(z??NaN)))})}
-                                      @click=${t=>{t.stopPropagation(),x&&this._handleMoreInfo(x.entity_id)}}
-                                    >
-                                      <ha-icon icon="mdi:counter"></ha-icon>
-                                      <div class="detail-item-value">
-                                        ${x&&!isNaN(parseFloat(x.state))?(()=>{const t=parseFloat(x.state),e=z?parseFloat(String(z)):NaN;return isNaN(e)?W`<div class="value-row">
-                                                <span>${x.state}</span>
-                                                ${this._renderTrend(x.entity_id,x.state)}
-                                              </div>`:W`<div class="value-row">
-                                                    <span>${t}/${e}</span>
-                                                    ${this._renderTrend(x.entity_id,x.state)}
-                                                  </div>
-                                                  ${this._renderProgressBar(t,e)}`})():W`<span>N/A</span>`}
-                                        <span class="detail-item-label"
-                                          >${St(this.hass,"component.bergfex-card.card.header.slopes_info")}
-                                          (${St(this.hass,"component.bergfex-card.card.header.slopes_total")})</span
-                                        >
-                                      </div>
-                                    </div>
-                                  `:x?W`
-                                      <div
-                                        class=${yt({"detail-item":!0,"n-a":!x||isNaN(parseFloat(x.state))})}
-                                        @click=${t=>{t.stopPropagation(),x&&this._handleMoreInfo(x.entity_id)}}
+                          <div
+                            class=${vt({"detail-item":!0,"n-a":!_||isNaN(parseFloat(_.state))})}
+                            @click=${t=>{t.stopPropagation(),_&&this._handleMoreInfo(_.entity_id)}}
+                          >
+                            <span class="custom-icon stroke">${$t('<?xml version="1.0" encoding="utf-8"?>\n\x3c!-- License: MIT. Made by Lucide Contributors: https://lucide.dev/ --\x3e\n<svg \n  xmlns="http://www.w3.org/2000/svg"\n  width="24"\n  height="24"\n  viewBox="0 0 24 24"\n  fill="none"\n  stroke="#000000"\n  stroke-width="2"\n  stroke-linecap="round"\n  stroke-linejoin="round"\n>\n  \x3c!-- Mountain --\x3e\n  <path d="M8 3l4 8 5-5 5 15H2L8 3z" />\n  <path d="M4.14 15.08c2.62-1.57 5.24-1.43 7.86.42 2.74 1.94 5.49 2 8.23.19" />\n\n  \x3c!-- Left-pointing arrow further right from first peak --\x3e\n  <g stroke-width="1">\n    <line x1="15" y1="3" x2="10" y2="3" />\n    <polyline points="12,1 10,3 12,5" />\n  </g>\n</svg>')}</span>
+                            <div class="detail-item-value">
+                              ${_&&!isNaN(parseFloat(_.state))?W`<div class="value-row">
+                                      <span
+                                        >${_.state}
+                                        ${_.attributes.unit_of_measurement??""}</span
                                       >
-                                        <ha-icon icon="mdi:counter"></ha-icon>
-                                        <div class="detail-item-value">
-                                          ${x&&!isNaN(parseFloat(x.state))?W`<div class="value-row">
-                                                <span>${x.state}</span>
-                                                ${this._renderTrend(x.entity_id,x.state)}
-                                              </div>`:W`<span>N/A</span>`}
-                                          <span class="detail-item-label"
-                                            >${St(this.hass,"component.bergfex-card.card.header.slopes_info")}</span
-                                          >
+                                      ${this._renderTrend(_.entity_id,_.state)}
+                                    </div>`:W`<span>N/A</span>`}
+                              <span class="detail-item-label"
+                                >${xt(this.hass,"component.bergfex-card.card.header.snow_mountain")}
+                                ${_?.attributes.elevation?`(${_.attributes.elevation}m)`:""}</span
+                              >
+                            </div>
+                          </div>
+                          <div
+                            class=${vt({"detail-item":!0,"n-a":!p||isNaN(parseFloat(p.state))})}
+                            @click=${t=>{t.stopPropagation(),p&&this._handleMoreInfo(p.entity_id);const e=t.currentTarget;e.classList.add("clicked"),setTimeout(()=>{e.classList.remove("clicked")},500)}}
+                          >
+                            <span class="custom-icon stroke">${$t('<?xml version="1.0" encoding="utf-8"?>\n\x3c!-- License: MIT. Made by Lucide Contributors: https://lucide.dev/ --\x3e\n<svg \n  xmlns="http://www.w3.org/2000/svg"\n  width="24"\n  height="24"\n  viewBox="0 0 24 24"\n  fill="none"\n  stroke="#000000"\n  stroke-width="2"\n  stroke-linecap="round"\n  stroke-linejoin="round"\n>\n  <path d="M8 3l4 8 5-5 5 15H2L8 3z" />\n  <path d="M4.14 15.08c2.62-1.57 5.24-1.43 7.86.42 2.74 1.94 5.49 2 8.23.19" />\n\n  <g stroke-width="1">\n    <line x1="5" y1="17.5" x2="10" y2="17.5" />\n    <polyline points="8,15.5 5,17.5 8,19.5" />\n  </g>\n</svg>')}</span>
+                            <div class="detail-item-value">
+                              ${p&&!isNaN(parseFloat(p.state))?W`<div class="value-row">
+                                      <span
+                                        >${p.state} ${p.attributes.unit_of_measurement??""}</span
+                                      >
+                                      ${this._renderTrend(p.entity_id,p.state)}
+                                    </div>`:W`<span>N/A</span>`}
+                              <span class="detail-item-label"
+                                >${xt(this.hass,"component.bergfex-card.card.header.snow_valley")}
+                                ${p?.attributes.elevation?`(${p.attributes.elevation}m)`:""}</span
+                              >
+                            </div>
+                          </div>
+                          <div
+                            class=${vt({"detail-item":!0,"n-a":!u||isNaN(parseFloat(u.state))})}
+                            @click=${t=>{t.stopPropagation(),u&&this._handleMoreInfo(u.entity_id)}}
+                          >
+                            <ha-icon icon="mdi:weather-snowy-heavy"></ha-icon>
+                            <div class="detail-item-value">
+                              ${u&&!isNaN(parseFloat(u.state))?W`<div class="value-row">
+                                      <span>${u.state} ${u.attributes.unit_of_measurement??""}</span>
+                                      ${this._renderTrend(u.entity_id,u.state)}
+                                    </div>`:W`<span>N/A</span>`}
+                              <span class="detail-item-label"
+                                >${xt(this.hass,"component.bergfex-card.card.header.new_snow")}</span
+                              >
+                            </div>
+                          </div>
+                        `:""}
+                  ${E?W`
+                          ${S?W`
+                                  <div
+                                    class=${vt({"detail-item":!0,"n-a":!S||isNaN(parseFloat(S.state))})}
+                                    @click=${t=>{t.stopPropagation(),S&&this._handleMoreInfo(S.entity_id)}}
+                                  >
+                                    <span class="custom-icon fill">${$t(Ct)}</span>
+                                    <div class="detail-item-value">
+                                      ${S&&!isNaN(parseFloat(S.state))?(()=>{const t=parseFloat(S.state),e=S.attributes.unit_of_measurement??"km",s=P?parseFloat(String(P)):NaN;return isNaN(s)?W`<div class="value-row">
+                                              <span>${S.state} ${e}</span>
+                                              ${this._renderTrend(S.entity_id,S.state)}
+                                            </div>`:W`<div class="value-row">
+                                                  <span>${t}/${s} ${e}</span>
+                                                  ${this._renderTrend(S.entity_id,S.state)}
+                                                </div>
+                                                ${this._renderProgressBar(t,s)}`})():W`<span>N/A</span>`}
+                                      <span class="detail-item-label"
+                                        >${xt(this.hass,"component.bergfex-card.card.header.classical_trails")}</span
+                                      >
+                                    </div>
+                                  </div>
+                                `:""}
+                          ${A?W`
+                                  <div
+                                    class=${vt({"detail-item":!0,"n-a":!A||isNaN(parseFloat(A.state))})}
+                                    @click=${t=>{t.stopPropagation(),A&&this._handleMoreInfo(A.entity_id)}}
+                                  >
+                                    <span class="custom-icon fill">${$t(Et)}</span>
+                                    <div class="detail-item-value">
+                                      ${A&&!isNaN(parseFloat(A.state))?(()=>{const t=parseFloat(A.state),e=A.attributes.unit_of_measurement??"km",s=T?parseFloat(String(T)):NaN;return isNaN(s)?W`<div class="value-row">
+                                              <span>${A.state} ${e}</span>
+                                              ${this._renderTrend(A.entity_id,A.state)}
+                                            </div>`:W`<div class="value-row">
+                                                  <span>${t}/${s} ${e}</span>
+                                                  ${this._renderTrend(A.entity_id,A.state)}
+                                                </div>
+                                                ${this._renderProgressBar(t,s)}`})():W`<span>N/A</span>`}
+                                      <span class="detail-item-label"
+                                        >${xt(this.hass,"component.bergfex-card.card.header.skating_trails")}</span
+                                      >
+                                    </div>
+                                  </div>
+                                `:""}
+                        `:W`
+                          ${this._config.show_lifts_slopes&&g?W`
+                                  <div
+                                    class=${vt({"detail-item":!0,"n-a":!g||isNaN(parseFloat(g.state))})}
+                                    @click=${t=>{t.stopPropagation(),g&&this._handleMoreInfo(g.entity_id)}}
+                                  >
+                                    <ha-icon icon="mdi:gondola"></ha-icon>
+                                    <div class="detail-item-value">
+                                      ${g&&!isNaN(parseFloat(g.state))?(()=>{const t=parseFloat(g.state),e=M?parseFloat(String(M)):NaN;return isNaN(e)?W`<div class="value-row">
+                                              <span>${g.state}</span>
+                                              ${this._renderTrend(g.entity_id,g.state)}
+                                            </div>`:W`<div class="value-row">
+                                                  <span>${t}/${e}</span>
+                                                  ${this._renderTrend(g.entity_id,g.state)}
+                                                </div>
+                                                ${this._renderProgressBar(t,e)}`})():W`<span>N/A</span>`}
+                                      <span class="detail-item-label"
+                                        >${xt(this.hass,"component.bergfex-card.card.lifts_open")}</span
+                                      >
+                                    </div>
+                                  </div>
+                                `:""}
+                          ${this._config.show_lifts_slopes&&(b||x)?W`
+                                  ${b?W`
+                                        <div
+                                          class=${vt({"detail-item":!0,"n-a":!b||isNaN(parseFloat(b.state))})}
+                                          @click=${t=>{t.stopPropagation(),b&&this._handleMoreInfo(b.entity_id)}}
+                                        >
+                                          <span class="custom-icon stroke">
+                                            <ha-icon icon="mdi:slope-downhill"></ha-icon>
+                                          </span>
+                                          <div class="detail-item-value">
+                                            ${b&&!isNaN(parseFloat(b.state))?(()=>{const t=parseFloat(b.state),e=O?parseFloat(String(O)):NaN,s=b.attributes.unit_of_measurement??"km";return isNaN(e)?W`<div class="value-row">
+                                                    <span>${b.state} ${s}</span>
+                                                    ${this._renderTrend(b.entity_id,b.state)}
+                                                  </div>`:W`<div class="value-row">
+                                                        <span>${t}/${e} ${s}</span>
+                                                        ${this._renderTrend(b.entity_id,b.state)}
+                                                      </div>
+                                                      ${this._renderProgressBar(t,e)}`})():W`<span>N/A</span>`}
+                                            <span class="detail-item-label"
+                                              >${xt(this.hass,"component.bergfex-card.card.header.slopes_info_km")}</span
+                                            >
+                                          </div>
                                         </div>
-                                      </div>
-                                    `:""}
-                            `:""}
-                      `}
+                                      `:""}
+                                  ${x&&z?W`
+                                        <div
+                                          class=${vt({"detail-item":!0,"n-a":!x||isNaN(parseFloat(x.state))||isNaN(parseFloat(String(z??NaN)))})}
+                                          @click=${t=>{t.stopPropagation(),x&&this._handleMoreInfo(x.entity_id)}}
+                                        >
+                                          <ha-icon icon="mdi:counter"></ha-icon>
+                                          <div class="detail-item-value">
+                                            ${x&&!isNaN(parseFloat(x.state))?(()=>{const t=parseFloat(x.state),e=z?parseFloat(String(z)):NaN;return isNaN(e)?W`<div class="value-row">
+                                                    <span>${x.state}</span>
+                                                    ${this._renderTrend(x.entity_id,x.state)}
+                                                  </div>`:W`<div class="value-row">
+                                                        <span>${t}/${e}</span>
+                                                        ${this._renderTrend(x.entity_id,x.state)}
+                                                      </div>
+                                                      ${this._renderProgressBar(t,e)}`})():W`<span>N/A</span>`}
+                                            <span class="detail-item-label"
+                                              >${xt(this.hass,"component.bergfex-card.card.header.slopes_info")}
+                                              (${xt(this.hass,"component.bergfex-card.card.header.slopes_total")})</span
+                                            >
+                                          </div>
+                                        </div>
+                                      `:x?W`
+                                          <div
+                                            class=${vt({"detail-item":!0,"n-a":!x||isNaN(parseFloat(x.state))})}
+                                            @click=${t=>{t.stopPropagation(),x&&this._handleMoreInfo(x.entity_id)}}
+                                          >
+                                            <ha-icon icon="mdi:counter"></ha-icon>
+                                            <div class="detail-item-value">
+                                              ${x&&!isNaN(parseFloat(x.state))?W`<div class="value-row">
+                                                    <span>${x.state}</span>
+                                                    ${this._renderTrend(x.entity_id,x.state)}
+                                                  </div>`:W`<span>N/A</span>`}
+                                              <span class="detail-item-label"
+                                                >${xt(this.hass,"component.bergfex-card.card.header.slopes_info")}</span
+                                              >
+                                            </div>
+                                          </div>
+                                        `:""}
+                                `:""}
+                        `}
                 </div>
 
                 ${this._config.show_conditions&&(v||y||$||w||n||N||C)?W`
-                      <div class="accordion-container">
-                        <div
-                          class="accordion-header"
-                          @click=${e=>this._toggleAccordion(t,"conditions",e)}
-                        >
-                          <span>${St(this.hass,"component.bergfex-card.card.accordion.conditions")}</span>
-                          <ha-icon icon=${j?"mdi:chevron-up":"mdi:chevron-down"}></ha-icon>
+                        <div class="accordion-container">
+                          <div
+                            class="accordion-header"
+                            @click=${e=>this._toggleAccordion(t,"conditions",e)}
+                          >
+                            <span>${xt(this.hass,"component.bergfex-card.card.accordion.conditions")}</span>
+                            <ha-icon icon=${j?"mdi:chevron-up":"mdi:chevron-down"}></ha-icon>
+                          </div>
+                          ${j?W`
+                                  <div class="accordion-content details">
+                                    ${this._config.show_conditions&&(v||y)&&!E?W`
+                                          ${v?W`
+                                                <div
+                                                  class=${vt({"detail-item":!0,"n-a":this._isNA(v.state)})}
+                                                  @click=${t=>{t.stopPropagation(),v&&this._handleMoreInfo(v.entity_id)}}
+                                                >
+                                                  <ha-icon icon="mdi:weather-snowy"></ha-icon>
+                                                  <div class="detail-item-value">
+                                                    <span>${v.state}</span>
+                                                    <span class="detail-item-label"
+                                                      >${xt(this.hass,"component.bergfex-card.card.header.snow_condition")}</span
+                                                    >
+                                                  </div>
+                                                </div>
+                                              `:""}
+                                          ${y?W`
+                                                <div
+                                                  class=${vt({"detail-item":!0,"n-a":this._isNA(y.state)})}
+                                                  @click=${t=>{t.stopPropagation(),y&&this._handleMoreInfo(y.entity_id)}}
+                                                >
+                                                  <ha-icon icon="mdi:ski"></ha-icon>
+                                                  <div class="detail-item-value">
+                                                    <span>${y.state}</span>
+                                                    <span class="detail-item-label"
+                                                      >${xt(this.hass,"component.bergfex-card.card.header.slope_condition")}</span
+                                                    >
+                                                  </div>
+                                                </div>
+                                              `:""}
+                                        `:""}
+                                    ${this._config.show_conditions&&$&&!E?W`
+                                          <div
+                                            class=${vt({"detail-item":!0,"n-a":this._isNA($.state)})}
+                                            @click=${t=>{t.stopPropagation(),$&&this._handleMoreInfo($.entity_id)}}
+                                          >
+                                            <ha-icon icon="mdi:alert"></ha-icon>
+                                            <div class="detail-item-value">
+                                              <span>${$.state}</span>
+                                              <span class="detail-item-label"
+                                                >${xt(this.hass,"component.bergfex-card.card.header.avalanche_warning")}</span
+                                              >
+                                            </div>
+                                          </div>
+                                        `:""}
+                                    ${this._config.show_conditions&&(N||C)?W`
+                                          ${N?W`
+                                                <div
+                                                  class=${vt({"detail-item":!0,"n-a":this._isNA(N.state)})}
+                                                  @click=${t=>{t.stopPropagation(),N&&this._handleMoreInfo(N.entity_id)}}
+                                                >
+                                                  <span class="custom-icon fill"
+                                                    >${$t(Ct)}</span
+                                                  >
+                                                  <div class="detail-item-value">
+                                                    <span>${N.state}</span>
+                                                    <span class="detail-item-label"
+                                                      >${xt(this.hass,"component.bergfex-card.card.header.classical_condition")}</span
+                                                    >
+                                                  </div>
+                                                </div>
+                                              `:""}
+                                          ${C?W`
+                                                <div
+                                                  class=${vt({"detail-item":!0,"n-a":this._isNA(C.state)})}
+                                                  @click=${t=>{t.stopPropagation(),C&&this._handleMoreInfo(C.entity_id)}}
+                                                >
+                                                  <span class="custom-icon fill"
+                                                    >${$t(Et)}</span
+                                                  >
+                                                  <div class="detail-item-value">
+                                                    <span>${C.state}</span>
+                                                    <span class="detail-item-label"
+                                                      >${xt(this.hass,"component.bergfex-card.card.header.skating_condition")}</span
+                                                    >
+                                                  </div>
+                                                </div>
+                                              `:""}
+                                        `:""}
+                                    ${w?W`
+                                          <div
+                                            class=${vt({"detail-item":!0,"n-a":this._isNA(w.state)})}
+                                            @click=${t=>{t.stopPropagation(),this._handleMoreInfo(w.entity_id)}}
+                                          >
+                                            <ha-icon icon="mdi:calendar-clock"></ha-icon>
+                                            <div class="detail-item-value">
+                                              <span>${w.state}</span>
+                                              <span class="detail-item-label"
+                                                >${xt(this.hass,"component.bergfex-card.card.header.last_snowfall")}</span
+                                              >
+                                            </div>
+                                          </div>
+                                        `:""}
+                                    ${this._config.show_conditions&&n?W`
+                                          <div
+                                            class=${vt({"detail-item":!0,"n-a":this._isNA(n.state)})}
+                                            @click=${t=>{t.stopPropagation(),n&&this._handleMoreInfo(n.entity_id)}}
+                                          >
+                                            <ha-icon icon="mdi:information-outline"></ha-icon>
+                                            <div class="detail-item-value">
+                                              <span>${n.state}</span>
+                                              <span class="detail-item-label"
+                                                >${xt(this.hass,"component.bergfex-card.card.header.operation_status")}</span
+                                              >
+                                            </div>
+                                          </div>
+                                        `:""}
+                                  </div>
+                                `:""}
                         </div>
-                        ${j?W`
-                              <div class="accordion-content details">
-                                ${this._config.show_conditions&&(v||y)&&!E?W`
-                                      ${v?W`
-                                            <div
-                                              class=${yt({"detail-item":!0,"n-a":this._isNA(v.state)})}
-                                              @click=${t=>{t.stopPropagation(),v&&this._handleMoreInfo(v.entity_id)}}
-                                            >
-                                              <ha-icon icon="mdi:weather-snowy"></ha-icon>
-                                              <div class="detail-item-value">
-                                                <span>${v.state}</span>
-                                                <span class="detail-item-label"
-                                                  >${St(this.hass,"component.bergfex-card.card.header.snow_condition")}</span
-                                                >
-                                              </div>
-                                            </div>
-                                          `:""}
-                                      ${y?W`
-                                            <div
-                                              class=${yt({"detail-item":!0,"n-a":this._isNA(y.state)})}
-                                              @click=${t=>{t.stopPropagation(),y&&this._handleMoreInfo(y.entity_id)}}
-                                            >
-                                              <ha-icon icon="mdi:ski"></ha-icon>
-                                              <div class="detail-item-value">
-                                                <span>${y.state}</span>
-                                                <span class="detail-item-label"
-                                                  >${St(this.hass,"component.bergfex-card.card.header.slope_condition")}</span
-                                                >
-                                              </div>
-                                            </div>
-                                          `:""}
-                                    `:""}
-                                ${this._config.show_conditions&&$&&!E?W`
-                                      <div
-                                        class=${yt({"detail-item":!0,"n-a":this._isNA($.state)})}
-                                        @click=${t=>{t.stopPropagation(),$&&this._handleMoreInfo($.entity_id)}}
-                                      >
-                                        <ha-icon icon="mdi:alert"></ha-icon>
-                                        <div class="detail-item-value">
-                                          <span>${$.state}</span>
-                                          <span class="detail-item-label"
-                                            >${St(this.hass,"component.bergfex-card.card.header.avalanche_warning")}</span
-                                          >
-                                        </div>
-                                      </div>
-                                    `:""}
-                                ${this._config.show_conditions&&(N||C)?W`
-                                      ${N?W`
-                                            <div
-                                              class=${yt({"detail-item":!0,"n-a":this._isNA(N.state)})}
-                                              @click=${t=>{t.stopPropagation(),N&&this._handleMoreInfo(N.entity_id)}}
-                                            >
-                                              <span class="custom-icon fill"
-                                                >${bt(Et)}</span
-                                              >
-                                              <div class="detail-item-value">
-                                                <span>${N.state}</span>
-                                                <span class="detail-item-label"
-                                                  >${St(this.hass,"component.bergfex-card.card.header.classical_condition")}</span
-                                                >
-                                              </div>
-                                            </div>
-                                          `:""}
-                                      ${C?W`
-                                            <div
-                                              class=${yt({"detail-item":!0,"n-a":this._isNA(C.state)})}
-                                              @click=${t=>{t.stopPropagation(),C&&this._handleMoreInfo(C.entity_id)}}
-                                            >
-                                              <span class="custom-icon fill"
-                                                >${bt(Pt)}</span
-                                              >
-                                              <div class="detail-item-value">
-                                                <span>${C.state}</span>
-                                                <span class="detail-item-label"
-                                                  >${St(this.hass,"component.bergfex-card.card.header.skating_condition")}</span
-                                                >
-                                              </div>
-                                            </div>
-                                          `:""}
-                                    `:""}
-                                ${w?W`
-                                      <div
-                                        class=${yt({"detail-item":!0,"n-a":this._isNA(w.state)})}
-                                        @click=${t=>{t.stopPropagation(),this._handleMoreInfo(w.entity_id)}}
-                                      >
-                                        <ha-icon icon="mdi:calendar-clock"></ha-icon>
-                                        <div class="detail-item-value">
-                                          <span>${w.state}</span>
-                                          <span class="detail-item-label"
-                                            >${St(this.hass,"component.bergfex-card.card.header.last_snowfall")}</span
-                                          >
-                                        </div>
-                                      </div>
-                                    `:""}
-                                ${this._config.show_conditions&&n?W`
-                                      <div
-                                        class=${yt({"detail-item":!0,"n-a":this._isNA(n.state)})}
-                                        @click=${t=>{t.stopPropagation(),n&&this._handleMoreInfo(n.entity_id)}}
-                                      >
-                                        <ha-icon icon="mdi:information-outline"></ha-icon>
-                                        <div class="detail-item-value">
-                                          <span>${n.state}</span>
-                                          <span class="detail-item-label"
-                                            >${St(this.hass,"component.bergfex-card.card.header.operation_status")}</span
-                                          >
-                                        </div>
-                                      </div>
-                                    `:""}
-                              </div>
-                            `:""}
-                      </div>
-                    `:""}
+                      `:""}
                 ${(()=>{if(!this._config.show_forecast)return"";const s=e.forecast_days&&e.forecast_days.length>0&&e.forecast_days.some(t=>{const e=this.hass.states[t];return e&&e.attributes.entity_picture}),i=e.forecast_summaries&&e.forecast_summaries.length>0&&e.forecast_summaries.some(t=>{const e=this.hass.states[t];return e&&e.attributes.entity_picture});return s||i?W`
                     <div class="accordion-container">
                       <div
                         class="accordion-header"
                         @click=${e=>this._toggleAccordion(t,"forecast",e)}
                       >
-                        <span>${St(this.hass,"component.bergfex-card.card.accordion.forecast")}</span>
+                        <span>${xt(this.hass,"component.bergfex-card.card.accordion.forecast")}</span>
                         <ha-icon icon=${R?"mdi:chevron-up":"mdi:chevron-down"}></ha-icon>
                       </div>
                       ${R?W`
-                            <div class="forecast-container">
-                              <div class="forecast-tabs">
-                                ${s?W`
-                                      <div
-                                        class="forecast-tab ${this._forecastState[t]&&"daily"!==this._forecastState[t].tab?"":"active"}"
-                                        @click=${e=>this._handleTabChange(t,"daily",e)}
-                                      >
-                                        ${St(this.hass,"component.bergfex-card.card.forecast.daily")}
-                                      </div>
-                                    `:""}
-                                ${i?W`
-                                      <div
-                                        class="forecast-tab ${"summary"===this._forecastState[t]?.tab?"active":""}"
-                                        @click=${e=>this._handleTabChange(t,"summary",e)}
-                                      >
-                                        ${St(this.hass,"component.bergfex-card.card.forecast.summary")}
-                                      </div>
-                                    `:""}
-                              </div>
+                              <div class="forecast-container">
+                                <div class="forecast-tabs">
+                                  ${s?W`
+                                          <div
+                                            class="forecast-tab ${this._forecastState[t]&&"daily"!==this._forecastState[t].tab?"":"active"}"
+                                            @click=${e=>this._handleTabChange(t,"daily",e)}
+                                          >
+                                            ${xt(this.hass,"component.bergfex-card.card.forecast.daily")}
+                                          </div>
+                                        `:""}
+                                  ${i?W`
+                                          <div
+                                            class="forecast-tab ${"summary"===this._forecastState[t]?.tab?"active":""}"
+                                            @click=${e=>this._handleTabChange(t,"summary",e)}
+                                          >
+                                            ${xt(this.hass,"component.bergfex-card.card.forecast.summary")}
+                                          </div>
+                                        `:""}
+                                </div>
 
-                              <div class="forecast-carousel">
-                                ${(()=>{const s=this._forecastState[t]?.tab||"daily",i="daily"===s?e.forecast_days:e.forecast_summaries,o=this._forecastState[t]?.index||0;if(!i||0===i.length)return W``;const n=i[o],a=this.hass.states[n],r=a?.attributes.entity_picture;let l="";if("daily"===s){const t=n.match(/day_(\d+)/),e=t?parseInt(t[1],10):o;l=this._formatForecastDate(e)}else{const t=n.match(/summary_image_(\d+)h/),e=t?t[1]:"";l=St(this.hass,"component.bergfex-card.card.forecast.hour",{hours:e})}return W`
-                                    <div class="forecast-image-container">
-                                      ${r?W`<img
-                                            src="${r}"
-                                            class="forecast-image"
-                                            alt="${l}"
-                                            @click=${t=>{t.stopPropagation(),this._handleMoreInfo(n)}}
-                                            style="cursor: pointer;"
-                                          />`:W`<span>Image not available</span>`}
-                                    </div>
-                                    <div class="carousel-controls">
-                                      <button
-                                        class="carousel-btn"
-                                        @click=${e=>this._handleCarouselChange(t,"prev",i.length,e)}
-                                        ?disabled=${i.length<=1}
-                                      >
-                                        <ha-icon icon="mdi:chevron-left"></ha-icon>
-                                      </button>
-                                      <span class="carousel-label">${l}</span>
-                                      <button
-                                        class="carousel-btn"
-                                        @click=${e=>this._handleCarouselChange(t,"next",i.length,e)}
-                                        ?disabled=${i.length<=1}
-                                      >
-                                        <ha-icon icon="mdi:chevron-right"></ha-icon>
-                                      </button>
-                                    </div>
-                                  `})()}
+                                <div class="forecast-carousel">
+                                  ${(()=>{const s=this._forecastState[t]?.tab||"daily",i="daily"===s?e.forecast_days:e.forecast_summaries,o=this._forecastState[t]?.index||0;if(!i||0===i.length)return W``;const n=i[o],a=this.hass.states[n],r=a?.attributes.entity_picture;let l;if("daily"===s){const t=n.match(/day_(\d+)/),e=t?parseInt(t[1],10):o;l=this._formatForecastDate(e)}else{const t=n.match(/summary_image_(\d+)h/),e=t?t[1]:"";l=xt(this.hass,"component.bergfex-card.card.forecast.hour",{hours:e})}return W`
+                                      <div class="forecast-image-container">
+                                        ${r?W`<img
+                                              src="${r}"
+                                              class="forecast-image"
+                                              alt="${l}"
+                                              @click=${t=>{t.stopPropagation(),this._handleMoreInfo(n)}}
+                                              style="cursor: pointer;"
+                                            />`:W`<span>Image not available</span>`}
+                                      </div>
+                                      <div class="carousel-controls">
+                                        <button
+                                          class="carousel-btn"
+                                          @click=${e=>this._handleCarouselChange(t,"prev",i.length,e)}
+                                          ?disabled=${i.length<=1}
+                                        >
+                                          <ha-icon icon="mdi:chevron-left"></ha-icon>
+                                        </button>
+                                        <span class="carousel-label">${l}</span>
+                                        <button
+                                          class="carousel-btn"
+                                          @click=${e=>this._handleCarouselChange(t,"next",i.length,e)}
+                                          ?disabled=${i.length<=1}
+                                        >
+                                          <ha-icon icon="mdi:chevron-right"></ha-icon>
+                                        </button>
+                                      </div>
+                                    `})()}
+                                </div>
                               </div>
-                            </div>
-                          `:""}
+                            `:""}
                     </div>
                   `:""})()}
 
                 <div class="resort-footer">
                   ${this._config.show_link&&h?W`
-                        <a
-                          href=${h}
-                          target="_blank"
-                          class="link-icon"
-                          title=${St(this.hass,"component.bergfex-card.card.link_title",{resortName:o})}
-                          @click=${t=>t.stopPropagation()}
-                        >
-                          <ha-icon icon="mdi:link-variant"></ha-icon>
-                        </a>
-                      `:W`<div></div>`}
+                          <a
+                            href=${h}
+                            target="_blank"
+                            class="link-icon"
+                            title=${xt(this.hass,"component.bergfex-card.card.link_title",{resortName:o})}
+                            @click=${t=>t.stopPropagation()}
+                          >
+                            <ha-icon icon="mdi:link-variant"></ha-icon>
+                          </a>
+                        `:W`<div></div>`}
                   ${this._config.show_last_updated&&m?W`
-                        <div
-                          class="last-updated"
-                          @click=${t=>{t.stopPropagation(),m&&this._handleMoreInfo(m.entity_id)}}
-                        >
-                          <ha-icon icon="mdi:clock-outline"></ha-icon>
-                          <span>${Nt(m.state,this.hass)}</span>
-                        </div>
-                      `:""}
+                          <div
+                            class="last-updated"
+                            @click=${t=>{t.stopPropagation(),m&&this._handleMoreInfo(m.entity_id)}}
+                          >
+                            <ha-icon icon="mdi:clock-outline"></ha-icon>
+                            <span>${At(m.state,this.hass)}</span>
+                          </div>
+                        `:""}
                 </div>
               </div>
             `})}
         </div>
       </ha-card>
     `}static{this.styles=r`
-    ${a(Ct)}
-  `}};t([_t({attribute:!1})],Ot.prototype,"hass",void 0),t([
+    ${a(Nt)}
+  `}}t([pt({attribute:!1})],Mt.prototype,"hass",void 0),t([
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-function(t){return(e,s,i)=>((t,e,s)=>(s.configurable=!0,s.enumerable=!0,Reflect.decorate&&"object"!=typeof e&&Object.defineProperty(t,e,s),s))(e,s,{get(){return(e=>e.renderRoot?.querySelector(t)??null)(this)}})}("ha-card")],Ot.prototype,"_card",void 0),t([ut()],Ot.prototype,"_config",void 0),t([ut()],Ot.prototype,"_forecastState",void 0),t([ut()],Ot.prototype,"_accordionState",void 0),t([ut()],Ot.prototype,"_historyState",void 0),Ot=t([dt(Tt)],Ot),"undefined"!=typeof window&&(window.customCards=window.customCards||[],window.customCards.push({type:Tt,name:"Bergfex Card",description:"A Lovelace card to display ski resort conditions from Bergfex.",documentationURL:"https://github.com/timmaurice/lovelace-bergfex-card",getEntitySuggestion:(t,e)=>{const s=t.entities[e];return"bergfex"===s?.platform&&s.device_id?{config:{type:`custom:${Tt}`,resorts:[s.device_id]}}:null}}));const zt=r`.card-config{display:flex;flex-direction:column;gap:12px}.group{border:1px solid var(--divider-color);border-radius:var(--ha-card-border-radius, 12px);margin-top:0;padding:16px}.group-header{color:var(--primary-text-color);font-size:16px;font-weight:500;margin-bottom:12px}ha-form{display:block}`,jt=[{name:"title",selector:{text:{}}},{name:"resorts",selector:{device:{multiple:!0,integration:"bergfex"}}},{type:"expandable",title:"groups.display",schema:[{name:"show_conditions",selector:{boolean:{}}},{name:"conditions_default_open",selector:{boolean:{}}},{name:"show_trend",selector:{boolean:{}}},{name:"show_link",selector:{boolean:{}}},{name:"show_last_updated",selector:{boolean:{}}},{name:"hide_closed_resorts",selector:{boolean:{}}},{name:"sort_by",selector:{select:{mode:"dropdown"}}}]},{type:"expandable",title:"groups.ski_only",schema:[{name:"show_snow",selector:{boolean:{}}},{name:"show_lifts_slopes",selector:{boolean:{}}},{name:"show_forecast",selector:{boolean:{}}},{name:"forecast_default_open",selector:{boolean:{}}}]}];let Rt=class extends lt{setConfig(t){this._config={show_snow:!0,show_lifts_slopes:!0,show_conditions:!0,show_forecast:!1,show_trend:!1,conditions_default_open:!1,forecast_default_open:!1,...t}}_valueChanged(t){this.hass&&this._config&&At(this,"config-changed",{config:{...this._config,...t.detail.value}})}render(){if(!this.hass||!this._config)return W``;const t=[{value:"mountain",label:St(this.hass,"component.bergfex-card.editor.sort_by_options.mountain")},{value:"valley",label:St(this.hass,"component.bergfex-card.editor.sort_by_options.valley")},{value:"new",label:St(this.hass,"component.bergfex-card.editor.sort_by_options.new")},{value:"lift",label:St(this.hass,"component.bergfex-card.editor.sort_by_options.lift")},{value:"classical",label:St(this.hass,"component.bergfex-card.editor.sort_by_options.classical")},{value:"skating",label:St(this.hass,"component.bergfex-card.editor.sort_by_options.skating")},{value:"update",label:St(this.hass,"component.bergfex-card.editor.sort_by_options.update")}],e=(e=>e.reduce((e,s)=>{const i={...s};if("expandable"===i.type&&Array.isArray(i.schema)){const s=i.schema.map(t=>({...t}));return"groups.display"===i.title&&s.forEach(e=>{"sort_by"===e.name&&(e.selector={select:{mode:"dropdown",clearable:!0,options:t}})}),i.title="string"==typeof i.title?St(this.hass,`component.bergfex-card.editor.${i.title}`):i.title,i.schema=s,e.push(i),e}return"resorts"===i.name&&(i.selector={device:{multiple:!0,integration:"bergfex"}}),e.push(i),e},[]))(jt);return W`
+function(t){return(e,s,i)=>((t,e,s)=>(s.configurable=!0,s.enumerable=!0,Reflect.decorate&&"object"!=typeof e&&Object.defineProperty(t,e,s),s))(e,s,{get(){return(e=>e.renderRoot?.querySelector(t)??null)(this)}})}("ha-card")],Mt.prototype,"_card",void 0),t([_t()],Mt.prototype,"_config",void 0),t([_t()],Mt.prototype,"_forecastState",void 0),t([_t()],Mt.prototype,"_accordionState",void 0),t([_t()],Mt.prototype,"_historyState",void 0),customElements.get(Pt)?console.warn(`${Pt}: another copy of this card is already loaded, so this one stays inactive. The card now ships with the Bergfex integration - uninstall "Bergfex Card" from HACS and reload your browser.`):customElements.define(Pt,Mt),"undefined"!=typeof window&&(window.customCards=window.customCards||[],window.customCards.some(t=>t.type===Pt)||window.customCards.push({type:Pt,name:"Bergfex Card",description:"A Lovelace card to display ski resort conditions from Bergfex.",documentationURL:"https://github.com/timmaurice/bergfex",getEntitySuggestion:(t,e)=>{const s=t.entities[e];return"bergfex"===s?.platform&&s.device_id?{config:{type:`custom:${Pt}`,resorts:[s.device_id]}}:null}}));const Ot=r`.card-config{display:flex;flex-direction:column;gap:12px}.group{border:1px solid var(--divider-color);border-radius:var(--ha-card-border-radius, 12px);margin-top:0;padding:16px}.group-header{color:var(--primary-text-color);font-size:16px;font-weight:500;margin-bottom:12px}ha-form{display:block}`,zt=[{name:"title",selector:{text:{}}},{name:"resorts",selector:{device:{multiple:!0,integration:"bergfex"}}},{type:"expandable",title:"groups.display",schema:[{name:"show_conditions",selector:{boolean:{}}},{name:"conditions_default_open",selector:{boolean:{}}},{name:"show_trend",selector:{boolean:{}}},{name:"show_link",selector:{boolean:{}}},{name:"show_last_updated",selector:{boolean:{}}},{name:"hide_closed_resorts",selector:{boolean:{}}},{name:"sort_by",selector:{select:{mode:"dropdown"}}}]},{type:"expandable",title:"groups.ski_only",schema:[{name:"show_snow",selector:{boolean:{}}},{name:"show_lifts_slopes",selector:{boolean:{}}},{name:"show_forecast",selector:{boolean:{}}},{name:"forecast_default_open",selector:{boolean:{}}}]}],jt="bergfex-card-editor";class Rt extends lt{setConfig(t){this._config={show_snow:!0,show_lifts_slopes:!0,show_conditions:!0,show_forecast:!1,show_trend:!1,conditions_default_open:!1,forecast_default_open:!1,...t}}_valueChanged(t){this.hass&&this._config&&St(this,"config-changed",{config:{...this._config,...t.detail.value}})}render(){if(!this.hass||!this._config)return W``;const t=[{value:"mountain",label:xt(this.hass,"component.bergfex-card.editor.sort_by_options.mountain")},{value:"valley",label:xt(this.hass,"component.bergfex-card.editor.sort_by_options.valley")},{value:"new",label:xt(this.hass,"component.bergfex-card.editor.sort_by_options.new")},{value:"lift",label:xt(this.hass,"component.bergfex-card.editor.sort_by_options.lift")},{value:"classical",label:xt(this.hass,"component.bergfex-card.editor.sort_by_options.classical")},{value:"skating",label:xt(this.hass,"component.bergfex-card.editor.sort_by_options.skating")},{value:"update",label:xt(this.hass,"component.bergfex-card.editor.sort_by_options.update")}],e=(e=>e.reduce((e,s)=>{const i={...s};if("expandable"===i.type&&Array.isArray(i.schema)){const s=i.schema.map(t=>({...t}));return"groups.display"===i.title&&s.forEach(e=>{"sort_by"===e.name&&(e.selector={select:{mode:"dropdown",clearable:!0,options:t}})}),i.title="string"==typeof i.title?xt(this.hass,`component.bergfex-card.editor.${i.title}`):i.title,i.schema=s,e.push(i),e}return"resorts"===i.name&&(i.selector={device:{multiple:!0,integration:"bergfex"}}),e.push(i),e},[]))(zt);return W`
       <ha-card>
         <div class="card-content card-config">
           <ha-form
             .schema=${e}
             .hass=${this.hass}
             .data=${this._config}
-            .computeLabel=${t=>St(this.hass,`component.bergfex-card.editor.${t.name}`)}
+            .computeLabel=${t=>xt(this.hass,`component.bergfex-card.editor.${t.name}`)}
             @value-changed=${this._valueChanged}
           ></ha-form>
         </div>
       </ha-card>
     `}static{this.styles=r`
-    ${a(zt)}
-  `}};t([_t({attribute:!1})],Rt.prototype,"hass",void 0),t([ut()],Rt.prototype,"_config",void 0),Rt=t([dt("bergfex-card-editor")],Rt);var Lt=Object.freeze({__proto__:null,get BergfexCardEditor(){return Rt}});export{Ot as BergfexCard};
+    ${a(Ot)}
+  `}}t([pt({attribute:!1})],Rt.prototype,"hass",void 0),t([_t()],Rt.prototype,"_config",void 0),customElements.get(jt)||customElements.define(jt,Rt);var Lt=Object.freeze({__proto__:null,BergfexCardEditor:Rt});export{Mt as BergfexCard};
