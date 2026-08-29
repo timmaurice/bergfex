@@ -4,7 +4,7 @@ import { HomeAssistant, LovelaceCard, LovelaceCardEditor, ResortConfig, BergfexC
 import { classMap } from 'lit/directives/class-map.js';
 import { unsafeSVG } from 'lit/directives/unsafe-svg.js';
 import { localize } from './localize.js';
-import { fireEvent, formatRelativeTime, fetchHistory } from './utils.js';
+import { fireEvent, formatRelativeTime, parseDate, fetchHistory } from './utils.js';
 import styles from './styles/card.styles.scss';
 
 import mountainIcon from './svg/mountain-peak.svg';
@@ -455,10 +455,16 @@ export class BergfexCard extends LitElement implements LovelaceCard {
             valA = a.skating_trails_open ? parseFloat(this.hass.states[a.skating_trails_open].state) : NaN;
             valB = b.skating_trails_open ? parseFloat(this.hass.states[b.skating_trails_open].state) : NaN;
             break;
-          case 'update':
-            valA = a.last_update ? this.hass.states[a.last_update].state : '0';
-            valB = b.last_update ? this.hass.states[b.last_update].state : '0';
-            return new Date(valB).getTime() - new Date(valA).getTime(); // Newest first
+          case 'update': {
+            // Resorts without a usable timestamp sort last rather than scrambling
+            // the order through NaN comparisons.
+            const timeA = parseDate(a.last_update ? this.hass.states[a.last_update]?.state : undefined)?.getTime();
+            const timeB = parseDate(b.last_update ? this.hass.states[b.last_update]?.state : undefined)?.getTime();
+            if (timeA === undefined && timeB === undefined) return 0;
+            if (timeA === undefined) return 1;
+            if (timeB === undefined) return -1;
+            return timeB - timeA; // Newest first
+          }
         }
 
         if (typeof valA === 'number' && typeof valB === 'number') {
@@ -518,6 +524,9 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                 ? this.hass.states[resort.lifts_open]
                 : undefined;
             const last_update = resort.last_update ? this.hass.states[resort.last_update] : undefined;
+            // Not every resort publishes a timestamp; without this the footer
+            // renders a clock next to the string "Invalid Date".
+            const last_update_at = parseDate(last_update?.state);
             const snow_condition = resort.snow_condition ? this.hass.states[resort.snow_condition] : undefined;
             const slope_condition = resort.slope_condition ? this.hass.states[resort.slope_condition] : undefined;
             const last_snowfall = resort.last_snowfall ? this.hass.states[resort.last_snowfall] : undefined;
@@ -1382,7 +1391,7 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                       : html`<div></div>`
                   }
                   ${
-                    this._config.show_last_updated && last_update
+                    this._config.show_last_updated && last_update && last_update_at
                       ? html`
                           <div
                             class="last-updated"
@@ -1394,7 +1403,7 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                             }}
                           >
                             <ha-icon icon="mdi:clock-outline"></ha-icon>
-                            <span>${formatRelativeTime(last_update.state, this.hass)}</span>
+                            <span>${formatRelativeTime(last_update_at, this.hass)}</span>
                           </div>
                         `
                       : ''

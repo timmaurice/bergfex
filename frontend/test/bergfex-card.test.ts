@@ -47,6 +47,7 @@ const createMockResort = (
     forecast_days?: boolean;
     forecast_summaries?: boolean;
     last_snowfall?: string;
+    last_update?: string;
     lifts_open?: string;
     lifts_open_count?: string;
     lifts_total?: string;
@@ -119,7 +120,7 @@ const createMockResort = (
   if (data.snow_condition) createEntity('snow_condition', data.snow_condition);
   if (data.last_snowfall) createEntity('last_snowfall', data.last_snowfall);
   if (data.avalanche_warning) createEntity('avalanche_warning', data.avalanche_warning);
-  createEntity('last_update', new Date().toISOString());
+  createEntity('last_update', data.last_update ?? new Date().toISOString());
 
   if (data.forecast_days) {
     for (let i = 0; i < 6; i++) {
@@ -420,6 +421,65 @@ describe('BergfexCard', () => {
 
       const lastUpdatedEl = element.shadowRoot?.querySelector('.last-updated');
       expect(lastUpdatedEl).toBeNull();
+    });
+
+    it.each(['unknown', 'unavailable', '', 'not a date'])(
+      'should hide last updated when the timestamp is %s rather than showing "Invalid Date"',
+      async (state) => {
+        const resort = createMockResort('airolo', 'Airolo', { status: 'Closed', last_update: state });
+        await setupCard({ show_last_updated: true }, resort);
+
+        expect(element.shadowRoot?.querySelector('.last-updated')).toBeNull();
+        expect(element.shadowRoot?.textContent).not.toContain('Invalid Date');
+      },
+    );
+
+    it('should still show last updated when the timestamp is valid', async () => {
+      const resort = createMockResort('ischgl', 'Ischgl', {
+        status: 'Open',
+        last_update: new Date().toISOString(),
+      });
+      await setupCard({ show_last_updated: true }, resort);
+
+      expect(element.shadowRoot?.querySelector('.last-updated')).not.toBeNull();
+      expect(element.shadowRoot?.textContent).not.toContain('Invalid Date');
+    });
+
+    it('should sort resorts without a timestamp last instead of scrambling the order', async () => {
+      const newest = createMockResort('newest', 'Newest', {
+        status: 'Open',
+        last_update: new Date('2026-08-30T10:00:00Z').toISOString(),
+      });
+      const older = createMockResort('older', 'Older', {
+        status: 'Open',
+        last_update: new Date('2026-08-29T10:00:00Z').toISOString(),
+      });
+      const undated = createMockResort('undated', 'Undated', { status: 'Open', last_update: 'unknown' });
+
+      await setupCard({ sort_by: 'update' }, older, undated, newest);
+
+      const names = Array.from(element.shadowRoot?.querySelectorAll('.resort-name') ?? []).map((el) =>
+        el.textContent?.trim(),
+      );
+      expect(names).toEqual(['Newest', 'Older', 'Undated']);
+    });
+
+    it('should ignore null and undefined entries in the resorts config', async () => {
+      const resort = createMockResort('ischgl', 'Ischgl', { status: 'Open' });
+
+      await expect(
+        setupCard(
+          {
+            resorts: [null, resort.device_id, undefined, null] as unknown as BergfexCardConfig['resorts'],
+          },
+          resort,
+        ),
+      ).resolves.not.toThrow();
+
+      const names = Array.from(element.shadowRoot?.querySelectorAll('.resort-name') ?? []).map((el) =>
+        el.textContent?.trim(),
+      );
+      expect(names).toEqual(['Ischgl']);
     });
 
     it('should show link icon by default if link attribute exists', async () => {

@@ -20,6 +20,20 @@ export const fireEvent = <T>(
 };
 
 /**
+ * Parses a value into a Date, returning null when it is not a usable timestamp.
+ *
+ * Sensor states arrive as strings and are routinely `unknown`, `unavailable` or
+ * absent entirely - bergfex does not publish a timestamp for every resort. Feeding
+ * those to `new Date()` yields an Invalid Date that formats as the literal string
+ * "Invalid Date", so callers need a way to tell the difference.
+ */
+export function parseDate(date: string | Date | null | undefined): Date | null {
+  if (date === null || date === undefined || date === '') return null;
+  const parsed = date instanceof Date ? date : new Date(date);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+/**
  * Formats a date string or object into a locale-aware string.
  * If the date is today, only the time is shown.
  * @param date The date to format.
@@ -27,7 +41,9 @@ export const fireEvent = <T>(
  * @returns A formatted date string.
  */
 export function formatDate(date: string | Date, hass: HomeAssistant): string {
-  const dateObj = new Date(date);
+  const dateObj = parseDate(date);
+  if (!dateObj) return '';
+
   const today = new Date();
   const isToday =
     dateObj.getDate() === today.getDate() &&
@@ -57,7 +73,9 @@ export function formatDate(date: string | Date, hass: HomeAssistant): string {
  * @returns A formatted relative time string.
  */
 export function formatRelativeTime(date: string | Date, hass: HomeAssistant): string {
-  const dateObj = new Date(date);
+  const dateObj = parseDate(date);
+  if (!dateObj) return '';
+
   const now = new Date();
   const diffSeconds = Math.round((now.getTime() - dateObj.getTime()) / 1000);
 
