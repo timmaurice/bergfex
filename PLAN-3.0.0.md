@@ -86,6 +86,16 @@ then retire `timmaurice/lovelace-bergfex-card` from HACS and archive the repo.
 - [x] Card states already covered: cross-country has its own suite, and missing
       sensors are exercised through the `lifts_open` / `slopes_open` fallbacks, the
       "without total" cases and the absent-timestamp tests.
+- [x] Step through all thirteen card options against the running instance. Twelve
+      behave as specified; `sort_by: lift` did nothing and is fixed.
+- [ ] `hide_closed_resorts` renders a completely empty card off-season — no header,
+      no text, nothing. Every resort is closed from April to November, so anyone
+      with the option on sees a blank card for half the year and will read it as
+      broken. Needs an empty state, or the option should stop hiding resorts when
+      it would hide all of them.
+- [ ] There is no way to hide cross-country details. `show_snow` and
+      `show_lifts_slopes` are scoped to ski resorts by design, so with every display
+      option off a cross-country resort still renders its two trail figures.
 - [ ] Card: cover the two remaining degraded states, which are pure test work. - **loading** — `hass` is set but the coordinator has not delivered yet.
       Nothing asserts what the card renders in that window. - **partial data** — some sensors carry values while others are `unknown`,
       within the same resort row. Only covered field by field, never as a row.
