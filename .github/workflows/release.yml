@@ -5,64 +5,42 @@ on:
     tags:
       - "*"
 
+# A re-pushed tag should supersede the run it replaces, not race it.
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   release:
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
-      # 1. Checkout code
       - uses: actions/checkout@v7
 
-      # 2. Get version from tag
       - name: Get version from tag
-        id: get_version
         run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
 
-      # 3. Build the Lovelace card
       - name: Set up Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '22'
+          node-version-file: .nvmrc
           cache: 'npm'
 
-      - name: Install frontend dependencies
+      - name: Install dependencies
         run: npm ci
 
+      # The card ships inside the archive, so a stale or failing build must stop
+      # the release rather than quietly producing one without it.
       - name: Build Lovelace card
         run: npm run build
 
-      # 4. Create ZIP in repo root (bergfex folder only, minus anything users
-      #    should never receive: fixtures, caches and host-compiled bytecode)
-      - name: Create zip archive for HACS
-        run: |
-          cd custom_components/bergfex
-          zip -r ../../bergfex.zip . \
-            -x "tests/*" \
-               "__pycache__/*" "*/__pycache__/*" "*.pyc" \
-               ".pytest_cache/*" \
-               ".DS_Store" "*/.DS_Store"
+      # Refuses to build when the manifest version disagrees with the tag, when a
+      # required file is missing, or when test fixtures, caches or bytecode would
+      # reach users. See scripts/build-release-zip.mjs.
+      - name: Build and verify HACS archive
+        run: npm run build:release
 
-      # 5. Verify the archive is complete and clean
-      - name: Verify zip contents
-        run: |
-          ls -l bergfex.zip
-          unzip -l bergfex.zip
-
-          for required in manifest.json __init__.py bergfex-card.js; do
-            if ! unzip -l bergfex.zip | grep -q "  $required$"; then
-              echo "::error::bergfex.zip is missing $required"
-              exit 1
-            fi
-          done
-
-          if unzip -l bergfex.zip | grep -qE "tests/|__pycache__|\.pytest_cache|\.DS_Store"; then
-            echo "::error::bergfex.zip contains files that must not ship"
-            unzip -l bergfex.zip | grep -E "tests/|__pycache__|\.pytest_cache|\.DS_Store"
-            exit 1
-          fi
-
-      # 6. Create GitHub Release and attach ZIP
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v3
         with:
