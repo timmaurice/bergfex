@@ -75,6 +75,9 @@ then retire `timmaurice/lovelace-bergfex-card` from HACS and archive the repo.
 
 ### Quality _(offline)_
 
+- [x] Fix the visual editor showing `[object Object]` / "Unknown device selected" for
+      every resort written in the `{ device, name }` form, and silently dropping custom
+      resort names on save.
 - [ ] Card: fixture-driven visual states — loading, off-season, missing sensor,
       partial data, cross-country.
 - [x] Add a regression test for the `_getResorts()` null-guard.

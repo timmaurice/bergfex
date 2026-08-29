@@ -1,9 +1,18 @@
 import { LitElement, html, css, TemplateResult, unsafeCSS } from 'lit';
 import { property, state } from 'lit/decorators.js';
-import { HomeAssistant, LovelaceCardEditor, BergfexCardConfig } from './types';
+import { HomeAssistant, LovelaceCardEditor, BergfexCardConfig, ResortConfig } from './types';
 import { localize } from './localize';
 import { fireEvent } from './utils';
 import editorStyles from './styles/editor.styles.scss';
+
+/**
+ * The `resorts` config accepts either a bare device ID or a `{ device, name }`
+ * object, the latter written by hand in YAML to override a resort's label.
+ * ha-form's device selector only speaks device IDs.
+ */
+function toDeviceId(resort: ResortConfig): string {
+  return typeof resort === 'string' ? resort : resort.device;
+}
 
 const SCHEMA = [
   { name: 'title', selector: { text: {} } },
@@ -58,7 +67,27 @@ export class BergfexCardEditor extends LitElement implements LovelaceCardEditor 
   private _valueChanged(ev: { detail: { value: Partial<BergfexCardConfig> } }): void {
     if (!this.hass || !this._config) return;
 
-    fireEvent(this, 'config-changed', { config: { ...this._config, ...ev.detail.value } });
+    const value = { ...ev.detail.value };
+
+    if (Array.isArray(value.resorts)) {
+      // The device picker hands back plain IDs. Without this, opening the editor
+      // and changing any unrelated setting would silently drop every custom
+      // resort name the user had written in YAML.
+      const customNames = new Map<string, string>();
+      for (const resort of this._config.resorts ?? []) {
+        if (resort && typeof resort === 'object' && resort.name) {
+          customNames.set(resort.device, resort.name);
+        }
+      }
+
+      value.resorts = value.resorts.filter(Boolean).map((resort) => {
+        const device = toDeviceId(resort);
+        const name = customNames.get(device);
+        return name ? { device, name } : device;
+      });
+    }
+
+    fireEvent(this, 'config-changed', { config: { ...this._config, ...value } });
   }
 
   protected render(): TemplateResult {
@@ -117,13 +146,20 @@ export class BergfexCardEditor extends LitElement implements LovelaceCardEditor 
 
     const schema = computeSchema(SCHEMA);
 
+    // Normalise resorts for the form; the object form renders as "[object Object]"
+    // in the device picker and matches no device.
+    const formData = {
+      ...this._config,
+      resorts: (this._config.resorts ?? []).filter(Boolean).map(toDeviceId),
+    };
+
     return html`
       <ha-card>
         <div class="card-content card-config">
           <ha-form
             .schema=${schema}
             .hass=${this.hass}
-            .data=${this._config}
+            .data=${formData}
             .computeLabel=${(s: { name: string }) => localize(this.hass, `component.bergfex-card.editor.${s.name}`)}
             @value-changed=${this._valueChanged}
           ></ha-form>
