@@ -128,6 +128,7 @@ def in_season(today=None):
         return override.strip().lower() in ("1", "true", "yes")
     return (today or datetime.date.today()).month in IN_SEASON_MONTHS
 
+
 TARGET_RESORTS = [
     {
         "name": "Stubai",
@@ -420,7 +421,9 @@ def report(results, baseline_gaps):
 
     if mismatches:
         print("\nKeyword mismatches (shifts ignored):")
-        print(f"{'LANG':<6} | {'KEY':<18} | {'AT BASELINE':<25} | {'EXPECTED':<25} | FOUND")
+        print(
+            f"{'LANG':<6} | {'KEY':<18} | {'AT BASELINE':<25} | {'EXPECTED':<25} | FOUND"
+        )
         print("-" * 100)
         for lang, errs, _ in results:
             for e in errs:

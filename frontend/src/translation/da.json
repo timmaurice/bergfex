@@ -64,7 +64,9 @@
     "status": {
       "open": "Åben",
       "closed": "Lukket",
-      "unknown": "Ukendt"
+      "unknown": "Ukendt",
+      "winter_season": "Vintersæson",
+      "summer_season": "Sommersæson"
     }
   },
   "common": {

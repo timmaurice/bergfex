@@ -64,7 +64,9 @@
     "status": {
       "open": "Offen",
       "closed": "Geschlossen",
-      "unknown": "Unbekannt"
+      "unknown": "Unbekannt",
+      "winter_season": "Wintersaison",
+      "summer_season": "Sommersaison"
     }
   },
   "common": {

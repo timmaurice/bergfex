@@ -68,7 +68,10 @@ class TestSeasonality:
 
     @pytest.mark.parametrize("month", [12, 1, 2, 3])
     def test_core_winter_demands_a_snow_report(self, month):
-        assert clc.in_season(datetime.date(2027 if month == 12 else 2026, month, 15)) is True
+        assert (
+            clc.in_season(datetime.date(2027 if month == 12 else 2026, month, 15))
+            is True
+        )
 
     def test_the_calendar_can_be_overridden(self):
         os.environ["BERGFEX_FORCE_SEASON"] = "1"

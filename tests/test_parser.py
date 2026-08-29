@@ -27,19 +27,28 @@ def test_parse_snow_forecast_images():
         </a>
     </div>
     """
-    
-    # Test page 0 (no summary expected, but if present it might be parsed if logic allows, 
+
+    # Test page 0 (no summary expected, but if present it might be parsed if logic allows,
     # but our logic checks page_num > 0 for summary)
     result_page_0 = parse_snow_forecast_images(html, 0)
-    assert result_page_0["daily_forecast_url"] == "https://vcdn.bergfex.at/images/resized/8b/daily.jpg"
+    assert (
+        result_page_0["daily_forecast_url"]
+        == "https://vcdn.bergfex.at/images/resized/8b/daily.jpg"
+    )
     assert result_page_0["daily_caption"] == "Daily Caption"
     assert "summary_url" not in result_page_0
-    
+
     # Test page 1 (summary expected)
     result_page_1 = parse_snow_forecast_images(html, 1)
-    assert result_page_1["daily_forecast_url"] == "https://vcdn.bergfex.at/images/resized/8b/daily.jpg"
+    assert (
+        result_page_1["daily_forecast_url"]
+        == "https://vcdn.bergfex.at/images/resized/8b/daily.jpg"
+    )
     assert result_page_1["daily_caption"] == "Daily Caption"
-    assert result_page_1["summary_url"] == "https://vcdn.bergfex.at/images/resized/7b/summary.jpg"
+    assert (
+        result_page_1["summary_url"]
+        == "https://vcdn.bergfex.at/images/resized/7b/summary.jpg"
+    )
     assert result_page_1["summary_caption"] == "Summary Caption"
 
 
@@ -322,13 +331,13 @@ def test_parse_overview_data_robust():
     </table>
     """
     results = parse_overview_data(html)
-    
+
     # Resort 1 (with data-value)
     assert results["/resort1/"]["snow_valley"] == "10"
     assert results["/resort1/"]["snow_mountain"] == "50"
     assert results["/resort1/"]["new_snow"] == "5"
     assert results["/resort1/"]["status"] == "Open"
-    
+
     # Resort 2 (without data-value, using text fallback)
     assert results["/resort2/"]["snow_valley"] == "20"
     assert results["/resort2/"]["snow_mountain"] == "80"
@@ -361,5 +370,7 @@ def test_resort_name_still_works_with_the_old_prefixed_class():
 
 
 def test_resort_name_falls_back_for_a_single_span_heading():
-    html = '<html><body><h1 class="text-4xl"><span>Axamer Lizum</span></h1></body></html>'
+    html = (
+        '<html><body><h1 class="text-4xl"><span>Axamer Lizum</span></h1></body></html>'
+    )
     assert parse_resort_page(html, "at")["resort_name"] == "Axamer Lizum"

@@ -99,37 +99,15 @@ then retire `timmaurice/lovelace-bergfex-card` from HACS and archive the repo.
       Serfaus flipped from **Open** to **Closed**, and no `season_start` attribute
       remains. Resorts without an operating-hours panel (Les Saisies) now carry no
       season data at all, which is better than carrying the summer one.
-- [ ] **Decide what the card should look like off-season.** This is a design call,
-      not a test, and it blocks writing the test.
-      Right now every snow field renders `N/A`: `airolo` shows six of six. That is
-      correct and still a poor display, and from September to November it is what
-      every user sees — the state the card spends a quarter of the year in.
-      Options worth weighing: - Drop the snow row entirely instead of filling it with `N/A`. - Render closed out-of-season resorts in a compact form. - Show the season start where it is known. The data is already there;
-      `season_start` parses year-round (Serfaus: 2026-06-13 → 2026-10-11).
-      `winter_season_start` and `winter_operating_hours_*` are now on the status
-      sensor, so "closed, season starts 05.12." is available to render.
-      Once decided, pin it down with a whole-card off-season test — the state is
-      reproducible offline from the current sensor shape, no snow required.
-- [x] Add a regression test for the `_getResorts()` null-guard.
-- [x] Get the Frontend workflow green: it failed on both `lint` and `check-format`
-      before it had ever run.
-- [x] Test the "both card versions installed" path in a live HA instance: seven
-      resources collapsed to three, the HACS and `/local/` leftovers and two duplicate
-      entries were removed, unrelated resources untouched, repair issue raised and
-      rendered, and a second bundle import warned instead of throwing.
-- [x] Fix "Invalid Date" in the card footer. `airolo` parses with no `last_update` at
-      all. Fixed in the card via `parseDate()`; the footer row now hides when there is
-      no timestamp. Whether the parser _should_ find one for `airolo` is still open —
-      worth a look during the Phase 1 fixture refresh.
-- [x] **Make the daily live check honest.** `scripts/check_live_site.py` had three
-      paths that exited 0 while finding nothing: a selector matching nothing was
-      recorded as a string and never counted, keys missing from the AT baseline were
-      skipped for all 18 languages with only a printed warning, and "no baseline at
-      all" returned instead of exiting non-zero. - Absence is now a structured outcome, split into seasonal (snow report, which
-      bergfex removes every summer) and year-round (season dates, prices, operating
-      hours, which it does not). - Year-round absence fails whenever it happens; snow-report absence fails only
-      from December to March, deliberately narrow so autumn — when only the glaciers
-      report — cannot produce false alarms. - "Validation successful" is printed only when every tracked structure was found. - `BERGFEX_FORCE_SEASON` overrides the calendar; 24 tests cover the verdict.
+- [x] **Off-season card appearance.** The badge is now four-valued instead of
+      collapsing everything that is not running into a red "Closed":
+      **Open** (green, unchanged operational state) · **Winter season** (green,
+      muted — in season but not running right now) · **Summer season** (yellow) ·
+      **Closed** (red, between the two periods). Resorts that publish no season at
+      all fall back to the previous Open/Closed. Translated into all five languages.
+- [ ] Optional follow-up: show the winter start date on the summer badge
+      ("Summer season · from 05.12."). `winter_season_start` is already on the
+      sensor, so this is presentation only.
 
 ---
 

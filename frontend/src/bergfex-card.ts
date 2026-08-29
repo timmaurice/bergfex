@@ -403,6 +403,30 @@ export class BergfexCard extends LitElement implements LovelaceCard {
    * translatable, so printing the state verbatim showed English inside an
    * otherwise localized card.
    */
+  /**
+   * Resolve the badge shown next to a resort name.
+   *
+   * "Open" stays the operational state - lifts running, within opening hours.
+   * The remaining cases used to collapse into a single red "Closed", which in
+   * summer sat above a column of N/A and explained nothing. Naming the running
+   * period instead tells the user why there is no snow report.
+   */
+  private _statusBadge(state: string, attrs: Record<string, unknown>): { key: string; variant: string } {
+    if ((state || '').toLowerCase() === 'open') return { key: 'open', variant: 'open' };
+
+    const today = new Date().toISOString().slice(0, 10);
+    const inPeriod = (season: 'winter' | 'summer') => {
+      const start = attrs[`${season}_season_start`] as string | undefined;
+      const end = attrs[`${season}_season_end`] as string | undefined;
+      return Boolean(start && end && start <= today && today <= end);
+    };
+
+    if (inPeriod('winter')) return { key: 'winter_season', variant: 'winter-season' };
+    if (inPeriod('summer')) return { key: 'summer_season', variant: 'summer-season' };
+    if ((state || '').toLowerCase() === 'closed') return { key: 'closed', variant: 'closed' };
+    return { key: 'unknown', variant: '' };
+  }
+
   private _conditionText(state: string): string {
     return this._isNA(state) ? localize(this.hass, 'component.bergfex-card.card.status.unknown') : state;
   }
@@ -514,14 +538,8 @@ export class BergfexCard extends LitElement implements LovelaceCard {
             const statusState = resort.status ? this.hass.states[resort.status] : undefined;
             const statusRaw = (statusState?.state as string) ?? 'unknown';
             const status = statusRaw;
-            // Map known states to translation keys; fallback to 'unknown'
-            const statusKey =
-              statusRaw && statusRaw.toLowerCase() === 'open'
-                ? 'open'
-                : statusRaw && statusRaw.toLowerCase() === 'closed'
-                  ? 'closed'
-                  : 'unknown';
-            const statusLabel = localize(this.hass, `component.bergfex-card.card.status.${statusKey}`) || status;
+            const badge = this._statusBadge(statusRaw, statusState?.attributes ?? {});
+            const statusLabel = localize(this.hass, `component.bergfex-card.card.status.${badge.key}`) || status;
             const link = statusState?.attributes.link as string | undefined;
             const snow_valley = resort.snow_valley ? this.hass.states[resort.snow_valley] : undefined;
             const snow_mountain = resort.snow_mountain ? this.hass.states[resort.snow_mountain] : undefined;
@@ -583,8 +601,7 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                   <span
                     class=${classMap({
                       'resort-status': true,
-                      open: (status || '').toLowerCase() === 'open',
-                      closed: (status || '').toLowerCase() === 'closed',
+                      [badge.variant]: Boolean(badge.variant),
                     })}
                     >${statusLabel}</span
                   >

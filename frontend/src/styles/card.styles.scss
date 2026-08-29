@@ -47,6 +47,18 @@
   &.closed {
     background-color: var(--label-badge-red);
   }
+
+  // In season but not currently running: still winter, just not open right now.
+  &.winter-season {
+    background-color: var(--label-badge-green);
+    opacity: 0.65;
+  }
+
+  // Summer operation. Not a fault, and not the same as closed.
+  &.summer-season {
+    background-color: var(--label-badge-yellow);
+    color: var(--primary-text-color);
+  }
 }
 
 .details {

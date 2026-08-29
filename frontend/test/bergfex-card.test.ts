@@ -48,6 +48,7 @@ const createMockResort = (
     forecast_summaries?: boolean;
     last_snowfall?: string;
     last_update?: string;
+    season_attrs?: Record<string, string>;
     lifts_open?: string;
     lifts_open_count?: string;
     lifts_total?: string;
@@ -91,7 +92,7 @@ const createMockResort = (
     };
   };
 
-  createEntity('status', data.status, undefined, { link: data.link });
+  createEntity('status', data.status, undefined, { link: data.link, ...(data.season_attrs ?? {}) });
   if (data.operation_status) createEntity('operation_status', data.operation_status);
   if (data.snow_valley) createEntity('snow_valley', data.snow_valley, 'cm');
   if (data.snow_mountain) createEntity('snow_mountain', data.snow_mountain, 'cm');
@@ -497,6 +498,62 @@ describe('BergfexCard', () => {
 
       const linkIcon = element.shadowRoot?.querySelector('.link-icon');
       expect(linkIcon).toBeNull();
+    });
+  });
+
+  describe('Status badge', () => {
+    const period = (season: 'winter' | 'summer', start: string, end: string) => ({
+      [`${season}_season_start`]: start,
+      [`${season}_season_end`]: end,
+    });
+
+    // Fixed offsets around today so the tests do not drift with the calendar.
+    const day = (offset: number) => new Date(Date.now() + offset * 86400000).toISOString().slice(0, 10);
+
+    it('shows Open when the resort is operating, whatever the season', async () => {
+      const resort = createMockResort('ischgl', 'Ischgl', {
+        status: 'Open',
+        season_attrs: period('summer', day(-30), day(30)),
+      });
+      await setupCard({}, resort);
+      expect(element.shadowRoot?.querySelector('.resort-status')?.textContent?.trim()).toBe('Open');
+      expect(element.shadowRoot?.querySelector('.resort-status.open')).not.toBeNull();
+    });
+
+    it('names the winter season when closed inside it', async () => {
+      const resort = createMockResort('ischgl', 'Ischgl', {
+        status: 'Closed',
+        season_attrs: period('winter', day(-30), day(30)),
+      });
+      await setupCard({}, resort);
+      expect(element.shadowRoot?.querySelector('.resort-status')?.textContent?.trim()).toBe('Winter Season');
+      expect(element.shadowRoot?.querySelector('.resort-status.winter-season')).not.toBeNull();
+    });
+
+    it('names the summer season instead of a bare Closed', async () => {
+      const resort = createMockResort('ischgl', 'Ischgl', {
+        status: 'Closed',
+        season_attrs: period('summer', day(-30), day(30)),
+      });
+      await setupCard({}, resort);
+      expect(element.shadowRoot?.querySelector('.resort-status')?.textContent?.trim()).toBe('Summer Season');
+      expect(element.shadowRoot?.querySelector('.resort-status.summer-season')).not.toBeNull();
+    });
+
+    it('falls back to Closed between the two seasons', async () => {
+      const resort = createMockResort('ischgl', 'Ischgl', {
+        status: 'Closed',
+        season_attrs: { ...period('winter', day(60), day(180)), ...period('summer', day(-180), day(-60)) },
+      });
+      await setupCard({}, resort);
+      expect(element.shadowRoot?.querySelector('.resort-status')?.textContent?.trim()).toBe('Closed');
+      expect(element.shadowRoot?.querySelector('.resort-status.closed')).not.toBeNull();
+    });
+
+    it('falls back to Closed for a resort that publishes no season at all', async () => {
+      const resort = createMockResort('les-saisies', 'Les Saisies', { status: 'Closed' });
+      await setupCard({}, resort);
+      expect(element.shadowRoot?.querySelector('.resort-status')?.textContent?.trim()).toBe('Closed');
     });
   });
 
