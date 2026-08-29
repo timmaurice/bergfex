@@ -27,22 +27,22 @@ then retire `timmaurice/lovelace-bergfex-card` from HACS and archive the repo.
 
 ### Migration blockers — do these first
 
-- [ ] **B1 — Remove stale card resources on setup.**
+- [x] **B1 — Remove stale card resources on setup.**
       `custom_components/bergfex/__init__.py:92` only reconciles resources whose URL
       starts with `/bergfex_frontend/`. A user upgrading from the HACS card keeps a
       second entry (`/hacsfiles/lovelace-bergfex-card/bergfex-card.js`, or a hand-rolled
       `/local/bergfex-card.js`) and loads the bundle **twice**.
       Extend the loop to delete any resource whose URL ends in `bergfex-card.js`
       and is not `new_url`.
-- [ ] **B2 — Guard the custom-element definition.**
+- [x] **B2 — Guard the custom-element definition.**
       Both bundles use `@customElement(ELEMENT_NAME)` → `bergfex-card`
       (`frontend/src/bergfex-card.ts:63`, plus `bergfex-card-editor` in `editor.ts:39`).
       The second `customElements.define` throws at module scope, killing whichever
       copy loads second — card _and_ editor. Wrap in a `customElements.get(...)` check
       so a leftover HACS copy degrades instead of exploding.
-- [ ] **B3 — Decide the migration UX.** Options: silent cleanup (B1), a repair issue
+- [x] **B3 — Decide the migration UX.** Options: silent cleanup (B1), a repair issue
       telling the user to uninstall the HACS card, or both. Recommend B1 + repair issue.
-- [ ] **B4 — Source parity check.** Diff `frontend/src/` against
+- [x] **B4 — Source parity check.** Diff `frontend/src/` against
       `../bergfex-card/src/` (card 2.2.1, last commit `fb516f7` "classical and skating
       trails detection") and confirm nothing was left behind in the move.
 
@@ -53,7 +53,7 @@ then retire `timmaurice/lovelace-bergfex-card` from HACS and archive the repo.
 - [ ] CHANGELOG for 2.3.1 → 3.0.0 (the 2.4.0 line is being skipped — say so).
 - [ ] Verify `hacs.json` `zip_release` / `bergfex.zip` actually contains the built
       `bergfex-card.js`.
-- [ ] Verify `.github/workflows/release.yml` runs the rollup build **before** zipping,
+- [x] Verify `.github/workflows/release.yml` runs the rollup build **before** zipping,
       so the bundle can never ship stale.
 - [ ] README rewrite: one-install story, card config reference, explicit
       "migrating from lovelace-bergfex-card" section.
@@ -64,7 +64,10 @@ then retire `timmaurice/lovelace-bergfex-card` from HACS and archive the repo.
 - [ ] Card: fixture-driven visual states — loading, off-season, missing sensor,
       partial data, cross-country.
 - [ ] Add a regression test for the `_getResorts()` null-guard.
-- [ ] Test the "both card versions installed" path once B1/B2 land.
+- [x] Get the Frontend workflow green: it failed on both `lint` and `check-format`
+      before it had ever run.
+- [ ] Test the "both card versions installed" path in a live HA instance now that
+      B1/B2 have landed.
 - [ ] **Fixture-refresh canary:** a check that flags when a live bergfex page yields
       0 `<dt>` elements _during_ the season — today off-season emptiness and a site
       redesign are indistinguishable, so a summer restructure would only surface in November.
