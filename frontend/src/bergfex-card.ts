@@ -1300,7 +1300,7 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                                   const imageUrl = currentImageEntity?.attributes.entity_picture;
 
                                   // Extract label based on entity ID or index
-                                  let label = '';
+                                  let label: string;
                                   if (activeTab === 'daily') {
                                     const dayMatch = currentImageEntityId.match(/day_(\d+)/);
                                     const dayOffset = dayMatch ? parseInt(dayMatch[1], 10) : currentIndex;
