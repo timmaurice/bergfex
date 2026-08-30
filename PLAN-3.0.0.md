@@ -71,6 +71,14 @@ then retire `timmaurice/lovelace-bergfex-card` from HACS and archive the repo.
 - [x] README rewrite: one-install story, card config reference, explicit
       "migrating from lovelace-bergfex-card" section.
 
+- [ ] **Let the language be changed after setup.** `CONF_LANGUAGE` is asked once in
+      the config flow and then fixed; the options flow only exposes the update
+      interval (`config_flow.py:286`). Changing it today means removing the resort
+      and adding it again, which loses its history. The language also picks the
+      bergfex domain, so the options flow has to update `CONF_DOMAIN` alongside it
+      and reload the entry. Worth checking whether entity ids and the device name
+      survive the switch, or whether a rename is part of it.
+
 ### Quality _(offline)_
 
 - [x] Fix the visual editor showing `[object Object]` / "Unknown device selected" for
@@ -93,9 +101,10 @@ then retire `timmaurice/lovelace-bergfex-card` from HACS and archive the repo.
       with the option on sees a blank card for half the year and will read it as
       broken. Needs an empty state, or the option should stop hiding resorts when
       it would hide all of them.
-- [ ] There is no way to hide cross-country details. `show_snow` and
-      `show_lifts_slopes` are scoped to ski resorts by design, so with every display
-      option off a cross-country resort still renders its two trail figures.
+- [x] Add `show_trails` so cross-country details can be hidden. `show_snow` and
+      `show_lifts_slopes` are scoped to ski resorts by design, so a cross-country
+      resort used to keep its trail figures with every display option off. The new
+      option sits in its own editor group, since the ski-only one does not apply.
 - [ ] Card: cover the two remaining degraded states, which are pure test work. - **loading** — `hass` is set but the coordinator has not delivered yet.
       Nothing asserts what the card renders in that window. - **partial data** — some sensors carry values while others are `unknown`,
       within the same resort row. Only covered field by field, never as a row.
