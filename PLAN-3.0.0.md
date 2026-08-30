@@ -94,11 +94,11 @@ then retire `timmaurice/lovelace-bergfex-card` from HACS and archive the repo.
       "without total" cases and the absent-timestamp tests.
 - [x] Step through all thirteen card options against the running instance. Twelve
       behave as specified; `sort_by: lift` did nothing and is fixed.
-- [ ] `hide_closed_resorts` renders a completely empty card off-season — no header,
-      no text, nothing. Every resort is closed from April to November, so anyone
-      with the option on sees a blank card for half the year and will read it as
-      broken. Needs an empty state, or the option should stop hiding resorts when
-      it would hide all of them.
+- [x] `hide_closed_resorts` now hides only genuinely closed resorts — those between
+      the two seasons — instead of everything the status sensor calls Closed. A
+      resort in summer operation is not closed; bergfex reports it as
+      "Sommerbetrieb" and it may be running lifts. This removes the empty card the
+      option produced from April to November without needing an empty state.
 - [x] Add `show_trails` so cross-country details can be hidden. `show_snow` and
       `show_lifts_slopes` are scoped to ski resorts by design, so a cross-country
       resort used to keep its trail figures with every display option off. The new

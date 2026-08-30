@@ -467,6 +467,21 @@ export class BergfexCard extends LitElement implements LovelaceCard {
     return localize(this.hass, 'component.bergfex-card.card.status.season_last_year', { date: formatted });
   }
 
+  /**
+   * Whether a resort is genuinely shut, as opposed to merely not skiable today.
+   *
+   * A resort in summer operation is not closed - bergfex reports it as
+   * "Sommerbetrieb" and it may well be running lifts. Filtering on the status
+   * sensor alone hid every resort from April to November and left an empty card.
+   */
+  private _isOutOfSeason(resort: Resort): boolean {
+    const state = resort.status ? this.hass.states[resort.status] : undefined;
+    if (!state) return true;
+    if (state.state.toLowerCase() === 'open') return false;
+
+    return this._statusBadge(state.state, state.attributes ?? {}).variant === 'closed';
+  }
+
   private _conditionText(state: string): string {
     return this._isNA(state) ? localize(this.hass, 'component.bergfex-card.card.status.unknown') : state;
   }
@@ -489,9 +504,7 @@ export class BergfexCard extends LitElement implements LovelaceCard {
     let resortEntries = Object.entries(this._getResorts(this.hass, this._config));
 
     if (this._config.hide_closed_resorts) {
-      resortEntries = resortEntries.filter(
-        ([, r]) => r.status && this.hass.states[r.status].state.toLowerCase() === 'open',
-      );
+      resortEntries = resortEntries.filter(([, r]) => !this._isOutOfSeason(r));
     }
 
     const sortBy = this._config.sort_by;

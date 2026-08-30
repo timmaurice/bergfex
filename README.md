@@ -137,7 +137,7 @@ resorts:
 | `show_last_updated`   | boolean                 | `true`       | Show the last updated timestamp.                                                                                  |
 | `show_trend`          | boolean                 | `false`      | Show 24h trend indicators for numeric values (Snow, Lifts, Slopes, Tracks).                                       |
 | `show_link`           | boolean                 | `true`       | Show a link to the Bergfex detail page for the resort.                                                            |
-| `hide_closed_resorts` | boolean                 | `false`      | Hide resorts that are currently closed.                                                                           |
+| `hide_closed_resorts` | boolean                 | `false`      | Hide resorts that are between seasons. Resorts in summer operation stay visible, since they are not closed.       |
 | `sort_by`             | string                  | `(none)`     | Sort resorts by a specific value. Options: `mountain`, `valley`, `new`, `lift`, `classical`, `skating`, `update`. |
 
 ### Resort Object Parameters

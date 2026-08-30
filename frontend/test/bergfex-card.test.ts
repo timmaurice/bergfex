@@ -685,6 +685,50 @@ describe('BergfexCard', () => {
   });
 
   describe('Filtering', () => {
+    const period = (season: 'winter' | 'summer', start: string, end: string) => ({
+      [`${season}_season_start`]: start,
+      [`${season}_season_end`]: end,
+    });
+    const day = (offset: number) => new Date(Date.now() + offset * 86400000).toISOString().slice(0, 10);
+
+    it('keeps resorts in summer operation, which are not closed', async () => {
+      // bergfex reports these as "Sommerbetrieb" and they may be running lifts.
+      const summer = createMockResort('warth', 'Warth', {
+        status: 'Closed',
+        season_attrs: period('summer', day(-30), day(30)),
+      });
+      await setupCard({ hide_closed_resorts: true }, summer);
+
+      expect(element.shadowRoot?.querySelectorAll('.resort').length).toBe(1);
+    });
+
+    it('keeps resorts inside the winter season that are shut for the night', async () => {
+      const winter = createMockResort('ischgl', 'Ischgl', {
+        status: 'Closed',
+        season_attrs: period('winter', day(-30), day(30)),
+      });
+      await setupCard({ hide_closed_resorts: true }, winter);
+
+      expect(element.shadowRoot?.querySelectorAll('.resort').length).toBe(1);
+    });
+
+    it('hides a resort that is between the two seasons', async () => {
+      const between = createMockResort('between', 'Between', {
+        status: 'Closed',
+        season_attrs: { ...period('winter', day(60), day(180)), ...period('summer', day(-180), day(-60)) },
+      });
+      await setupCard({ hide_closed_resorts: true }, between);
+
+      expect(element.shadowRoot?.querySelectorAll('.resort').length).toBe(0);
+    });
+
+    it('hides a closed resort that publishes no season at all', async () => {
+      const noSeason = createMockResort('les-saisies', 'Les Saisies', { status: 'Closed' });
+      await setupCard({ hide_closed_resorts: true }, noSeason);
+
+      expect(element.shadowRoot?.querySelectorAll('.resort').length).toBe(0);
+    });
+
     it('should hide closed resorts when hide_closed_resorts is true', async () => {
       const resort1 = createMockResort('resort1', 'Resort 1', { status: 'Open' });
       const resort2 = createMockResort('resort2', 'Resort 2', { status: 'Closed' });
