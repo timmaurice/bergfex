@@ -254,6 +254,8 @@ docker compose down
 
 Contributions are welcome! If you find a bug or have a feature request, please open an issue on the GitHub repository.
 
+For the repository layout, local setup and the conventions behind them, see [CONTRIBUTING.md](CONTRIBUTING.md).
+
 ---
 
 For further assistance or to [report issues](https://github.com/timmaurice/bergfex/issues), please visit the [GitHub repository](https://github.com/timmaurice/bergfex).

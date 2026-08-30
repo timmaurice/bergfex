@@ -103,7 +103,9 @@ then retire `timmaurice/lovelace-bergfex-card` from HACS and archive the repo.
       `show_lifts_slopes` are scoped to ski resorts by design, so a cross-country
       resort used to keep its trail figures with every display option off. The new
       option sits in its own editor group, since the ski-only one does not apply.
-- [ ] Card: cover the two remaining degraded states, which are pure test work. - **loading** — `hass` is set but the coordinator has not delivered yet.
+- [x] Card: cover the two remaining degraded states. The partial-data case was
+      already handled; the loading case turned up a real defect — the card kept
+      rendering stale values when a resort's entities disappeared. - **loading** — `hass` is set but the coordinator has not delivered yet.
       Nothing asserts what the card renders in that window. - **partial data** — some sensors carry values while others are `unknown`,
       within the same resort row. Only covered field by field, never as a row.
 - [x] Parse the winter season. bergfex publishes winter and summer operating periods
@@ -145,7 +147,7 @@ then retire `timmaurice/lovelace-bergfex-card` from HACS and archive the repo.
 
 ## Not blocking the release
 
-- [ ] Document the merged repo layout for contributors, in its own `CONTRIBUTING.md`
+- [x] Document the merged repo layout for contributors, in its own `CONTRIBUTING.md`
       rather than the README. The local AI context file is now `CLAUDE.md` and
       gitignored, so it no longer serves that purpose.
 
