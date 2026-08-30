@@ -275,8 +275,10 @@
 
 .forecast-image-container {
   align-items: center;
-  aspect-ratio: 16/9;
-  background-color: rgba(0, 0, 0, 0.05);
+  // bergfex serves these maps at 2000x1200. Forcing 16/9 letterboxed every one of
+  // them and the placeholder tint showed through as grey bars down both sides.
+  // Matching the source ratio removes the bars and gains a little height.
+  aspect-ratio: 5 / 3;
   border-radius: 8px;
   display: flex;
   justify-content: center;
