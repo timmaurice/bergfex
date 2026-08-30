@@ -26,7 +26,13 @@ The `2.4.0` line was never released. Its three betas (`2.4.0b1`, `2.4.0b2`,
   replaced by explicit `winter_season_start` / `winter_season_end` and
   `summer_season_start` / `summer_season_end`. Automations and templates reading
   the old attributes need updating; in almost every case `winter_season_*` is what
-  was meant. Status is now judged against the winter season alone.
+  was meant.
+- **`status` now means skiable, not in-season.** A resort is Open when its lifts
+  are running, there is snow on the ground and it is inside opening hours. The
+  season dates no longer decide it. Both alternatives were wrong at one end: lifts
+  alone reported every valley resort as Open in August, when a single lift runs for
+  hikers on bare grass, and the winter period alone reported the Hintertux glacier
+  as Closed with 3 m of snow and three lifts turning.
 
 ### Added
 

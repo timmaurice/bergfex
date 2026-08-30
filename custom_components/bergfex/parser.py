@@ -290,6 +290,68 @@ def _parse_operating_period(soup: BeautifulSoup, tab: str) -> dict[str, Any]:
     return period
 
 
+def _snow_depth(area_data: dict[str, Any], key: str) -> float | None:
+    """Read a parsed snow depth as a number, or None when there is no reading."""
+    raw = area_data.get(key)
+    if raw in (None, "", "-"):
+        return None
+    try:
+        return float(str(raw).replace(",", "."))
+    except ValueError:
+        return None
+
+
+def _operating_hours(area_data: dict[str, Any], today) -> tuple[str | None, str | None]:
+    """Opening hours of whichever period is running, falling back to the headline.
+
+    A glacier in summer operation keeps different hours from the same glacier in
+    winter, so the period decides which pair applies.
+    """
+    for season in ("winter", "summer"):
+        start = area_data.get(f"{season}_season_start")
+        end = area_data.get(f"{season}_season_end")
+        if start and end and start <= today <= end:
+            hours = (
+                area_data.get(f"{season}_operating_hours_start"),
+                area_data.get(f"{season}_operating_hours_end"),
+            )
+            if all(hours):
+                return hours
+
+    return (
+        area_data.get("operating_hours_start"),
+        area_data.get("operating_hours_end"),
+    )
+
+
+def evaluate_status(area_data: dict[str, Any]) -> str:
+    """Decide whether a resort is open, and record it on ``area_data``.
+
+    Open means you could ski there right now: lifts running, snow on the ground,
+    and inside opening hours. Deliberately not tied to the season dates.
+
+    Both alternatives were tried and both are wrong at one end. Lifts alone
+    reported every valley resort as Open in August, when a single lift runs for
+    hikers on bare grass. The winter season alone reported Hintertux as Closed
+    with 305 cm on the glacier and three lifts turning, because its winter period
+    had formally ended six weeks earlier. Snow plus lifts separates the two
+    without asking the calendar.
+    """
+    lifts_open = area_data.get("lifts_open_count", 0) > 0
+
+    depths = [_snow_depth(area_data, key) for key in ("snow_mountain", "snow_valley")]
+    has_snow = any(depth is not None and depth > 0 for depth in depths)
+
+    now = datetime.now()
+    start, end = _operating_hours(area_data, now.date())
+    within_hours = True
+    if start and end:
+        within_hours = start <= now.strftime("%H:%M") <= end
+
+    area_data["status"] = "Open" if lifts_open and has_snow and within_hours else "Closed"
+    return area_data["status"]
+
+
 def parse_resort_page(
     html: str, area_path: str | None = None, lang: str = "at"
 ) -> dict[str, Any]:
@@ -685,35 +747,7 @@ def parse_resort_page(
                 if match:
                     area_data["price"] = match.group(0).strip()
 
-    # Status with seasonal and time check
-    lifts_ok = area_data.get("lifts_open_count", 0) > 0
-    season_ok = True
-    time_ok = True
-    now_dt = datetime.now()
-    today = now_dt.date()
-    now_time_str = now_dt.strftime("%H:%M")
-
-    # Judged against the winter season only. The headline "Saison" field follows
-    # whichever period bergfex is currently showing, so using it reported ski
-    # resorts as Open in August, when their summer operation runs.
-    if "winter_season_start" in area_data and "winter_season_end" in area_data:
-        season_ok = (
-            area_data["winter_season_start"] <= today <= area_data["winter_season_end"]
-        )
-
-    hours_start = area_data.get(
-        "winter_operating_hours_start", area_data.get("operating_hours_start")
-    )
-    hours_end = area_data.get(
-        "winter_operating_hours_end", area_data.get("operating_hours_end")
-    )
-    if hours_start and hours_end:
-        time_ok = hours_start <= now_time_str <= hours_end
-
-    if lifts_ok and season_ok and time_ok:
-        area_data["status"] = "Open"
-    else:
-        area_data["status"] = "Closed"
+    evaluate_status(area_data)
 
     return {k: v for k, v in area_data.items() if v not in ("-", "")}
 

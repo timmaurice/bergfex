@@ -13,6 +13,8 @@ def test_parse_season_dates_open():
 
     html = f"""
     <h1 class="tw-text-4xl"><span>Ski resort</span><span>Test Resort</span></h1>
+    <dt class="big">Berg (Piste, 3.250m)</dt>
+    <dd class="big">80 cm</dd>
     <div class="block" x-show="tab == 'winter'">
       <h3>Saison</h3><p>13.12.{start_year} - 11.04.{end_year}</p>
     </div>
@@ -40,6 +42,8 @@ def test_parse_season_dates_en_dash():
     # Using en-dash (–) instead of hyphen (-)
     html = f"""
     <h1 class="tw-text-4xl"><span>Ski resort</span><span>Test Resort</span></h1>
+    <dt class="big">Berg (Piste, 3.250m)</dt>
+    <dd class="big">80 cm</dd>
     <div class="block" x-show="tab == 'winter'">
       <h3>Saison</h3><p>13.12.{start_year} – 11.04.{end_year}</p>
     </div>
@@ -109,8 +113,8 @@ def test_time_based_closure_after():
     assert data["status"] == "Closed"
 
 
-def test_parse_season_dates_closed():
-    """Test parsing of season dates resulting in Closed status."""
+def test_out_of_season_but_skiable_is_open():
+    """A finished winter period does not close a glacier that still has snow."""
     import datetime
 
     today = datetime.datetime.now().date()
@@ -119,6 +123,8 @@ def test_parse_season_dates_closed():
 
     html = f"""
     <h1 class="tw-text-4xl"><span>Ski resort</span><span>Test Resort</span></h1>
+    <dt class="big">Berg (Piste, 3.250m)</dt>
+    <dd class="big">80 cm</dd>
     <div class="block" x-show="tab == 'winter'">
       <h3>Saison</h3><p>13.12.{start_year} - 11.04.{end_year}</p>
     </div>
@@ -131,5 +137,50 @@ def test_parse_season_dates_closed():
     data = parse_resort_page(html)
     assert data["winter_season_start"] == date(start_year, 12, 13)
     assert data["winter_season_end"] == date(end_year, 4, 11)
-    # Lifts are open, but season is over, so status should be Closed.
+    # Lifts turning and snow on the ground: skiable, whatever the calendar says.
+    # This is the Hintertux case - its winter period ends in July and the glacier
+    # keeps 3 m through August.
+    assert data["status"] == "Open"
+
+
+def test_lifts_without_snow_are_not_open():
+    """Summer operation: a lift runs for hikers and there is nothing to ski on."""
+    html = """
+    <h1 class="tw-text-4xl"><span>Ski resort</span><span>Test Resort</span></h1>
+    <dt class="big">Tal (Piste, 1.495m)</dt>
+    <dd class="big">0 cm</dd>
+    <dd>
+      <div class="status-lifte" title="open lift"></div>
+      1 von 15
+    </dd>
+    """
+
+    data = parse_resort_page(html)
     assert data["status"] == "Closed"
+
+
+def test_snow_without_a_running_lift_is_not_open():
+    html = """
+    <h1 class="tw-text-4xl"><span>Ski resort</span><span>Test Resort</span></h1>
+    <dt class="big">Berg (Piste, 3.250m)</dt>
+    <dd class="big">180 cm</dd>
+    """
+
+    data = parse_resort_page(html)
+    assert data["status"] == "Closed"
+
+
+def test_valley_snow_alone_is_enough():
+    """Some areas only report a valley depth."""
+    html = """
+    <h1 class="tw-text-4xl"><span>Ski resort</span><span>Test Resort</span></h1>
+    <dt class="big">Tal (Piste, 1.400m)</dt>
+    <dd class="big">40 cm</dd>
+    <dd>
+      <div class="status-lifte" title="open lift"></div>
+      5 von 10
+    </dd>
+    """
+
+    data = parse_resort_page(html)
+    assert data["status"] == "Open"

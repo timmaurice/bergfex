@@ -115,6 +115,7 @@ async def test_async_update_data_resort_fallback(
         area_data = data.get("/it/test/schneebericht/")
 
         assert area_data is not None
+        # No snow reported, so not skiable - the season dates no longer decide this.
         assert area_data["status"] == "Closed"
         assert area_data["winter_season_start"] == date(2025, 12, 13)
         assert area_data["winter_season_end"] == date(2026, 4, 11)
@@ -132,6 +133,8 @@ async def test_async_update_data_resort_fallback_active_season(
     subpage_html = """
     <dt>Tageskarte:</dt>
     <dd>€ 75,00</dd>
+    <dt class="big">Berg (Piste, 3.250m)</dt>
+    <dd class="big">80 cm</dd>
     <dd>
       <div class="status-lifte" title="open lift"></div>
       5 von 10

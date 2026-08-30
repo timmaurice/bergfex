@@ -386,43 +386,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                                         # on every single poll.
                                         _SEASON_PANEL_CACHE[area_path] = panel
 
-                                        # Re-evaluate status since we might have new seasonal boundaries
-                                        lifts_ok = (
-                                            parsed_data.get("lifts_open_count", 0) > 0
-                                        )
-                                        season_ok = True
-                                        time_ok = True
-                                        now_dt = datetime.now()
-                                        today = now_dt.date()
-                                        now_time_str = now_dt.strftime("%H:%M")
-
-                                        if (
-                                            "winter_season_start" in parsed_data
-                                            and "winter_season_end" in parsed_data
-                                        ):
-                                            season_ok = (
-                                                parsed_data["winter_season_start"]
-                                                <= today
-                                                <= parsed_data["winter_season_end"]
-                                            )
-
-                                        hours_start = parsed_data.get(
-                                            "winter_operating_hours_start",
-                                            parsed_data.get("operating_hours_start"),
-                                        )
-                                        hours_end = parsed_data.get(
-                                            "winter_operating_hours_end",
-                                            parsed_data.get("operating_hours_end"),
-                                        )
-                                        if hours_start and hours_end:
-                                            time_ok = (
-                                                hours_start <= now_time_str <= hours_end
-                                            )
-
-                                        if lifts_ok and season_ok and time_ok:
-                                            parsed_data["status"] = "Open"
-                                        else:
-                                            parsed_data["status"] = "Closed"
+                                        # The merged period and hours can flip
+                                        # the verdict, so judge it again with the
+                                        # same rule the parser uses.
+                                        evaluate_status(parsed_data)
                             except Exception as err:
                                 _LOGGER.debug(
                                     "Could not fetch main page for price: %s", err
