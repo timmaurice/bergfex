@@ -71,13 +71,11 @@ then retire `timmaurice/lovelace-bergfex-card` from HACS and archive the repo.
 - [x] README rewrite: one-install story, card config reference, explicit
       "migrating from lovelace-bergfex-card" section.
 
-- [ ] **Let the language be changed after setup.** `CONF_LANGUAGE` is asked once in
-      the config flow and then fixed; the options flow only exposes the update
-      interval (`config_flow.py:286`). Changing it today means removing the resort
-      and adding it again, which loses its history. The language also picks the
-      bergfex domain, so the options flow has to update `CONF_DOMAIN` alongside it
-      and reload the entry. Worth checking whether entity ids and the device name
-      survive the switch, or whether a rename is part of it.
+- [x] **Let the language be changed after setup.** The options flow now carries the
+      language alongside the update interval. Changing it rewrites `CONF_DOMAIN` and
+      the cached url, then reloads the entry; resort and country paths are identical
+      on every bergfex domain and are left alone. The options dialog had only ever
+      been translated for `de` and `en` — the other five now have it too.
 
 ### Quality _(offline)_
 

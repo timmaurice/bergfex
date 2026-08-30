@@ -58,6 +58,18 @@
       "already_configured": "Esta estación de esquí ya está configurada."
     }
   },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Ajustes",
+        "description": "Intervalo de actualización en minutos. Bergfex puede bloquear direcciones IP que consultan con demasiada frecuencia. El idioma también determina el dominio de Bergfex utilizado; cambiarlo recarga la integración.",
+        "data": {
+          "update_interval": "Intervalo de actualización (minutos)",
+          "language": "Idioma"
+        }
+      }
+    }
+  },
   "entity": {
     "sensor": {
       "status": {

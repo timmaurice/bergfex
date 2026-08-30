@@ -291,7 +291,16 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
     ) -> FlowResult:
         """Manage the options."""
         if user_input is not None:
-            return self.async_create_entry(title="", data=user_input)
+            language = user_input.get(CONF_LANGUAGE)
+            if language and language != self.config_entry.data.get(CONF_LANGUAGE):
+                self._async_apply_language(language)
+
+            return self.async_create_entry(
+                title="",
+                data={CONF_UPDATE_INTERVAL: user_input[CONF_UPDATE_INTERVAL]},
+            )
+
+        current_language = self.config_entry.data.get(CONF_LANGUAGE, "at")
 
         return self.async_show_form(
             step_id="init",
@@ -306,6 +315,40 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                         vol.Coerce(int),
                         vol.Range(min=MIN_UPDATE_INTERVAL, max=MAX_UPDATE_INTERVAL),
                     ),
+                    vol.Optional(CONF_LANGUAGE, default=current_language): vol.In(
+                        {
+                            code: lang["name"]
+                            for code, lang in SUPPORTED_LANGUAGES.items()
+                        }
+                    ),
                 }
             ),
         )
+
+    @callback
+    def _async_apply_language(self, language: str) -> None:
+        """Switch the entry to another bergfex language.
+
+        The language also selects the domain, and the entry caches a full url built
+        from it, so all three move together. Resort and country paths are the same
+        on every bergfex domain, so they are left alone.
+
+        Updating the entry fires the update listener, which reloads it - the
+        coordinators then refetch against the new domain and the sensors pick up
+        the localized values.
+        """
+        data = dict(self.config_entry.data)
+        data[CONF_LANGUAGE] = language
+        data[CONF_DOMAIN] = SUPPORTED_LANGUAGES[language]["domain"]
+
+        ski_area = data.get(CONF_SKI_AREA)
+        if ski_area:
+            data["url"] = f"{data[CONF_DOMAIN]}{ski_area}"
+
+        _LOGGER.debug(
+            "Switching %s to language %s (%s)",
+            self.config_entry.title,
+            language,
+            data[CONF_DOMAIN],
+        )
+        self.hass.config_entries.async_update_entry(self.config_entry, data=data)

@@ -61,10 +61,11 @@
   "options": {
     "step": {
       "init": {
-        "title": "Aktualisierungsintervall konfigurieren",
-        "description": "Legen Sie das Aktualisierungsintervall in Minuten fest. Bergfex blockiert möglicherweise IP-Adressen, die zu häufig abfragen.",
+        "title": "Einstellungen",
+        "description": "Aktualisierungsintervall in Minuten. Bergfex blockiert möglicherweise IP-Adressen, die zu häufig abfragen. Die Sprache bestimmt auch die verwendete Bergfex-Domain; eine Änderung lädt die Integration neu.",
         "data": {
-          "update_interval": "Aktualisierungsintervall (Minuten)"
+          "update_interval": "Aktualisierungsintervall (Minuten)",
+          "language": "Sprache"
         }
       }
     }

@@ -58,6 +58,18 @@
       "already_configured": "Ten ośrodek narciarski jest już skonfigurowany."
     }
   },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Ustawienia",
+        "description": "Interwał aktualizacji w minutach. Bergfex może blokować adresy IP odpytujące zbyt często. Język określa również używaną domenę Bergfex; zmiana przeładowuje integrację.",
+        "data": {
+          "update_interval": "Interwał aktualizacji (minuty)",
+          "language": "Język"
+        }
+      }
+    }
+  },
   "entity": {
     "sensor": {
       "status": {

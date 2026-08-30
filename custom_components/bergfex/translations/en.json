@@ -61,10 +61,11 @@
   "options": {
     "step": {
       "init": {
-        "title": "Configure Update Interval",
-        "description": "Set the update interval in minutes. Bergfex might block IP addresses querying too frequently.",
+        "title": "Settings",
+        "description": "Update interval in minutes. Bergfex may block IP addresses that poll too often. The language also selects which Bergfex domain is used; changing it reloads the integration.",
         "data": {
-          "update_interval": "Update Interval (minutes)"
+          "update_interval": "Update interval (minutes)",
+          "language": "Language"
         }
       }
     }

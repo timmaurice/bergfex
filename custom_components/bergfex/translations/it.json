@@ -58,6 +58,18 @@
       "already_configured": "Questa area sciistica è già configurata."
     }
   },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Impostazioni",
+        "description": "Intervallo di aggiornamento in minuti. Bergfex può bloccare gli indirizzi IP che interrogano troppo spesso. La lingua determina anche il dominio Bergfex utilizzato; modificarla ricarica l'integrazione.",
+        "data": {
+          "update_interval": "Intervallo di aggiornamento (minuti)",
+          "language": "Lingua"
+        }
+      }
+    }
+  },
   "entity": {
     "sensor": {
       "status": {

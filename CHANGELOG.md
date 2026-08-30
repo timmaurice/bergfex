@@ -42,6 +42,11 @@ The `2.4.0` line was never released. Its three betas (`2.4.0b1`, `2.4.0b2`,
   `summer_*` equivalents. These are read from bergfex's operating-hours panel
   structurally rather than by keyword, so they also work on domains where the
   localized labels differ.
+- **The language can be changed after setup.** It now sits in the integration's
+  options alongside the update interval, instead of being fixed at the moment the
+  resort was added. Switching it moves the Bergfex domain with it and reloads the
+  entry, so sensor values come back in the new language. The options dialog is also
+  translated into all seven languages now, rather than only German and English.
 - **Live-site validation scripts** (`check_live_site.py`, `e2e_report.py`) that
   detect structural changes on Bergfex before they break parsing.
 

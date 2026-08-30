@@ -58,6 +58,18 @@
       "already_configured": "Dit skigebied is al geconfigureerd."
     }
   },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Instellingen",
+        "description": "Update-interval in minuten. Bergfex kan IP-adressen blokkeren die te vaak opvragen. De taal bepaalt ook welk Bergfex-domein wordt gebruikt; wijzigen herlaadt de integratie.",
+        "data": {
+          "update_interval": "Update-interval (minuten)",
+          "language": "Taal"
+        }
+      }
+    }
+  },
   "entity": {
     "sensor": {
       "status": {
