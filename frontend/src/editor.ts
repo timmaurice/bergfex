@@ -1,6 +1,6 @@
 import { LitElement, html, css, TemplateResult, unsafeCSS } from 'lit';
 import { property, state } from 'lit/decorators.js';
-import { HomeAssistant, LovelaceCardEditor, BergfexCardConfig, ResortConfig } from './types';
+import { HomeAssistant, LovelaceCardEditor, BergfexCardConfig, ResortConfig, DEFAULT_CONFIG } from './types';
 import { localize } from './localize';
 import { fireEvent } from './utils';
 import editorStyles from './styles/editor.styles.scss';
@@ -58,15 +58,21 @@ export class BergfexCardEditor extends LitElement implements LovelaceCardEditor 
 
   public setConfig(config: BergfexCardConfig): void {
     this._config = {
-      show_snow: true,
-      show_lifts_slopes: true,
-      show_conditions: true,
-      show_forecast: false,
-      show_trend: false,
-      conditions_default_open: false,
-      forecast_default_open: false,
+      ...DEFAULT_CONFIG,
       ...config,
     };
+  }
+
+  /**
+   * Optional one-line explanation under a field.
+   *
+   * Only fields with an `<name>_helper` translation get one; localize echoes the
+   * key back when it finds nothing, which is how absence is detected.
+   */
+  private _helper(name: string): string | undefined {
+    const key = `component.bergfex-card.editor.${name}_helper`;
+    const text = localize(this.hass, key);
+    return text === key ? undefined : text;
   }
 
   private _valueChanged(ev: { detail: { value: Partial<BergfexCardConfig> } }): void {
@@ -166,6 +172,7 @@ export class BergfexCardEditor extends LitElement implements LovelaceCardEditor 
             .hass=${this.hass}
             .data=${formData}
             .computeLabel=${(s: { name: string }) => localize(this.hass, `component.bergfex-card.editor.${s.name}`)}
+            .computeHelper=${(s: { name: string }) => this._helper(s.name)}
             @value-changed=${this._valueChanged}
           ></ha-form>
         </div>

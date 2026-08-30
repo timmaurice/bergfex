@@ -1,14 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import '../src/editor';
 import { BergfexCardEditor } from '../src/editor';
-import { BergfexCardConfig, HomeAssistant } from '../src/types';
-
-vi.mock('../src/localize.ts', () => ({
-  localize: (_hass: unknown, key: string) => key,
-}));
+import { BergfexCardConfig, DEFAULT_CONFIG, HomeAssistant } from '../src/types';
 
 interface HaForm extends HTMLElement {
   data?: BergfexCardConfig;
+  computeHelper?: (schema: { name: string }) => string | undefined;
 }
 
 describe('BergfexCardEditor', () => {
@@ -56,6 +53,49 @@ describe('BergfexCardEditor', () => {
         resorts: [null, 'device-a', undefined] as unknown as BergfexCardConfig['resorts'],
       });
       expect(formData()?.resorts).toEqual(['device-a']);
+    });
+  });
+
+  describe('defaults', () => {
+    it('shows every option in the state the card actually renders', async () => {
+      // The two used to keep separate default lists, so the editor displayed
+      // toggles as off for options the card was rendering.
+      await setConfig({ resorts: ['device-a'] });
+      const data = formData() as unknown as Record<string, unknown>;
+
+      for (const [option, value] of Object.entries(DEFAULT_CONFIG)) {
+        expect({ option, value: data[option] }).toEqual({ option, value });
+      }
+    });
+
+    it('lets an explicit config override a default', async () => {
+      await setConfig({ resorts: ['device-a'], show_trails: false, show_link: false });
+      const data = formData() as unknown as Record<string, unknown>;
+
+      expect(data.show_trails).toBe(false);
+      expect(data.show_link).toBe(false);
+      expect(data.show_snow).toBe(true);
+    });
+  });
+
+  describe('field help', () => {
+    const helper = (name: string) => {
+      const form = editor.shadowRoot?.querySelector('ha-form') as HaForm | null;
+      return form?.computeHelper?.({ name });
+    };
+
+    it('explains that summer-operation resorts are not hidden', async () => {
+      await setConfig({ resorts: ['device-a'] });
+      const text = helper('hide_closed_resorts');
+      expect(text).toBeDefined();
+      expect(text).toMatch(/summer/i);
+    });
+
+    it('leaves fields without a helper translation blank', async () => {
+      await setConfig({ resorts: ['device-a'] });
+      for (const name of ['title', 'resorts', 'show_snow', 'sort_by']) {
+        expect(helper(name)).toBeUndefined();
+      }
     });
   });
 

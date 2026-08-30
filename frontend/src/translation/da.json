@@ -18,6 +18,7 @@
     "show_last_updated": "Vis sidst opdateret",
     "show_link": "Vis link ikon",
     "hide_closed_resorts": "Skjul lukkede områder",
+    "hide_closed_resorts_helper": "Skjuler kun skisportssteder mellem vinter- og sommersæsonen. Steder i sommerdrift forbliver synlige, selv om man ikke kan stå på ski.",
     "sort_by": "Sorter efter",
     "sort_by_options": {
       "mountain": "Sne (Bjerg)",

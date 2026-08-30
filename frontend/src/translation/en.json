@@ -18,6 +18,7 @@
     "show_last_updated": "Show last updated",
     "show_link": "Show link icon",
     "hide_closed_resorts": "Hide closed resorts",
+    "hide_closed_resorts_helper": "Only hides resorts between the winter and summer seasons. Resorts in summer operation stay visible, even though you cannot ski there.",
     "sort_by": "Sort by",
     "sort_by_options": {
       "mountain": "Snow (Mountain)",

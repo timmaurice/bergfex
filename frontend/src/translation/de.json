@@ -18,6 +18,7 @@
     "show_last_updated": "Zuletzt aktualisiert anzeigen",
     "show_link": "Link-Symbol anzeigen",
     "hide_closed_resorts": "Geschlossene Skigebiete ausblenden",
+    "hide_closed_resorts_helper": "Blendet nur Skigebiete aus, die zwischen Winter- und Sommersaison liegen. Gebiete im Sommerbetrieb bleiben sichtbar, auch wenn nicht Ski gefahren werden kann.",
     "sort_by": "Sortieren nach",
     "sort_by_options": {
       "mountain": "Schnee (Berg)",

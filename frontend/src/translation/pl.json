@@ -18,6 +18,7 @@
     "show_last_updated": "Pokaż ostatnio aktualizowane",
     "show_link": "Pokaż ikonę linku",
     "hide_closed_resorts": "Ukryj zamknięte kurorty",
+    "hide_closed_resorts_helper": "Ukrywa tylko ośrodki znajdujące się między sezonem zimowym a letnim. Ośrodki w ruchu letnim pozostają widoczne, nawet jeśli nie można w nich jeździć na nartach.",
     "sort_by": "Posortuj",
     "sort_by_options": {
       "mountain": "Śnieg (szczyt)",

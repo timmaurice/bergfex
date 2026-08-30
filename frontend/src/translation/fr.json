@@ -18,6 +18,7 @@
     "show_last_updated": "Afficher la dernière mise à jour",
     "show_link": "Afficher le lien",
     "hide_closed_resorts": "Masquer les stations fermées",
+    "hide_closed_resorts_helper": "Masque uniquement les stations situées entre la saison d'hiver et celle d'été. Les stations en exploitation estivale restent visibles, même si le ski y est impossible.",
     "sort_by": "Trier par",
     "sort_by_options": {
       "mountain": "Neige (au sommet)",
