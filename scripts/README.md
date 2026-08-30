@@ -34,6 +34,14 @@ This directory contains utility scripts for maintaining and validating the Bergf
 - **When to use**: Run it before tagging. CI runs it on every pull request and again during the release.
 - It refuses to build when the `manifest.json` version disagrees with the release tag, when `manifest.json`, `__init__.py` or `bergfex-card.js` is missing, or when test fixtures, `__pycache__`, `.pytest_cache` or `.DS_Store` would reach users. Build the card first — the archive includes `bergfex-card.js`, not the TypeScript sources.
 
+### 5. `check_season_start.py`
+
+**Purpose**: Watches for the point at which refreshing the HTML fixtures becomes worthwhile — when the reference resorts start reporting open pistes.
+
+- **Usage**: `PYTHONPATH=. python3 scripts/check_season_start.py`
+- **When to use**: Runs daily from September via the `Season Watch` workflow, which opens an issue once it fires. Run it by hand to see where the resorts stand.
+- It reuses the integration's own `evaluate_status`, so the watcher cannot drift away from what the integration considers open. Glaciers are deliberately excluded from the reference list: they report all summer and cannot signal the season starting.
+
 ## Execution
 
 All scripts should be executed from the project root using the virtual environment:

@@ -5,9 +5,13 @@ then retire `timmaurice/lovelace-bergfex-card` from HACS and archive the repo.
 
 ## Context (as of 2026-08-29)
 
-- **No live _snow_ data.** Even the Hintertux glacier snow report — the year-round
-  resort — currently renders **0** `<dt>` elements; the winter fixture `hintertux.html`
-  has **20**. bergfex drops the snow-report block off-season.
+- **Glaciers report year round; valley resorts do not.** On 30 August Hintertux
+  showed 305 cm and 14 `<dt>` elements, Schnalstal 50 cm, while Warth rendered
+  **0** `<dt>` (the winter fixture has 20). An earlier note here claimed there was
+  no live snow data anywhere — that was drawn from valley resorts only.
+- **Nowhere is skiable yet.** No resort reports a single open piste; the Hintertux
+  operator shows 3 lifts and 0 km prepared. That is what mid-September changes,
+  and it is what the status rule turns on.
 - **Everything else is live, though.** The test instance parses status, lift counts,
   elevations, prices and season dates right now (Serfaus: `Open`, 11/11 lifts,
   season 2026-06-13 → 2026-10-11). The card renders against that today, with the
@@ -132,16 +136,33 @@ then retire `timmaurice/lovelace-bergfex-card` from HACS and archive the repo.
 
 ---
 
-## Phase 1 — 18–26 Sept: first live data
+## Phase 1 — from mid-September: the season proper
 
-- [ ] **18 Sept — Schnalstal.** First live parse of the season. Compare against fixtures.
-- [ ] **26 Sept — Pitztal.** Second data point.
-- [ ] **mid/late Sept — Hintertux.** Confirm the `<dt>` block is back (expect ~20).
+The original premise here was wrong and is corrected below. Glaciers report **year
+round** — on 30 August Hintertux showed 305 cm and Schnalstal 50 cm — so "the first
+live data of the season" already exists. What actually arrives in September is
+**prepared piste**, which is what the status rule now turns on, and which no resort
+reports today. The Hintertux operator confirms it: 3 lifts, 0 km.
+
+- [ ] **Watch for the trigger.** `.github/workflows/season_watch.yml` runs daily
+      from September and opens an issue once a reference resort reports open
+      pistes. Nothing to remember; the checklist below is in the issue body.
 - [ ] Refresh all 27 fixtures from live pages; commit the diff separately so parser
-      drift is reviewable.
-- [ ] Fix whatever the season's markup broke.
-- [ ] Full end-to-end in the `ha-bergfex-test` docker instance (port 8124) with a
-      real, populated resort — the first honest visual verification since spring.
+      drift stays reviewable.
+- [ ] **Sweep for further dead `tw-` selectors.** bergfex dropped the Tailwind
+      prefix site-wide and it broke resort-name parsing for months while the suite
+      stayed green, because the winter fixtures still carry the old markup. Others
+      may be dead too and cannot be found until the fixtures are current.
+- [ ] **Teach `_isNA` the per-language "no report" strings.** It knows only the
+      German "keine Meldung", so a Hungarian resort shows `nincs üzenet` in normal
+      text where every other language greys out. The `values` map in `const.py`
+      has `nincs jelentés`, which is a different phrase from the one bergfex
+      actually serves — the whole map wants checking against live pages.
+- [ ] Fix whatever else the season's markup broke.
+- [ ] Verify what only real data can show: trend indicators against genuine 24 h
+      history, and snow sorting against real values rather than injected ones.
+- [ ] Full end-to-end in the `ha-bergfex-test` docker instance with a resort that
+      is actually running.
 
 ---
 

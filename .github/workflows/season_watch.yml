@@ -1,0 +1,76 @@
+name: Season Watch
+
+# The HTML fixtures were captured mid-winter and describe a page shape bergfex
+# does not serve in summer, so the suite can stay green while live parsing is
+# broken. This watches for the point at which refreshing them is worthwhile and
+# opens an issue then, so nobody has to remember to look.
+on:
+  schedule:
+    # Midday, so opening hours are satisfied when the status is evaluated.
+    # September through December only - outside that the answer is never in doubt.
+    - cron: "0 11 * 9-12 *"
+  workflow_dispatch:
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Check the reference resorts
+        id: check
+        run: PYTHONPATH=. python scripts/check_season_start.py
+
+      - name: Open the fixture-refresh issue
+        if: steps.check.outputs.season_started == 'true'
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const marker = '<!-- season-watch -->';
+            const existing = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              per_page: 100,
+            });
+            if (existing.data.some((issue) => (issue.body ?? '').includes(marker))) {
+              core.info('Issue already open, nothing to do.');
+              return;
+            }
+
+            const open = '${{ steps.check.outputs.open_resorts }}';
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: 'Season has started — refresh the HTML fixtures',
+              body: [
+                marker,
+                `${open} now reports open pistes, so the live pages carry a full snow report again.`,
+                '',
+                'The fixtures in `tests/fixtures/` date from last winter. Until they are refreshed the',
+                'test suite can stay green while live parsing is broken — which is how the dropped',
+                'Tailwind `tw-` prefix went unnoticed for months.',
+                '',
+                '- [ ] Refresh all 27 fixtures, committed separately so parser drift stays reviewable',
+                '- [ ] Sweep for further dead `tw-` selectors, which the old fixtures cannot reveal',
+                '- [ ] Fill in the per-language "no report" strings `_isNA` does not recognise',
+                '- [ ] Verify trend indicators against real 24 h history',
+                '- [ ] Verify snow sorting against real values rather than injected ones',
+                '- [ ] Full end-to-end in the docker instance with a populated resort',
+                '',
+                'Raised by `.github/workflows/season_watch.yml`.',
+              ].join('\n'),
+            });
