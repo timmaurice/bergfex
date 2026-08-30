@@ -113,8 +113,8 @@ def test_time_based_closure_after():
     assert data["status"] == "Closed"
 
 
-def test_out_of_season_but_skiable_is_open():
-    """A finished winter period does not close a glacier that still has snow."""
+def test_out_of_season_without_piste_figures_is_closed():
+    """Old snow under a running lift is not skiing; the season is the fallback."""
     import datetime
 
     today = datetime.datetime.now().date()
@@ -137,10 +137,32 @@ def test_out_of_season_but_skiable_is_open():
     data = parse_resort_page(html)
     assert data["winter_season_start"] == date(start_year, 12, 13)
     assert data["winter_season_end"] == date(end_year, 4, 11)
-    # Lifts turning and snow on the ground: skiable, whatever the calendar says.
-    # This is the Hintertux case - its winter period ends in July and the glacier
-    # keeps 3 m through August.
-    assert data["status"] == "Open"
+    # The Hintertux case: lifts turning, metres of old glacier snow, but no piste
+    # figures and the winter period long over. Its operator shows 0 km prepared.
+    assert data["status"] == "Closed"
+
+
+def test_reported_pistes_decide_when_they_exist():
+    """The most specific signal wins: prepared terrain beats lifts and snow."""
+    html = """
+    <h1 class="tw-text-4xl"><span>Ski resort</span><span>Test Resort</span></h1>
+    <dt class="big">Berg (Piste, 3.250m)</dt>
+    <dd class="big">180 cm</dd>
+    <dd><div class="status-lifte" title="open lift"></div>8 von 10</dd>
+    <dd><div class="status-lifte" title="open piste"></div>0 von 40</dd>
+    """
+    assert parse_resort_page(html)["status"] == "Closed"
+
+
+def test_one_open_piste_is_enough():
+    html = """
+    <h1 class="tw-text-4xl"><span>Ski resort</span><span>Test Resort</span></h1>
+    <dt class="big">Berg (Piste, 3.250m)</dt>
+    <dd class="big">180 cm</dd>
+    <dd><div class="status-lifte" title="open lift"></div>8 von 10</dd>
+    <dd><div class="status-lifte" title="open piste"></div>1 von 40</dd>
+    """
+    assert parse_resort_page(html)["status"] == "Open"
 
 
 def test_lifts_without_snow_are_not_open():

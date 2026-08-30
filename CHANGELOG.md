@@ -28,11 +28,12 @@ The `2.4.0` line was never released. Its three betas (`2.4.0b1`, `2.4.0b2`,
   the old attributes need updating; in almost every case `winter_season_*` is what
   was meant.
 - **`status` now means skiable, not in-season.** A resort is Open when its lifts
-  are running, there is snow on the ground and it is inside opening hours. The
-  season dates no longer decide it. Both alternatives were wrong at one end: lifts
-  alone reported every valley resort as Open in August, when a single lift runs for
-  hikers on bare grass, and the winter period alone reported the Hintertux glacier
-  as Closed with 3 m of snow and three lifts turning.
+  are running, there is snow on the ground, it is inside opening hours, and its
+  terrain is actually prepared. Where Bergfex publishes open-piste figures those
+  decide; where the piste row is missing entirely, the winter season stands in.
+  Lifts alone reported every valley resort as Open in August — Serfaus runs all
+  eleven for hikers — and snow depth alone reported the Hintertux glacier as Open
+  on three metres of old snow while its operator showed 0 km of prepared piste.
 
 ### Added
 

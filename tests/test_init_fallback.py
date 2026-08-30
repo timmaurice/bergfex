@@ -88,7 +88,7 @@ async def test_async_update_data_resort_fallback(
     with patch(
         "custom_components.bergfex.__init__.async_get_clientsession",
         return_value=mock_session,
-    ), patch("custom_components.bergfex.__init__.datetime") as mock_datetime, patch(
+    ), patch("custom_components.bergfex.parser.datetime") as mock_datetime, patch(
         "homeassistant.helpers.update_coordinator.DataUpdateCoordinator.async_config_entry_first_refresh"
     ) as mock_refresh, patch(
         "homeassistant.config_entries.ConfigEntries.async_forward_entry_setups",
@@ -188,7 +188,7 @@ async def test_async_update_data_resort_fallback_active_season(
     with patch(
         "custom_components.bergfex.__init__.async_get_clientsession",
         return_value=mock_session,
-    ), patch("custom_components.bergfex.__init__.datetime") as mock_datetime, patch(
+    ), patch("custom_components.bergfex.parser.datetime") as mock_datetime, patch(
         "homeassistant.helpers.update_coordinator.DataUpdateCoordinator.async_config_entry_first_refresh"
     ) as mock_refresh, patch(
         "homeassistant.config_entries.ConfigEntries.async_forward_entry_setups",

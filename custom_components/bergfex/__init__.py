@@ -36,6 +36,7 @@ from .const import (
     DEFAULT_UPDATE_INTERVAL,
 )
 from .parser import (
+    evaluate_status,
     parse_cross_country_resort_page,
     parse_cross_country_overview_data,
     parse_overview_data,
@@ -386,14 +387,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                                         # on every single poll.
                                         _SEASON_PANEL_CACHE[area_path] = panel
 
-                                        # The merged period and hours can flip
-                                        # the verdict, so judge it again with the
-                                        # same rule the parser uses.
-                                        evaluate_status(parsed_data)
                             except Exception as err:
                                 _LOGGER.debug(
                                     "Could not fetch main page for price: %s", err
                                 )
+
+                # The season and opening hours only arrive here, and they can flip
+                # the verdict. Judge it again on the merged data - outside the
+                # fallback branch, because a cache hit skips that branch entirely
+                # and used to leave the subpage's season-less verdict standing.
+                evaluate_status(parsed_data)
 
                 # Fetch "New Snow" from region overview (more accurate than detail page)
                 region_path_from_data = parsed_data.get("region_path", "").strip("/")

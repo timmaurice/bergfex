@@ -325,17 +325,20 @@ def _operating_hours(area_data: dict[str, Any], today) -> tuple[str | None, str 
 
 
 def evaluate_status(area_data: dict[str, Any]) -> str:
-    """Decide whether a resort is open, and record it on ``area_data``.
+    """Decide whether a resort is skiable right now, and record it on ``area_data``.
 
-    Open means you could ski there right now: lifts running, snow on the ground,
-    and inside opening hours. Deliberately not tied to the season dates.
+    No single bergfex field answers this. Open lifts do not mean skiing - Serfaus
+    runs all eleven in August for hikers. Snow depth does not either - Hintertux
+    reports 3 m of old glacier snow while its operator shows 0 km of prepared
+    piste. So the check takes the most specific signal each resort offers:
 
-    Both alternatives were tried and both are wrong at one end. Lifts alone
-    reported every valley resort as Open in August, when a single lift runs for
-    hikers on bare grass. The winter season alone reported Hintertux as Closed
-    with 305 cm on the glacier and three lifts turning, because its winter period
-    had formally ended six weeks earlier. Snow plus lifts separates the two
-    without asking the calendar.
+    * where bergfex reports open pistes, those decide - that is prepared terrain;
+    * where the piste row is absent entirely, the winter season decides;
+    * where neither is known, lifts and snow are all there is to go on.
+
+    Note the difference between an absent piste row and a reported zero. Lelex-
+    Crozet publishes no piste figures at all while running eight lifts on 15 cm;
+    a resort reporting 0 of 60 open really has nothing groomed.
     """
     lifts_open = area_data.get("lifts_open_count", 0) > 0
 
@@ -348,7 +351,25 @@ def evaluate_status(area_data: dict[str, Any]) -> str:
     if start and end:
         within_hours = start <= now.strftime("%H:%M") <= end
 
-    area_data["status"] = "Open" if lifts_open and has_snow and within_hours else "Closed"
+    slopes_open = area_data.get("slopes_open_count")
+    if slopes_open is None:
+        slopes_open = area_data.get("slopes_open_km")
+
+    season_start = area_data.get("winter_season_start")
+    season_end = area_data.get("winter_season_end")
+
+    if slopes_open is not None:
+        terrain_open = slopes_open > 0
+    elif season_start and season_end:
+        terrain_open = season_start <= now.date() <= season_end
+    else:
+        # Neither figure available: the resort page carries no piste row and no
+        # operating panel. Nothing further to test, so lifts and snow stand alone.
+        terrain_open = True
+
+    area_data["status"] = (
+        "Open" if lifts_open and has_snow and within_hours and terrain_open else "Closed"
+    )
     return area_data["status"]
 
 
