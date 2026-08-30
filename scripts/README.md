@@ -40,7 +40,8 @@ This directory contains utility scripts for maintaining and validating the Bergf
 
 - **Usage**: `PYTHONPATH=. python3 scripts/check_season_start.py`
 - **When to use**: Runs daily from September via the `Season Watch` workflow, which opens an issue once it fires. Run it by hand to see where the resorts stand.
-- It reuses the integration's own `evaluate_status`, so the watcher cannot drift away from what the integration considers open. Glaciers are deliberately excluded from the reference list: they report all summer and cannot signal the season starting.
+- It reuses the integration's own `evaluate_status`, so the watcher cannot drift away from what the integration considers open. That means fetching the resort's main page as well, for the operating panel — without it a summer glacier parses season-less and reads as open.
+- Two groups are watched separately because they open weeks apart: the glaciers on the first real snowfall, and the valley resorts in late November or December. Each raises its own issue with its own checklist.
 
 ## Execution
 

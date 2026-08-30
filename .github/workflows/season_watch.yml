@@ -34,43 +34,73 @@ jobs:
         id: check
         run: PYTHONPATH=. python scripts/check_season_start.py
 
-      - name: Open the fixture-refresh issue
-        if: steps.check.outputs.season_started == 'true'
+      - name: Raise an issue when skiing starts
+        if: steps.check.outputs.glacier_started == 'true' || steps.check.outputs.valley_started == 'true'
         uses: actions/github-script@v8
         with:
           script: |
-            const marker = '<!-- season-watch -->';
-            const existing = await github.rest.issues.listForRepo({
+            const groups = [
+              {
+                key: 'glacier',
+                started: '${{ steps.check.outputs.glacier_started }}' === 'true',
+                resorts: '${{ steps.check.outputs.glacier_resorts }}',
+                title: 'Glacier skiing has started — first live check',
+                lead: 'is running prepared piste. Glacier operation depends on the first real snowfall, so this is the earliest the live pages carry a full winter snow report.',
+                tasks: [
+                  'Capture a fixture from a running glacier — the suite has no populated page from outside the main season',
+                  'Verify the card against real snow depths, lift and piste counts',
+                  'Sweep for dead `tw-` selectors, which the winter fixtures cannot reveal',
+                  'Check the per-language "no report" strings `_isNA` does not recognise',
+                ],
+              },
+              {
+                key: 'valley',
+                started: '${{ steps.check.outputs.valley_started }}' === 'true',
+                resorts: '${{ steps.check.outputs.valley_resorts }}',
+                title: 'Season has started — refresh the HTML fixtures',
+                lead: 'is running prepared piste, so the ordinary season has begun and the live pages match what most users see.',
+                tasks: [
+                  'Refresh all 27 fixtures, committed separately so parser drift stays reviewable',
+                  'Fix whatever the season markup broke',
+                  'Verify trend indicators against real 24 h history',
+                  'Verify snow sorting against real values rather than injected ones',
+                  'Full end-to-end in the docker instance with a running resort',
+                ],
+              },
+            ];
+
+            const open = await github.rest.issues.listForRepo({
               owner: context.repo.owner,
               repo: context.repo.repo,
               state: 'open',
               per_page: 100,
             });
-            if (existing.data.some((issue) => (issue.body ?? '').includes(marker))) {
-              core.info('Issue already open, nothing to do.');
-              return;
-            }
 
-            const open = '${{ steps.check.outputs.open_resorts }}';
-            await github.rest.issues.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              title: 'Season has started — refresh the HTML fixtures',
-              body: [
-                marker,
-                `${open} now reports open pistes, so the live pages carry a full snow report again.`,
-                '',
-                'The fixtures in `tests/fixtures/` date from last winter. Until they are refreshed the',
-                'test suite can stay green while live parsing is broken — which is how the dropped',
-                'Tailwind `tw-` prefix went unnoticed for months.',
-                '',
-                '- [ ] Refresh all 27 fixtures, committed separately so parser drift stays reviewable',
-                '- [ ] Sweep for further dead `tw-` selectors, which the old fixtures cannot reveal',
-                '- [ ] Fill in the per-language "no report" strings `_isNA` does not recognise',
-                '- [ ] Verify trend indicators against real 24 h history',
-                '- [ ] Verify snow sorting against real values rather than injected ones',
-                '- [ ] Full end-to-end in the docker instance with a populated resort',
-                '',
-                'Raised by `.github/workflows/season_watch.yml`.',
-              ].join('\n'),
-            });
+            for (const group of groups) {
+              if (!group.started) continue;
+
+              const marker = `<!-- season-watch:${group.key} -->`;
+              if (open.data.some((issue) => (issue.body ?? '').includes(marker))) {
+                core.info(`${group.key}: issue already open`);
+                continue;
+              }
+
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: group.title,
+                body: [
+                  marker,
+                  `**${group.resorts}** ${group.lead}`,
+                  '',
+                  'The fixtures in `tests/fixtures/` date from last winter. Until they are refreshed the',
+                  'test suite can stay green while live parsing is broken — which is how the dropped',
+                  'Tailwind `tw-` prefix went unnoticed for months.',
+                  '',
+                  ...group.tasks.map((task) => `- [ ] ${task}`),
+                  '',
+                  'Raised by `.github/workflows/season_watch.yml`.',
+                ].join('\n'),
+              });
+              core.info(`${group.key}: issue created`);
+            }

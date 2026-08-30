@@ -14,19 +14,34 @@ import check_season_start as watcher  # noqa: E402
 from custom_components.bergfex.parser import parse_resort_page  # noqa: E402
 
 
-def test_reference_resorts_exclude_glaciers():
-    """Glaciers report all summer, so they cannot signal the season starting."""
-    glaciers = ("hintertux", "soelden", "sölden", "stubai", "pitztal", "schnalstal", "kaunertal")
-    for name, path in watcher.REFERENCE_RESORTS.items():
-        haystack = f"{name} {path}".lower()
-        assert not any(g in haystack for g in glaciers), name
+GLACIER_WORDS = ("hintertux", "soelden", "sölden", "stubai", "pitztal", "kitzstein", "kaunertal")
 
 
-def test_reference_resorts_have_fixtures_or_a_test_entry():
-    """The point is to know when refreshing the fixtures pays off."""
-    assert len(watcher.REFERENCE_RESORTS) >= 3
-    for path in watcher.REFERENCE_RESORTS.values():
-        assert path.startswith("/") and path.endswith("/schneebericht/")
+def test_the_two_groups_are_kept_apart():
+    """They answer different questions weeks apart.
+
+    A glacier in the valley list would fire the fixture-refresh issue in
+    September, when ordinary resorts are still on grass.
+    """
+    for name, path in watcher.VALLEY_RESORTS.items():
+        assert not any(word in f"{name} {path}".lower() for word in GLACIER_WORDS), name
+
+    for name, path in watcher.GLACIER_RESORTS.items():
+        assert any(word in f"{name} {path}".lower() for word in GLACIER_WORDS), name
+
+
+def test_both_groups_are_worth_checking():
+    assert len(watcher.GLACIER_RESORTS) >= 3
+    assert len(watcher.VALLEY_RESORTS) >= 3
+    for resorts in watcher.RESORT_GROUPS.values():
+        for path in resorts.values():
+            assert path.startswith("/") and path.endswith("/schneebericht/")
+
+
+def test_the_panel_keys_carry_the_season():
+    """Without them a summer glacier parses season-less and reads as open."""
+    assert "winter_season_start" in watcher.PANEL_KEYS
+    assert "winter_season_end" in watcher.PANEL_KEYS
 
 
 def test_a_summer_page_does_not_count_as_open():

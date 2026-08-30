@@ -144,9 +144,11 @@ live data of the season" already exists. What actually arrives in September is
 **prepared piste**, which is what the status rule now turns on, and which no resort
 reports today. The Hintertux operator confirms it: 3 lifts, 0 km.
 
-- [ ] **Watch for the trigger.** `.github/workflows/season_watch.yml` runs daily
-      from September and opens an issue once a reference resort reports open
-      pistes. Nothing to remember; the checklist below is in the issue body.
+- [x] **Watch for the trigger.** `.github/workflows/season_watch.yml` runs daily
+      from September and raises an issue once resorts start running prepared piste.
+      Two groups, because they open weeks apart and mean different things: the
+      glaciers first, on the first real snowfall, which no calendar predicts; the
+      valley resorts in late November or December. Each carries its own checklist.
 - [ ] Refresh all 27 fixtures from live pages; commit the diff separately so parser
       drift stays reviewable.
 - [ ] **Sweep for further dead `tw-` selectors.** bergfex dropped the Tailwind
