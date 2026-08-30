@@ -35,6 +35,11 @@ const SCHEMA = [
   },
   {
     type: 'expandable',
+    title: 'groups.cross_country_only',
+    schema: [{ name: 'show_trails', selector: { boolean: {} } }],
+  },
+  {
+    type: 'expandable',
     title: 'groups.ski_only',
     schema: [
       { name: 'show_snow', selector: { boolean: {} } },

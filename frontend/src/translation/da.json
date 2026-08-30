@@ -3,7 +3,8 @@
     "groups": {
       "core": "Kerne Konfiguration",
       "display": "Visning",
-      "ski_only": "Skiområde muligheder"
+      "ski_only": "Skiområde muligheder",
+      "cross_country_only": "Indstillinger for langrend"
     },
     "title": "Title (Valgfri)",
     "resorts": "Område enheder",
@@ -26,7 +27,8 @@
       "classical": "Klassiske stier",
       "skating": "Skate stier",
       "update": "Sidste opdatering"
-    }
+    },
+    "show_trails": "Vis løjpestatistik"
   },
   "card": {
     "resort_not_found": "Områder ikke fundet: {resort}",

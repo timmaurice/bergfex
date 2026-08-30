@@ -3,7 +3,8 @@
     "groups": {
       "core": "Główna konfiguracja",
       "display": "Wyświetlacz",
-      "ski_only": "Opcje kurortu narciarskiego"
+      "ski_only": "Opcje kurortu narciarskiego",
+      "cross_country_only": "Opcje tras biegowych"
     },
     "title": "Tytuł (opcjonalnie)",
     "resorts": "Wpisy kurortu",
@@ -26,7 +27,8 @@
       "classical": "Trasy klasyczne",
       "skating": "Trasy łyżwiarskie",
       "update": "Ostatnio aktualizowane"
-    }
+    },
+    "show_trails": "Pokaż statystyki tras"
   },
   "card": {
     "resort_not_found": "Nie znaleziono resortu: {resort}",

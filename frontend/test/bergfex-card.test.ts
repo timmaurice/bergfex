@@ -922,6 +922,40 @@ describe('BergfexCard', () => {
       expect(skatingTrailItem?.querySelector('.progress-bar-container')).not.toBeNull();
     });
 
+    it('hides trail statistics when show_trails is false', async () => {
+      const resort = createMockResort('loipe', 'Loipe', {
+        status: 'Open',
+        classical_open_km: '12',
+        skating_open_km: '8',
+      });
+      await setupCard({ show_trails: false }, resort);
+
+      const text = element.shadowRoot?.textContent ?? '';
+      expect(text).not.toContain('Classical Trails');
+      expect(text).not.toContain('Skating Trails');
+    });
+
+    it('shows trail statistics by default', async () => {
+      const resort = createMockResort('loipe', 'Loipe', {
+        status: 'Open',
+        classical_open_km: '12',
+        skating_open_km: '8',
+      });
+      await setupCard({}, resort);
+
+      const text = element.shadowRoot?.textContent ?? '';
+      expect(text).toContain('Classical Trails');
+      expect(text).toContain('Skating Trails');
+    });
+
+    it('leaves ski resorts untouched when show_trails is false', async () => {
+      const resort = createMockResort('ischgl', 'Ischgl', { status: 'Open', lifts_open_count: '5', lifts_total: '10' });
+      await setupCard({ show_trails: false, show_lifts_slopes: true }, resort);
+
+      expect(element.shadowRoot?.textContent).toContain('5');
+      expect(element.shadowRoot?.querySelectorAll('.detail-item').length).toBeGreaterThan(0);
+    });
+
     it('should not render snow details for cross-country resorts even if show_snow is true', async () => {
       const resortData = {
         status: 'Open' as const,

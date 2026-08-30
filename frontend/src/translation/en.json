@@ -3,7 +3,8 @@
     "groups": {
       "core": "Core Configuration",
       "display": "Display",
-      "ski_only": "Ski Resort Options"
+      "ski_only": "Ski Resort Options",
+      "cross_country_only": "Cross-country options"
     },
     "title": "Title (Optional)",
     "resorts": "Resort Entities",
@@ -26,7 +27,8 @@
       "classical": "Classical Trails",
       "skating": "Skating Trails",
       "update": "Last Update"
-    }
+    },
+    "show_trails": "Show trail statistics"
   },
   "card": {
     "resort_not_found": "Resort not found: {resort}",

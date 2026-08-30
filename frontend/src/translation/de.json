@@ -3,7 +3,8 @@
     "groups": {
       "core": "Grundeinstellungen",
       "display": "Anzeige",
-      "ski_only": "Optionen für Skigebiete"
+      "ski_only": "Optionen für Skigebiete",
+      "cross_country_only": "Optionen für Loipengebiete"
     },
     "title": "Titel (Optional)",
     "resorts": "Skigebiete",
@@ -26,7 +27,8 @@
       "classical": "Klassische Loipen",
       "skating": "Skating-Loipen",
       "update": "Letzte Aktualisierung"
-    }
+    },
+    "show_trails": "Loipenstatistiken anzeigen"
   },
   "card": {
     "resort_not_found": "Skigebiet nicht gefunden: {resort}",

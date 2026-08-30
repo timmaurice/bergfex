@@ -3,7 +3,8 @@
     "groups": {
       "core": "Configuration",
       "display": "Affichage",
-      "ski_only": "Options station de ski"
+      "ski_only": "Options station de ski",
+      "cross_country_only": "Options pour le ski de fond"
     },
     "title": "Titre (optionnel)",
     "resorts": "Stations de ski",
@@ -26,7 +27,8 @@
       "classical": "Pistes classiques",
       "skating": "Back-country",
       "update": "Dernière mise à jour"
-    }
+    },
+    "show_trails": "Afficher les statistiques de pistes"
   },
   "card": {
     "resort_not_found": "Station non trouvée : {resort}",

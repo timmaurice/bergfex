@@ -79,6 +79,7 @@ export interface BergfexCardConfig extends LovelaceCardConfig {
   show_lifts_slopes?: boolean;
   show_link?: boolean;
   show_snow?: boolean;
+  show_trails?: boolean;
   show_trend?: boolean;
   sort_by?: string;
   title?: string;

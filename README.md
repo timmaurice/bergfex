@@ -112,6 +112,7 @@ title: Ski Resorts & Cross-Country Areas
 hide_closed_resorts: true
 show_snow: true
 show_lifts_slopes: true
+show_trails: true
 show_conditions: true
 sort_by: mountain
 resorts:
@@ -129,7 +130,8 @@ resorts:
 | `title`               | string                  | `(none)`     | The title of the card.                                                                                            |
 | `resorts`             | list (string or object) | **Required** | A list of device IDs. To set a custom name, use an object: `{ device: '...', name: '...' }`.                      |
 | `show_snow`           | boolean                 | `true`       | Show snow depth information (mountain, valley, new) for ski resorts.                                              |
-| `show_lifts_slopes`   | boolean                 | `true`       | Show lift and slope statistics for ski resorts, or track lengths for cross-country areas.                         |
+| `show_lifts_slopes`   | boolean                 | `true`       | Show lift and slope statistics for ski resorts.                                                                   |
+| `show_trails`         | boolean                 | `true`       | Show classical and skating track lengths for cross-country areas.                                                 |
 | `show_conditions`     | boolean                 | `true`       | Show conditions section (snow/slope/track conditions, avalanche warning, operation status).                       |
 | `show_forecast`       | boolean                 | `false`      | Show snow forecast carousel with daily and summary views.                                                         |
 | `show_last_updated`   | boolean                 | `true`       | Show the last updated timestamp.                                                                                  |

@@ -75,6 +75,7 @@ export class BergfexCard extends LitElement implements LovelaceCard {
     this._config = {
       show_snow: true,
       show_lifts_slopes: true,
+      show_trails: true,
       show_last_updated: true,
       hide_closed_resorts: false,
       show_link: true,
@@ -762,7 +763,7 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                       : ''
                   }
                   ${
-                    isCrossCountry
+                    isCrossCountry && this._config.show_trails
                       ? html`
                           ${
                             classical_open_km
