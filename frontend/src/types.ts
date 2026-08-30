@@ -70,6 +70,27 @@ export interface LovelaceCardEditor extends HTMLElement {
 
 export type ResortConfig = string | { device: string; name?: string };
 
+/**
+ * Defaults for every optional card setting.
+ *
+ * Shared by the card and its editor on purpose: they used to keep separate lists
+ * that had drifted apart, so the editor showed toggles as off for options the card
+ * was rendering.
+ */
+export const DEFAULT_CONFIG = {
+  show_snow: true,
+  show_lifts_slopes: true,
+  show_trails: true,
+  show_conditions: true,
+  show_forecast: false,
+  show_trend: false,
+  show_link: true,
+  show_last_updated: true,
+  hide_closed_resorts: false,
+  conditions_default_open: false,
+  forecast_default_open: false,
+} as const;
+
 export interface BergfexCardConfig extends LovelaceCardConfig {
   hide_closed_resorts?: boolean;
   resorts: ResortConfig[];

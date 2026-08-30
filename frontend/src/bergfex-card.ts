@@ -1,6 +1,13 @@
 import { LitElement, TemplateResult, html, css, unsafeCSS } from 'lit';
 import { property, state, query } from 'lit/decorators.js';
-import { HomeAssistant, LovelaceCard, LovelaceCardEditor, ResortConfig, BergfexCardConfig } from './types.js';
+import {
+  HomeAssistant,
+  LovelaceCard,
+  LovelaceCardEditor,
+  ResortConfig,
+  BergfexCardConfig,
+  DEFAULT_CONFIG,
+} from './types.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { unsafeSVG } from 'lit/directives/unsafe-svg.js';
 import { localize } from './localize.js';
@@ -73,18 +80,7 @@ export class BergfexCard extends LitElement implements LovelaceCard {
       throw new Error(localize(this.hass, 'common.errors.no_resorts'));
     }
     this._config = {
-      show_snow: true,
-      show_lifts_slopes: true,
-      show_trails: true,
-      show_last_updated: true,
-      hide_closed_resorts: false,
-      show_link: true,
-      show_conditions: true,
-      show_avalanche: true,
-      show_slopes: true,
-      show_trend: false,
-      conditions_default_open: false,
-      forecast_default_open: false,
+      ...DEFAULT_CONFIG,
       ...config,
     };
 
