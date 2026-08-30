@@ -255,9 +255,18 @@ export class BergfexCard extends LitElement implements LovelaceCard {
 
     const oldHass = changedProperties.get('hass') as HomeAssistant | undefined;
     if (oldHass) {
-      const resorts = this._getResorts(this.hass, this._config);
-      const entities = Object.values(resorts).flatMap((s) => Object.values(s));
-      const hasChanged = entities.some((entity) => entity && oldHass.states[entity] !== this.hass.states[entity]);
+      // Watch the union of before and after. Deriving the list from the new state
+      // alone meant that when a resort's entities disappeared - a reload, a restart,
+      // a failed refresh - nothing was left to compare, so the card skipped the
+      // update and kept presenting the last known snow depths as current.
+      const entitiesOf = (hass: HomeAssistant) =>
+        Object.values(this._getResorts(hass, this._config)).flatMap((s) => Object.values(s));
+      const watched = new Set<string>();
+      for (const entity of [...entitiesOf(this.hass), ...entitiesOf(oldHass)]) {
+        if (typeof entity === 'string') watched.add(entity);
+      }
+
+      const hasChanged = [...watched].some((entity) => oldHass.states[entity] !== this.hass.states[entity]);
       const showTrendChanged = this.getOldConfig(changedProperties)?.show_trend !== this._config.show_trend;
 
       if (showTrendChanged && this._config.show_trend) {

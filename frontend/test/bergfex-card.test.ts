@@ -501,6 +501,86 @@ describe('BergfexCard', () => {
     });
   });
 
+  describe('Degraded states', () => {
+    /**
+     * Hand the card a fresh hass with some states gone, leaving the previous one
+     * intact - Home Assistant replaces the object rather than mutating it, and
+     * the card compares the two.
+     */
+    const setupThenDrop = async (
+      config: Partial<BergfexCardConfig>,
+      resort: ReturnType<typeof createMockResort>,
+      ...drop: string[]
+    ) => {
+      await setupCard(config, resort);
+      const remaining = Object.fromEntries(
+        Object.entries(hass.states).filter(([entityId]) => !drop.includes(entityId)),
+      );
+      element.hass = { ...hass, states: remaining };
+      await element.updateComplete;
+    };
+
+    it('stops showing stale values once the states disappear', async () => {
+      // A reload or a failed refresh empties the states. shouldUpdate used to
+      // derive its watch list from the new state only, so with nothing left to
+      // compare it skipped the render and kept the last snow depths on screen.
+      const resort = createMockResort('ischgl', 'Ischgl', {
+        status: 'Open',
+        snow_mountain: '80',
+        lifts_open_count: '5',
+        lifts_total: '10',
+      });
+      await setupCard({}, resort);
+      expect(element.shadowRoot?.textContent).toContain('80');
+
+      await setupThenDrop({}, resort, ...Object.keys(resort.states));
+
+      const text = element.shadowRoot?.textContent ?? '';
+      expect(text).not.toContain('80');
+      expect(text).not.toContain('undefined');
+      expect(text).not.toContain('NaN');
+    });
+
+    it('re-renders when a single value disappears', async () => {
+      const resort = createMockResort('ischgl', 'Ischgl', { status: 'Open', snow_mountain: '80' });
+      await setupCard({}, resort);
+      expect(element.shadowRoot?.textContent).toContain('80');
+
+      await setupThenDrop({}, resort, 'sensor.ischgl_snow_mountain');
+
+      expect(element.shadowRoot?.textContent).not.toContain('80');
+      expect(element.shadowRoot?.textContent).toContain('N/A');
+    });
+
+    it('shows the values it has and N/A for the rest', async () => {
+      // Half a report is the normal shape early in the season.
+      const resort = createMockResort('partial', 'Partial', {
+        status: 'Open',
+        snow_mountain: '80',
+        lifts_open_count: '4',
+        lifts_total: '12',
+      });
+      await setupCard({ show_snow: true, show_lifts_slopes: true }, resort);
+
+      const text = element.shadowRoot?.textContent ?? '';
+      expect(text).toContain('80');
+      expect(text).toContain('4');
+      expect(text).toContain('N/A');
+      expect(text).not.toContain('undefined');
+      expect(text).not.toContain('NaN');
+    });
+
+    it('keeps the resort name and badge even with no data behind them', async () => {
+      const resort = createMockResort('ischgl', 'Ischgl', { status: 'Open' });
+      const ids = Object.keys(resort.states).filter((id) => !id.endsWith('_status'));
+
+      await setupThenDrop({}, resort, ...ids);
+
+      expect(element.shadowRoot?.querySelector('.resort-name')?.textContent?.trim()).toBe('Ischgl');
+      expect(element.shadowRoot?.querySelector('.resort-status')).not.toBeNull();
+    });
+  });
+
   describe('Sorting', () => {
     it('sorts by open lifts when resorts report lifts_open_count', async () => {
       // The sort read `lifts_open`, which is only mapped when `lifts_open_count`
