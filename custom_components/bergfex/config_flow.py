@@ -50,6 +50,29 @@ _BERGFEX_HOST = re.compile(r"^(?:[\w-]+\.)*bergfex\.[a-z]{2,}(?::\d+)?$", re.IGN
 _SUBPAGE_SEGMENTS = frozenset({SNOW_REPORT_SEGMENT, "loipen", "langlaufen"})
 
 
+class InvalidWebhookUrl(ValueError):
+    """Raised for a webhook that is not an http(s) url with a host.
+
+    The field is free text and whatever lands in it is POSTed to on every single
+    poll. A typo therefore does not surface in the flow, where the user could
+    still fix it, but as an error line in the log every few minutes forever.
+    """
+
+
+def validate_webhook_url(webhook_url: str) -> str:
+    """Return the webhook url, or raise if it is not one.
+
+    Deliberately strict about the scheme: aiohttp will happily be handed a
+    "file://" or "ftp://" target, and the resort data is posted outward, so the
+    destination should be one the user meant.
+    """
+    candidate = webhook_url.strip()
+    parts = urlsplit(candidate)
+    if parts.scheme not in ("http", "https") or not parts.netloc:
+        raise InvalidWebhookUrl(webhook_url)
+    return candidate
+
+
 class InvalidSkiAreaPath(ValueError):
     """Raised for hand-entered input that names no resort.
 
@@ -305,7 +328,11 @@ class BergfexConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             webhook_url = user_input.get("webhook_url")
 
             if not ski_area_path and not manual_path:
-                errors["base"] = "config.error.no_selection"
+                # Plain key: Home Assistant looks the message up under
+                # config.error.<key> itself, so prefixing it here asked for
+                # config.error.config.error.no_selection and the user got the
+                # raw key printed on the form.
+                errors["base"] = "no_selection"
             else:
                 if manual_path:
                     try:
@@ -316,6 +343,16 @@ class BergfexConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         # Nothing to complete "bergfex.at" or "/" into. Say so on
                         # the form instead of letting it fail somewhere later.
                         errors["base"] = "invalid_path"
+
+                if webhook_url:
+                    try:
+                        webhook_url = validate_webhook_url(webhook_url)
+                    except InvalidWebhookUrl:
+                        errors["base"] = "invalid_webhook"
+                else:
+                    # An empty string is not a webhook; storing it would have the
+                    # update loop treat "" as falsy anyway, so normalise it.
+                    webhook_url = None
 
             if not errors:
                 # A resort's path is the same on every bergfex domain and in

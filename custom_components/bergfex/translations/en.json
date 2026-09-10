@@ -53,7 +53,8 @@
       "cannot_connect": "Failed to connect to Bergfex. Please check your internet connection.",
       "no_areas_found": "Could not find any ski areas for the selected country. There might be no current snow reports available.",
       "no_selection": "Please select a ski area from the list or provide a manual path.",
-      "invalid_path": "That address does not name a ski area. Enter a resort path such as \"/ischgl/schneebericht/\", or paste the full URL of the resort's page."
+      "invalid_path": "That address does not name a ski area. Enter a resort path such as \"/ischgl/schneebericht/\", or paste the full URL of the resort's page.",
+      "invalid_webhook": "That is not a valid webhook address. Use a full http:// or https:// URL, or leave the field empty."
     },
     "abort": {
       "already_configured": "This ski area is already configured."

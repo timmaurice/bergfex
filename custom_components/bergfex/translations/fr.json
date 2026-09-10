@@ -53,7 +53,8 @@
       "cannot_connect": "Échec de la connexion à Bergfex. Veuillez vérifier votre connexion Internet.",
       "no_areas_found": "Aucune station de ski trouvée pour le pays sélectionné. Il se peut qu'aucun bulletin de neige ne soit disponible actuellement.",
       "no_selection": "Veuillez sélectionner une station de ski dans la liste ou fournir un chemin manuel.",
-      "invalid_path": "Cette adresse ne désigne aucune station de ski. Saisissez un chemin de station tel que « /ischgl/schneebericht/ » ou collez l'URL complète de la page de la station."
+      "invalid_path": "Cette adresse ne désigne aucune station de ski. Saisissez un chemin de station tel que « /ischgl/schneebericht/ » ou collez l'URL complète de la page de la station.",
+      "invalid_webhook": "Cette adresse de webhook n'est pas valide. Utilisez une URL http:// ou https:// complète, ou laissez le champ vide."
     },
     "abort": {
       "already_configured": "Cette station de ski est déjà configurée."

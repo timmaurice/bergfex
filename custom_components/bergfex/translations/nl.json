@@ -53,7 +53,8 @@
       "cannot_connect": "Verbinding met Bergfex mislukt. Controleer je internetverbinding.",
       "no_areas_found": "Geen skigebieden gevonden voor het geselecteerde land. Mogelijk zijn er momenteel geen sneeuwberichte beschikbaar.",
       "no_selection": "Selecteer een skigebied uit de lijst of geef een handmatig pad op.",
-      "invalid_path": "Dit adres verwijst niet naar een skigebied. Voer een gebiedspad in zoals \"/ischgl/schneebericht/\" of plak de volledige URL van de gebiedspagina."
+      "invalid_path": "Dit adres verwijst niet naar een skigebied. Voer een gebiedspad in zoals \"/ischgl/schneebericht/\" of plak de volledige URL van de gebiedspagina.",
+      "invalid_webhook": "Dat is geen geldig webhook-adres. Gebruik een volledige http:// of https:// URL, of laat het veld leeg."
     },
     "abort": {
       "already_configured": "Dit skigebied is al geconfigureerd."

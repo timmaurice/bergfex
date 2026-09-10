@@ -17,6 +17,7 @@ from custom_components.bergfex.const import (
     CONF_LANGUAGE,
     CONF_SKI_AREA,
     CONF_TYPE,
+    CONF_WEBHOOK_URL,
     DOMAIN,
     TYPE_ALPINE,
     TYPE_CROSS_COUNTRY,
@@ -343,3 +344,72 @@ def test_normalize_rejects_input_without_a_resort(typed: str, is_cross_country: 
 def test_ski_area_name_from_path(path: str, expected: str):
     """The name falls back to the resort segment, never off the end of the list."""
     assert ski_area_name_from_path(path) == expected
+
+
+@pytest.mark.parametrize(
+    "typed",
+    [
+        "not a url",
+        "example.com/hook",
+        "ftp://example.com/hook",
+        "file:///etc/passwd",
+        "https://",
+    ],
+)
+@pytest.mark.asyncio
+async def test_a_webhook_that_is_not_a_url_is_rejected_on_the_form(
+    hass: HomeAssistant, enable_custom_integrations, typed: str
+):
+    """The field is free text and every poll posts to whatever is in it.
+
+    Unvalidated, a typo never surfaces in the flow where it could still be
+    fixed - it surfaces as an error line in the log every few minutes, forever.
+    """
+    result = await _run_flow(
+        hass, {CONF_SKI_AREA: SKI_AREA_PATH, "webhook_url": typed}
+    )
+
+    assert result["type"] == FlowResultType.FORM
+    assert result["errors"] == {"base": "invalid_webhook"}
+
+
+@pytest.mark.asyncio
+async def test_a_real_webhook_is_stored(
+    hass: HomeAssistant, enable_custom_integrations
+):
+    """An http(s) url with a host is what the poll loop can actually post to."""
+    result = await _run_flow(
+        hass,
+        {CONF_SKI_AREA: SKI_AREA_PATH, "webhook_url": " https://example.com/hook "},
+    )
+
+    assert result["type"] == FlowResultType.CREATE_ENTRY
+    # Stripped, because a copied url routinely brings whitespace with it.
+    assert result["data"][CONF_WEBHOOK_URL] == "https://example.com/hook"
+
+
+@pytest.mark.asyncio
+async def test_an_empty_webhook_is_stored_as_none(
+    hass: HomeAssistant, enable_custom_integrations
+):
+    """An empty field means "no webhook", not a webhook that is the empty string."""
+    result = await _run_flow(hass, {CONF_SKI_AREA: SKI_AREA_PATH, "webhook_url": ""})
+
+    assert result["type"] == FlowResultType.CREATE_ENTRY
+    assert result["data"][CONF_WEBHOOK_URL] is None
+
+
+@pytest.mark.asyncio
+async def test_choosing_nothing_reports_a_key_the_user_can_read(
+    hass: HomeAssistant, enable_custom_integrations
+):
+    """The error key has to be the bare one.
+
+    Home Assistant looks the message up under config.error.<key> itself, so
+    "config.error.no_selection" asked it for
+    config.error.config.error.no_selection - and the user was shown the raw key.
+    """
+    result = await _run_flow(hass, {})
+
+    assert result["type"] == FlowResultType.FORM
+    assert result["errors"] == {"base": "no_selection"}

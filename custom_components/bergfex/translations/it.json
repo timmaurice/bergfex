@@ -53,7 +53,8 @@
       "cannot_connect": "Connessione a Bergfex fallita. Controlla la tua connessione internet.",
       "no_areas_found": "Nessuna area sciistica trovata per il paese selezionato. Potrebbe non esserci alcun bollettino neve disponibile.",
       "no_selection": "Seleziona un'area sciistica dalla lista o inserisci un percorso manuale.",
-      "invalid_path": "Questo indirizzo non indica alcun comprensorio sciistico. Inserisci un percorso come \"/ischgl/schneebericht/\" oppure incolla l'URL completo della pagina del comprensorio."
+      "invalid_path": "Questo indirizzo non indica alcun comprensorio sciistico. Inserisci un percorso come \"/ischgl/schneebericht/\" oppure incolla l'URL completo della pagina del comprensorio.",
+      "invalid_webhook": "Non è un indirizzo webhook valido. Inserisci un URL http:// o https:// completo oppure lascia vuoto il campo."
     },
     "abort": {
       "already_configured": "Questa area sciistica è già configurata."
