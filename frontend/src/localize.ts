@@ -3,14 +3,23 @@ import { HomeAssistant } from './types';
 import da from './translation/da.json';
 import de from './translation/de.json';
 import en from './translation/en.json';
+import es from './translation/es.json';
 import fr from './translation/fr.json';
+import it from './translation/it.json';
+import nl from './translation/nl.json';
 import pl from './translation/pl.json';
 
+// The set the integration itself can be configured in, so a resort set up on a
+// Spanish, Italian or Dutch bergfex page is not read back through an English
+// card. `da` is the card's own extra.
 const translations = {
   da,
   de,
   en,
+  es,
   fr,
+  it,
+  nl,
   pl,
 };
 

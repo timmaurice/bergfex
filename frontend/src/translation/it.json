@@ -1,0 +1,88 @@
+{
+  "editor": {
+    "groups": {
+      "core": "Configurazione principale",
+      "display": "Visualizzazione",
+      "ski_only": "Opzioni comprensorio sciistico",
+      "cross_country_only": "Opzioni sci di fondo"
+    },
+    "title": "Titolo (facoltativo)",
+    "resorts": "Comprensori",
+    "show_snow": "Mostra le informazioni sulla neve",
+    "show_lifts_slopes": "Mostra le statistiche di impianti e piste",
+    "show_conditions": "Mostra la sezione condizioni",
+    "conditions_default_open": "Sezione condizioni aperta per impostazione predefinita",
+    "show_forecast": "Mostra le previsioni di neve",
+    "forecast_default_open": "Previsioni di neve aperte per impostazione predefinita",
+    "show_trend": "Mostra gli indicatori di tendenza (24 h)",
+    "show_last_updated": "Mostra ultimo aggiornamento",
+    "show_link": "Mostra l'icona del collegamento",
+    "hide_closed_resorts": "Nascondi i comprensori chiusi",
+    "hide_closed_resorts_helper": "Nasconde solo i comprensori tra la stagione invernale e quella estiva. I comprensori in esercizio estivo restano visibili, anche se non vi si può sciare.",
+    "sort_by": "Ordina per",
+    "sort_by_options": {
+      "mountain": "Neve (monte)",
+      "valley": "Neve (valle)",
+      "new": "Neve fresca",
+      "lift": "Impianti aperti",
+      "classical": "Piste classiche",
+      "skating": "Piste skating",
+      "update": "Ultimo aggiornamento"
+    },
+    "show_trails": "Mostra le statistiche delle piste"
+  },
+  "card": {
+    "resort_not_found": "Comprensorio non trovato: {resort}",
+    "lifts_open": "Impianti",
+    "header": {
+      "snow_mountain": "Monte",
+      "snow_valley": "Valle",
+      "new_snow": "Fresca",
+      "snow_condition": "Condizioni della neve",
+      "slope_condition": "Condizioni delle piste",
+      "avalanche_warning": "Pericolo valanghe",
+      "last_snowfall": "Ultima nevicata",
+      "slopes_info": "Piste",
+      "slopes_info_km": "Piste (km)",
+      "slopes_open_km": "Aperte",
+      "slopes_total": "Totale",
+      "classical_trails": "Piste classiche",
+      "skating_trails": "Piste skating",
+      "classical_condition": "Condizioni classico",
+      "skating_condition": "Condizioni skating",
+      "operation_status": "Stato di esercizio",
+      "link_title": "Apri la pagina di {resortName} su bergfex"
+    },
+    "forecast": {
+      "daily": "Giornaliera",
+      "summary": "Riepilogo",
+      "hour": "{hours} ore",
+      "today": "Oggi",
+      "tomorrow": "Domani"
+    },
+    "accordion": {
+      "conditions": "Condizioni",
+      "forecast": "Previsioni di neve"
+    },
+    "status": {
+      "open": "Aperto",
+      "closed": "Chiuso",
+      "unknown": "Sconosciuto",
+      "winter_season": "Stagione invernale",
+      "summer_season": "Stagione estiva",
+      "season_from": "dal {date}",
+      "season_last_year": "lo scorso anno: {date}"
+    },
+    "warnings": {
+      "not_found": "Comprensorio non trovato: {subject}",
+      "unavailable": "Non viene riportato alcun dato per {subject}.",
+      "wrong_domain": "{subject} è un'entità {actual}, ma ne serve una {expected}.",
+      "not_numeric": "{subject} non riporta un numero (il valore è «{state}»)."
+    }
+  },
+  "common": {
+    "errors": {
+      "no_resorts": "Devi definire almeno un comprensorio."
+    }
+  }
+}
