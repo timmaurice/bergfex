@@ -81,3 +81,28 @@ async def test_the_live_device_cannot_be_deleted(hass: HomeAssistant, mock_confi
     live = _device(hass, mock_config_entry, AREA_PATH)
 
     assert not await async_remove_config_entry_device(hass, mock_config_entry, live)
+
+
+@pytest.mark.asyncio
+async def test_an_entry_without_a_ski_area_deletes_nothing(
+    hass: HomeAssistant, mock_config_entry
+):
+    """A missing ski_area would make `area_path` None, which matches nothing.
+
+    Every identifier would then compare unequal and the hook would report the
+    live device as deletable too, taking the user's area assignment, custom name
+    and dashboard references with it.
+    """
+    entry = MockConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test Resort",
+        data={"name": "Test Resort", "language": "it", "type": "alpine"},
+        source="user",
+        entry_id="no_area_entry",
+    )
+    entry.add_to_hass(hass)
+    live = _device(hass, entry, AREA_PATH)
+
+    assert not await async_remove_config_entry_device(hass, entry, live)

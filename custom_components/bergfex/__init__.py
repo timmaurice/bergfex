@@ -861,6 +861,16 @@ async def async_remove_config_entry_device(
     dashboard references. Everything else under this entry is stale.
     """
     area_path = entry.data.get(CONF_SKI_AREA)
+    if area_path is None:
+        # With nothing to compare against, every identifier - the live device's
+        # included - would come out unequal and the whole entry would go
+        # deletable. Refusing is the safe answer: the user can still remove the
+        # entry itself.
+        _LOGGER.debug(
+            "Entry %s carries no ski area; refusing device deletion", entry.entry_id
+        )
+        return False
+
     return not any(
         domain == DOMAIN and identifier == area_path
         for domain, identifier in device.identifiers
