@@ -186,6 +186,12 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
                 DOMAIN,
                 LEGACY_CARD_ISSUE_ID,
                 is_fixable=False,
+                # Only raised on the run that actually removed the resource, so
+                # nothing re-raises it later. A non-persistent issue is reloaded
+                # inactive after a restart, which made this one vanish before
+                # anyone had acted on it - while the HACS copy it asks about was
+                # still installed.
+                is_persistent=True,
                 severity=ir.IssueSeverity.WARNING,
                 translation_key=LEGACY_CARD_ISSUE_ID,
             )
@@ -253,6 +259,11 @@ def _async_backfill_unique_id(hass: HomeAssistant, entry: ConfigEntry) -> None:
         issue_id,
         is_fixable=True,
         data={"entry_id": entry.entry_id},
+        # Setup re-raises this one, so it does come back - but only once the
+        # entry has been set up, and `data` is dropped entirely for a
+        # non-persistent issue. The fix flow needs that entry id to know which
+        # row to delete.
+        is_persistent=True,
         severity=ir.IssueSeverity.WARNING,
         translation_key=DUPLICATE_ENTRY_ISSUE_ID,
         translation_placeholders={
