@@ -1,5 +1,6 @@
 {
   "name": "Bergfex Snow Report",
+  "homeassistant": "2024.7.0",
   "render_readme": true,
   "zip_release": true,
   "filename": "bergfex.zip"

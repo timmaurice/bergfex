@@ -1,0 +1,83 @@
+"""What the integration declares about itself, and what it lets users delete."""
+
+import json
+from pathlib import Path
+
+import pytest
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers import device_registry as dr
+from pytest_homeassistant_custom_component.common import MockConfigEntry
+
+from custom_components.bergfex.__init__ import async_remove_config_entry_device
+from custom_components.bergfex.const import DOMAIN
+
+ROOT = Path(__file__).resolve().parent.parent
+AREA_PATH = "/it/test/schneebericht/"
+
+
+def test_manifest_declares_the_lovelace_dependency():
+    """__init__.py reads hass.data["lovelace"] to register the card resource.
+
+    Without after_dependencies Home Assistant may set us up before lovelace is
+    there, and the card silently never gets registered.
+    """
+    manifest = json.loads(
+        (ROOT / "custom_components" / "bergfex" / "manifest.json").read_text()
+    )
+
+    assert "lovelace" in manifest.get("after_dependencies", [])
+
+
+def test_hacs_declares_a_minimum_home_assistant_version():
+    """async_register_static_paths does not exist before 2024.7."""
+    hacs = json.loads((ROOT / "hacs.json").read_text())
+
+    minimum = hacs.get("homeassistant")
+    assert minimum, "HACS would otherwise offer the integration to any version"
+
+    major, minor = (int(part) for part in minimum.split(".")[:2])
+    assert (major, minor) >= (2024, 7)
+
+
+@pytest.fixture
+def mock_config_entry():
+    return MockConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test Resort",
+        data={
+            "name": "Test Resort",
+            "country": "Italien",
+            "ski_area": AREA_PATH,
+            "language": "it",
+            "type": "alpine",
+        },
+        source="user",
+        entry_id="test_entry_id",
+    )
+
+
+def _device(hass, entry, identifier) -> dr.DeviceEntry:
+    return dr.async_get(hass).async_get_or_create(
+        config_entry_id=entry.entry_id,
+        identifiers={(DOMAIN, identifier)},
+    )
+
+
+@pytest.mark.asyncio
+async def test_a_stale_device_can_be_deleted(hass: HomeAssistant, mock_config_entry):
+    """A resort the entry no longer serves is the case the hook exists for."""
+    mock_config_entry.add_to_hass(hass)
+    stale = _device(hass, mock_config_entry, "/it/moved-away/schneebericht/")
+
+    assert await async_remove_config_entry_device(hass, mock_config_entry, stale)
+
+
+@pytest.mark.asyncio
+async def test_the_live_device_cannot_be_deleted(hass: HomeAssistant, mock_config_entry):
+    """Deleting it would only have it recreated, minus the user's settings."""
+    mock_config_entry.add_to_hass(hass)
+    live = _device(hass, mock_config_entry, AREA_PATH)
+
+    assert not await async_remove_config_entry_device(hass, mock_config_entry, live)

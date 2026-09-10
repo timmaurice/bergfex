@@ -16,6 +16,7 @@ from homeassistant.exceptions import ConfigEntryNotReady
 
 
 import homeassistant.helpers.config_validation as cv
+from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers import issue_registry as ir
 
@@ -814,6 +815,28 @@ async def async_remove_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
             # Backfilling re-runs the same first-come rule, so with three entries
             # for one resort the remaining leftover keeps its issue.
             _async_backfill_unique_id(hass, other)
+
+
+async def async_remove_config_entry_device(
+    hass: HomeAssistant, entry: ConfigEntry, device: dr.DeviceEntry
+) -> bool:
+    """Allow deleting a device the entry no longer provides.
+
+    Without this hook Home Assistant hides the delete button altogether, so a
+    device left behind by an earlier version - or by a resort whose bergfex path
+    changed - sits greyed out with its entities forever and the only way out is
+    removing the whole entry.
+
+    An entry serves exactly one resort, so the device that matches the entry's
+    current ski area is still live and must stay: deleting it would only have
+    Home Assistant recreate it on the next poll, minus the user's area, name and
+    dashboard references. Everything else under this entry is stale.
+    """
+    area_path = entry.data.get(CONF_SKI_AREA)
+    return not any(
+        domain == DOMAIN and identifier == area_path
+        for domain, identifier in device.identifiers
+    )
 
 
 async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
