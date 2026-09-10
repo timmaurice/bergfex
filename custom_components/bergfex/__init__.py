@@ -7,7 +7,7 @@ from urllib.parse import urljoin, urlparse
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.config_entries import ConfigEntry
@@ -67,6 +67,7 @@ CARD_FILENAME = "bergfex-card.js"
 CARD_URL_BASE = "/bergfex_frontend"
 
 LEGACY_CARD_ISSUE_ID = "standalone_card_installed"
+DUPLICATE_ENTRY_ISSUE_ID = "duplicate_resort_entry"
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
@@ -196,8 +197,74 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     return True
 
 
+@callback
+def _async_backfill_unique_id(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Give a pre-unique-id entry the resort path as its id, if it is still free.
+
+    A user who hit the duplicate bug has two entries for one resort. Backfilling
+    both would hand Home Assistant two entries with the same unique id: it
+    refuses the second, logs an error asking the user to file a bug against this
+    integration, and raises its own collision repair - on every restart, forever.
+
+    So only the first entry gets the id. The leftover keeps unique_id None (it
+    still works, it just cannot be recognized as a duplicate) and the user gets a
+    repair that names that exact entry and, when they confirm it, deletes it -
+    which is the only thing that actually resolves the situation.
+    """
+    unique_id = entry.data[CONF_SKI_AREA]
+    issue_id = f"{DUPLICATE_ENTRY_ISSUE_ID}_{entry.entry_id}"
+
+    # No await between the lookup and the update, so no second entry can claim
+    # the id in between.
+    taken_by = next(
+        (
+            other
+            for other in hass.config_entries.async_entries(DOMAIN)
+            if other.entry_id != entry.entry_id and other.unique_id == unique_id
+        ),
+        None,
+    )
+
+    if taken_by is None:
+        hass.config_entries.async_update_entry(entry, unique_id=unique_id)
+        ir.async_delete_issue(hass, DOMAIN, issue_id)
+        return
+
+    _LOGGER.warning(
+        "Config entry %s (%s) duplicates %s (%s); leaving its unique id unset",
+        entry.title,
+        entry.entry_id,
+        taken_by.entry_id,
+        unique_id,
+    )
+    # Both entries carry the same title, so naming the resort does not tell the
+    # user which of the two rows to delete. The issue is raised per entry and
+    # carries that entry's id, and the repair flow deletes exactly that entry -
+    # so the user never has to tell them apart by hand.
+    ir.async_create_issue(
+        hass,
+        DOMAIN,
+        issue_id,
+        is_fixable=True,
+        data={"entry_id": entry.entry_id},
+        severity=ir.IssueSeverity.WARNING,
+        translation_key=DUPLICATE_ENTRY_ISSUE_ID,
+        translation_placeholders={
+            "resort": entry.title,
+            "path": unique_id,
+            "entry_id": entry.entry_id,
+        },
+    )
+
+
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Bergfex from a config entry."""
+    # Entries created before the config flow set a unique id carry None, so the
+    # duplicate check in the flow would not catch a resort that is already
+    # installed. The resort path is stable across domains and languages.
+    if entry.unique_id is None:
+        _async_backfill_unique_id(hass, entry)
+
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN].setdefault(COORDINATORS, {})
 
@@ -579,6 +646,34 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         if DOMAIN in hass.data and COORDINATORS in hass.data[DOMAIN]:
             hass.data[DOMAIN][COORDINATORS].pop(f"bergfex_{entry.data['name']}", None)
     return unload_ok
+
+
+async def async_remove_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Clean up after a removed entry.
+
+    Deleting the leftover duplicate is exactly what the repair issue asks for, so
+    the issue has to go with it - nothing else would ever clear it, since it is
+    keyed on an entry that no longer exists.
+
+    The user may just as well delete the other one, the entry that won the
+    resort's unique id. Home Assistant has already dropped the removed entry from
+    the registry by the time this runs, so the id is free right now: hand it to
+    the leftover here rather than leaving it unidentifiable, and its repair issue
+    raised, until the next restart.
+    """
+    ir.async_delete_issue(hass, DOMAIN, f"{DUPLICATE_ENTRY_ISSUE_ID}_{entry.entry_id}")
+
+    ski_area = entry.data.get(CONF_SKI_AREA)
+    if ski_area is None:
+        return
+
+    for other in hass.config_entries.async_entries(DOMAIN):
+        if other.entry_id == entry.entry_id:
+            continue
+        if other.unique_id is None and other.data.get(CONF_SKI_AREA) == ski_area:
+            # Backfilling re-runs the same first-come rule, so with three entries
+            # for one resort the remaining leftover keeps its issue.
+            _async_backfill_unique_id(hass, other)
 
 
 async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:

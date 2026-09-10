@@ -52,7 +52,8 @@
     "error": {
       "cannot_connect": "Connessione a Bergfex fallita. Controlla la tua connessione internet.",
       "no_areas_found": "Nessuna area sciistica trovata per il paese selezionato. Potrebbe non esserci alcun bollettino neve disponibile.",
-      "no_selection": "Seleziona un'area sciistica dalla lista o inserisci un percorso manuale."
+      "no_selection": "Seleziona un'area sciistica dalla lista o inserisci un percorso manuale.",
+      "invalid_path": "Questo indirizzo non indica alcun comprensorio sciistico. Inserisci un percorso come \"/ischgl/schneebericht/\" oppure incolla l'URL completo della pagina del comprensorio."
     },
     "abort": {
       "already_configured": "Questa area sciistica è già configurata."
@@ -172,6 +173,18 @@
     "standalone_card_installed": {
       "title": "Rimuovi la Bergfex Card autonoma",
       "description": "La scheda Bergfex è ora inclusa in questa integrazione. La \"Bergfex Card\" separata è ancora installata tramite HACS e carica una seconda copia in conflitto. Apri HACS, disinstalla \"Bergfex Card\" e riavvia Home Assistant."
+    },
+    "duplicate_resort_entry": {
+      "title": "Comprensorio Bergfex configurato due volte",
+      "description": "Il comprensorio \"{resort}\" ({path}) è configurato più di una volta. Entrambe le voci generano le stesse entità, quindi solo una può funzionare e l'altra resta non funzionante. Questa riparazione riguarda la voce con l'ID {entry_id}, quella che non può funzionare. Seleziona \"Ripara\" qui sotto per eliminare esattamente quella voce; l'altra continua a funzionare.",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Elimina la voce duplicata",
+            "description": "Eliminare la voce Bergfex duplicata per \"{resort}\" ({path})? Viene rimossa solo la voce con l'ID {entry_id}. L'altra voce di questo comprensorio mantiene i suoi dispositivi ed entità e prende subito in carico il comprensorio."
+          }
+        }
+      }
     }
   }
 }

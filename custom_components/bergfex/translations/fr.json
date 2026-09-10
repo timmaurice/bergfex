@@ -52,7 +52,8 @@
     "error": {
       "cannot_connect": "Échec de la connexion à Bergfex. Veuillez vérifier votre connexion Internet.",
       "no_areas_found": "Aucune station de ski trouvée pour le pays sélectionné. Il se peut qu'aucun bulletin de neige ne soit disponible actuellement.",
-      "no_selection": "Veuillez sélectionner une station de ski dans la liste ou fournir un chemin manuel."
+      "no_selection": "Veuillez sélectionner une station de ski dans la liste ou fournir un chemin manuel.",
+      "invalid_path": "Cette adresse ne désigne aucune station de ski. Saisissez un chemin de station tel que « /ischgl/schneebericht/ » ou collez l'URL complète de la page de la station."
     },
     "abort": {
       "already_configured": "Cette station de ski est déjà configurée."
@@ -172,6 +173,18 @@
     "standalone_card_installed": {
       "title": "Supprimer la Bergfex Card autonome",
       "description": "La carte Bergfex est désormais fournie avec cette intégration. La « Bergfex Card » séparée est toujours installée via HACS et charge une seconde copie en conflit. Ouvrez HACS, désinstallez « Bergfex Card », puis redémarrez Home Assistant."
+    },
+    "duplicate_resort_entry": {
+      "title": "Station Bergfex configurée deux fois",
+      "description": "La station « {resort} » ({path}) est configurée plusieurs fois. Les deux entrées produisent les mêmes entités, donc une seule peut fonctionner et l'autre reste cassée. Cette réparation concerne l'entrée portant l'ID {entry_id}, celle qui ne peut pas fonctionner. Sélectionnez « Réparer » ci-dessous pour supprimer exactement cette entrée ; l'autre continue de fonctionner.",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Supprimer l'entrée en double",
+            "description": "Supprimer l'entrée Bergfex en double pour « {resort} » ({path}) ? Seule l'entrée portant l'ID {entry_id} est supprimée. L'autre entrée de cette station conserve ses appareils et entités et reprend la station immédiatement."
+          }
+        }
+      }
     }
   }
 }

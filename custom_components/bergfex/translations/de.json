@@ -52,7 +52,8 @@
     "error": {
       "cannot_connect": "Verbindung zu Bergfex fehlgeschlagen. Bitte überprüfen Sie Ihre Internetverbindung.",
       "no_areas_found": "Keine Skigebiete für das ausgewählte Land gefunden. Möglicherweise sind aktuell keine Schneeberichte verfügbar.",
-      "no_selection": "Bitte wählen Sie ein Skigebiet aus der Liste oder geben Sie einen manuellen Pfad an."
+      "no_selection": "Bitte wählen Sie ein Skigebiet aus der Liste oder geben Sie einen manuellen Pfad an.",
+      "invalid_path": "Diese Adresse benennt kein Skigebiet. Gib einen Gebietspfad wie \"/ischgl/schneebericht/\" ein oder füge die vollständige URL der Gebietsseite ein."
     },
     "abort": {
       "already_configured": "Dieses Skigebiet ist bereits konfiguriert."
@@ -172,6 +173,18 @@
     "standalone_card_installed": {
       "title": "Eigenständige Bergfex Card entfernen",
       "description": "Die Bergfex-Karte ist jetzt Teil dieser Integration. Die separate \"Bergfex Card\" ist weiterhin über HACS installiert und lädt eine zweite, konfliktbehaftete Kopie. Öffne HACS, deinstalliere \"Bergfex Card\" und starte Home Assistant neu."
+    },
+    "duplicate_resort_entry": {
+      "title": "Bergfex Skigebiet doppelt eingerichtet",
+      "description": "Das Skigebiet \"{resort}\" ({path}) ist mehrfach eingerichtet. Beide Einträge erzeugen dieselben Entitäten, deshalb kann nur einer davon funktionieren, der andere bleibt defekt. Diese Reparatur betrifft den Eintrag mit der ID {entry_id} - den defekten. Wähle unten \"Reparieren\", um genau diesen Eintrag zu löschen; der andere funktioniert weiter.",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Doppelten Eintrag löschen",
+            "description": "Den doppelten Bergfex-Eintrag für \"{resort}\" ({path}) löschen? Entfernt wird nur der Eintrag mit der ID {entry_id}. Der andere Eintrag für dieses Skigebiet behält seine Geräte und Entitäten und übernimmt das Gebiet sofort."
+          }
+        }
+      }
     }
   }
 }

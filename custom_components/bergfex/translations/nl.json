@@ -52,7 +52,8 @@
     "error": {
       "cannot_connect": "Verbinding met Bergfex mislukt. Controleer je internetverbinding.",
       "no_areas_found": "Geen skigebieden gevonden voor het geselecteerde land. Mogelijk zijn er momenteel geen sneeuwberichte beschikbaar.",
-      "no_selection": "Selecteer een skigebied uit de lijst of geef een handmatig pad op."
+      "no_selection": "Selecteer een skigebied uit de lijst of geef een handmatig pad op.",
+      "invalid_path": "Dit adres verwijst niet naar een skigebied. Voer een gebiedspad in zoals \"/ischgl/schneebericht/\" of plak de volledige URL van de gebiedspagina."
     },
     "abort": {
       "already_configured": "Dit skigebied is al geconfigureerd."
@@ -172,6 +173,18 @@
     "standalone_card_installed": {
       "title": "Verwijder de losse Bergfex Card",
       "description": "De Bergfex-kaart wordt nu met deze integratie meegeleverd. De aparte \"Bergfex Card\" is nog via HACS geïnstalleerd en laadt een tweede, conflicterende kopie. Open HACS, verwijder \"Bergfex Card\" en start Home Assistant opnieuw op."
+    },
+    "duplicate_resort_entry": {
+      "title": "Bergfex-skigebied dubbel ingesteld",
+      "description": "Het skigebied \"{resort}\" ({path}) is meer dan één keer ingesteld. Beide items maken dezelfde entiteiten aan, dus slechts één ervan kan werken en de andere blijft kapot. Deze reparatie gaat over het item met ID {entry_id}, het item dat niet kan werken. Kies hieronder \"Oplossen\" om precies dat item te verwijderen; het andere blijft werken.",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Dubbel item verwijderen",
+            "description": "Het dubbele Bergfex-item voor \"{resort}\" ({path}) verwijderen? Alleen het item met ID {entry_id} wordt verwijderd. Het andere item voor dit skigebied behoudt zijn apparaten en entiteiten en neemt het gebied meteen over."
+          }
+        }
+      }
     }
   }
 }

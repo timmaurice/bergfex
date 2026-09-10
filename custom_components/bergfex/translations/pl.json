@@ -52,7 +52,8 @@
     "error": {
       "cannot_connect": "Nie można się połączyć ze stroną Bergfex. Sprawdź swoje połączenie internetowe.",
       "no_areas_found": "Nie można znaleźć żadnych ośrodków narciarskich dla wybranego kraju. Być może obecnie nie są dostępne żadne raporty śniegowe.",
-      "no_selection": "Wybierz ośrodek narciarski z listy lub podaj ręcznie ścieżkę URL."
+      "no_selection": "Wybierz ośrodek narciarski z listy lub podaj ręcznie ścieżkę URL.",
+      "invalid_path": "Ten adres nie wskazuje żadnego ośrodka narciarskiego. Podaj ścieżkę ośrodka, na przykład „/ischgl/schneebericht/”, albo wklej pełny adres URL strony ośrodka."
     },
     "abort": {
       "already_configured": "Ten ośrodek narciarski jest już skonfigurowany."
@@ -171,7 +172,19 @@
   "issues": {
     "standalone_card_installed": {
       "title": "Usuń samodzielną kartę Bergfex Card",
-      "description": "Karta Bergfex jest teraz częścią tej integracji. Osobna „Bergfex Card\" jest nadal zainstalowana przez HACS i ładuje drugą, konfliktową kopię. Otwórz HACS, odinstaluj „Bergfex Card\", a następnie uruchom ponownie Home Assistant."
+      "description": "Karta Bergfex jest teraz częścią tej integracji. Osobna „Bergfex Card” jest nadal zainstalowana przez HACS i ładuje drugą, konfliktową kopię. Otwórz HACS, odinstaluj „Bergfex Card”, a następnie uruchom ponownie Home Assistant."
+    },
+    "duplicate_resort_entry": {
+      "title": "Ośrodek Bergfex skonfigurowany dwukrotnie",
+      "description": "Ośrodek „{resort}” ({path}) jest skonfigurowany więcej niż raz. Oba wpisy tworzą te same encje, więc tylko jeden z nich może działać, a drugi pozostaje uszkodzony. Ta naprawa dotyczy wpisu o identyfikatorze {entry_id} - tego, który nie może działać. Wybierz poniżej „Napraw”, aby usunąć dokładnie ten wpis; drugi działa dalej.",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Usuń zduplikowany wpis",
+            "description": "Usunąć zduplikowany wpis Bergfex dla ośrodka „{resort}” ({path})? Usunięty zostanie tylko wpis o identyfikatorze {entry_id}. Drugi wpis tego ośrodka zachowa swoje urządzenia i encje i od razu przejmie ośrodek."
+          }
+        }
+      }
     }
   }
 }
