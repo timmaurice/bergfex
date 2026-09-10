@@ -12,6 +12,7 @@ import { classMap } from 'lit/directives/class-map.js';
 import { unsafeSVG } from 'lit/directives/unsafe-svg.js';
 import { localize } from './localize.js';
 import { fireEvent, formatRelativeTime, parseDate, fetchHistory } from './utils.js';
+import { ResolutionProblem, problemMessage, resolveResort } from './resolve.js';
 import styles from './styles/card.styles.scss';
 
 import mountainIcon from './svg/mountain-peak.svg';
@@ -25,6 +26,8 @@ export interface LovelaceHelpers {
 
 interface Resort {
   name?: string;
+  /** Set when the resort could not be resolved; the card renders a warning row. */
+  problem?: ResolutionProblem;
   status?: string;
   avalanche_warning?: string;
   classical_condition?: string;
@@ -131,15 +134,15 @@ export class BergfexCard extends LitElement implements LovelaceCard {
       const deviceId = typeof resort === 'string' ? resort : resort.device;
       const customName = typeof resort === 'object' ? resort.name : undefined;
 
-      const deviceEntities = allEntities.filter(
-        (entity) =>
-          hass.entities[entity.entity_id]?.device_id === deviceId &&
-          (entity.entity_id.startsWith('sensor.') || entity.entity_id.startsWith('image.')),
-      );
-
-      if (deviceEntities.length === 0) {
+      const resolved = resolveResort(hass, deviceId);
+      if (!resolved.ok) {
+        // Keep the resort in the list rather than dropping it. Dropping it is
+        // what made an unknown device render as an empty card, with nothing to
+        // tell the user which of their resorts had gone missing.
+        resorts[deviceId] = { problem: resolved.problem, name: customName };
         return;
       }
+      const deviceEntities = resolved.value.entities;
 
       // Use the device_id as the unique key for the resort.
       if (!resorts[deviceId]) {
@@ -602,14 +605,15 @@ export class BergfexCard extends LitElement implements LovelaceCard {
         <div class="card-content">
           ${resortEntries.map(([resortId, resort]) => {
             const primaryEntity = resort.status;
-            if (!primaryEntity) {
-              return html`
-                <div class="warning">
-                  ${localize(this.hass, 'component.bergfex-card.card.resort_not_found', {
-                    resort: resortId,
-                  })}
-                </div>
-              `;
+            if (resort.problem || !primaryEntity) {
+              // A resort that resolved but has no status sensor is reporting
+              // nothing usable, which is the same story for the reader as a
+              // device that is not there at all.
+              const problem: ResolutionProblem = resort.problem ?? {
+                reason: 'unavailable',
+                subject: resort.name ?? resortId,
+              };
+              return html` <div class="warning">${problemMessage(this.hass, problem)}</div> `;
             }
 
             const device = this.hass.devices[resortId];

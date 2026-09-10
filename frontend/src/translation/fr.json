@@ -72,6 +72,12 @@
       "summer_season": "Saison estivale",
       "season_from": "à partir du {date}",
       "season_last_year": "l'an dernier : {date}"
+    },
+    "warnings": {
+      "not_found": "Station introuvable : {subject}",
+      "unavailable": "Aucune donnée n’est remontée pour {subject}.",
+      "wrong_domain": "{subject} est une entité {actual}, mais une entité {expected} est attendue.",
+      "not_numeric": "{subject} ne renvoie pas de nombre (la valeur est « {state} »)."
     }
   },
   "common": {

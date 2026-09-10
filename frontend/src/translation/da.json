@@ -72,6 +72,12 @@
       "summer_season": "Sommersæson",
       "season_from": "fra {date}",
       "season_last_year": "sidste år: {date}"
+    },
+    "warnings": {
+      "not_found": "Skisportsstedet blev ikke fundet: {subject}",
+      "unavailable": "Der rapporteres ingen data for {subject}.",
+      "wrong_domain": "{subject} er en {actual}-enhed, men der kræves en {expected}.",
+      "not_numeric": "{subject} rapporterer ikke et tal (værdien er \"{state}\")."
     }
   },
   "common": {

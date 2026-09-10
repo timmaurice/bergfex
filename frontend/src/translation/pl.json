@@ -72,6 +72,12 @@
       "summer_season": "Sezon letni",
       "season_from": "od {date}",
       "season_last_year": "w zeszłym roku: {date}"
+    },
+    "warnings": {
+      "not_found": "Nie znaleziono ośrodka: {subject}",
+      "unavailable": "Dla {subject} nie są raportowane żadne dane.",
+      "wrong_domain": "{subject} to encja {actual}, a wymagana jest {expected}.",
+      "not_numeric": "{subject} nie zwraca liczby (wartość to „{state}”)."
     }
   },
   "common": {

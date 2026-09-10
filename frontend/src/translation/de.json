@@ -72,6 +72,12 @@
       "summer_season": "Sommersaison",
       "season_from": "ab {date}",
       "season_last_year": "letztes Jahr: {date}"
+    },
+    "warnings": {
+      "not_found": "Skigebiet nicht gefunden: {subject}",
+      "unavailable": "Für {subject} werden keine Daten gemeldet.",
+      "wrong_domain": "{subject} ist eine {actual}-Entität, benötigt wird eine {expected}.",
+      "not_numeric": "{subject} meldet keine Zahl (der Wert ist „{state}“)."
     }
   },
   "common": {

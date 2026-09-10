@@ -72,6 +72,12 @@
       "summer_season": "Summer season",
       "season_from": "from {date}",
       "season_last_year": "last year: {date}"
+    },
+    "warnings": {
+      "not_found": "Resort not found: {subject}",
+      "unavailable": "No data is being reported for {subject}.",
+      "wrong_domain": "{subject} is a {actual} entity, but a {expected} is needed.",
+      "not_numeric": "{subject} does not report a number (it reads \"{state}\")."
     }
   },
   "common": {

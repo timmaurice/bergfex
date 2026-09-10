@@ -210,6 +210,38 @@ describe('BergfexCard', () => {
   });
 
   describe('Rendering', () => {
+    it('warns about a resort whose device is gone instead of rendering nothing', async () => {
+      // A device id that no longer resolves - the integration removed, the
+      // resort deleted, a dashboard copied to another instance. The resort used
+      // to be dropped from the list without a word, so a card configured with
+      // one resort rendered as an empty box.
+      const resort = createMockResort('ischgl', 'Ischgl', { status: 'Open' });
+      await setupCard({ resorts: ['device-that-is-gone'] }, resort);
+
+      const warning = element.shadowRoot?.querySelector('.warning');
+      expect(warning).not.toBeNull();
+      expect(warning?.textContent).toContain('Not Found');
+      expect(element.shadowRoot?.querySelector('.resort')).toBeNull();
+    });
+
+    it('warns about a resort whose device reports nothing', async () => {
+      const resort = createMockResort('ischgl', 'Ischgl', { status: 'Open' });
+      // The device is still in the registry, but none of its entities are.
+      resort.entities = {};
+      resort.states = {};
+      await setupCard({}, resort);
+
+      expect(element.shadowRoot?.querySelector('.warning')?.textContent).toContain('Unavailable');
+    });
+
+    it('still renders the resorts it can resolve alongside the warning', async () => {
+      const good = createMockResort('ischgl', 'Ischgl', { status: 'Open' });
+      await setupCard({ resorts: ['device-that-is-gone', good.device_id] }, good);
+
+      expect(element.shadowRoot?.querySelector('.warning')).not.toBeNull();
+      expect(element.shadowRoot?.querySelector('.resort-name')?.textContent).toBe('Ischgl');
+    });
+
     it('should render a title if provided', async () => {
       const resort = createMockResort('ischgl', 'Ischgl', { status: 'Open' });
       await setupCard({ title: 'Ski Resorts' }, resort);
