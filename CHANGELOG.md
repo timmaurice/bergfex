@@ -70,6 +70,11 @@ The `2.4.0` line was never released. Its three betas (`2.4.0b1`, `2.4.0b2`,
   and corrected `operating_hours` and `slope_condition` translations.
 - A `null` entry in the card's `resorts` config no longer throws while resolving
   device IDs.
+- A config entry that failed to set up said nothing at all: Home Assistant
+  reports `ConfigEntryNotReady` at INFO, which the default log level hides, and
+  the reason was not carried in the exception either, so the entry page showed
+  an empty one. The first failed attempt now logs a warning naming the resort
+  and the reason, retries stay at DEBUG, and the reason reaches the UI.
 
 ### Security
 

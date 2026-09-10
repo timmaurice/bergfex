@@ -55,6 +55,11 @@ from .parser import (
 PLATFORMS = ["sensor", "image"]
 _LOGGER = logging.getLogger(__name__)
 
+# Entries whose setup failure has already been reported at WARNING. Setup is
+# retried for as long as the outage lasts, and the reason does not change
+# between retries, so the second attempt onwards stays at DEBUG.
+_SETUP_FAILURE_LOGGED: set[str] = set()
+
 # Winter and summer operating periods live only on a resort's main page, and they
 # change at most once a season. Caching them keeps this from costing an extra
 # request on every poll - bergfex rate-limits, and the subpage is fetched anyway.
@@ -751,6 +756,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         coordinator = DataUpdateCoordinator(
             hass,
             _LOGGER,
+            config_entry=entry,
             name=resort_coordinator_name,
             update_method=async_update_data_resort,
             update_interval=timedelta(minutes=update_interval_minutes),
@@ -758,12 +764,30 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         try:
             await coordinator.async_config_entry_first_refresh()
         except Exception as err:
-            # Home Assistant already reports ConfigEntryNotReady, with a retry
-            # notice, so an error line here only duplicates it.
-            _LOGGER.debug(
-                "Failed to refresh resort coordinator for %s: %s", area_name, err
-            )
-            raise ConfigEntryNotReady from err
+            # Nothing else says why this failed. Home Assistant's own
+            # "not ready yet" line is INFO, which the default WARNING level
+            # hides, and `async_config_entry_first_refresh` asks the
+            # coordinator not to log the failure at all. So the reason has to
+            # travel in the exception - that is what the entry page shows the
+            # user - and one line has to reach the log.
+            #
+            # Only the first attempt is worth a warning: setup is retried on a
+            # backoff for as long as the outage lasts, and a warning per retry
+            # is the noise this whole path was cleaned up to remove.
+            if entry.entry_id in _SETUP_FAILURE_LOGGED:
+                _LOGGER.debug(
+                    "Still failing to refresh resort coordinator for %s: %s",
+                    area_name,
+                    err,
+                )
+            else:
+                _SETUP_FAILURE_LOGGED.add(entry.entry_id)
+                _LOGGER.warning(
+                    "Failed to refresh resort coordinator for %s: %s", area_name, err
+                )
+            raise ConfigEntryNotReady(
+                f"Error communicating with Bergfex for {area_name}: {err}"
+            ) from err
 
         hass.data[DOMAIN][COORDINATORS][resort_coordinator_name] = coordinator
 
@@ -775,11 +799,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     entry.async_on_unload(entry.add_update_listener(async_reload_entry))
 
+    # Setup got through, so the next outage deserves its warning again.
+    _SETUP_FAILURE_LOGGED.discard(entry.entry_id)
+
     return True
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
+    _SETUP_FAILURE_LOGGED.discard(entry.entry_id)
     # Forward the unloading to the sensor platform
     if unload_ok := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
         if DOMAIN in hass.data and COORDINATORS in hass.data[DOMAIN]:
