@@ -562,8 +562,14 @@ def parse_resort_page(
     op_hours_text = get_text_from_dd(soup, op_hours_kw)
     if op_hours_text:
         area_data["operation_status"] = _translate_value(op_hours_text, lang)
-        # Try to extract start/end times: "09:00 - 16:45"
-        time_match = re.search(r"(\d{2}:\d{2})\s*-\s*(\d{2}:\d{2})", op_hours_text)
+        # Try to extract start/end times: "09:00 - 16:45", or "8:30 - 16:00".
+        # bergfex does not always pad the hour - the Italian pages in particular
+        # print "8:30" - and it separates the two with a hyphen or an en/em dash
+        # depending on the page. Both are what _parse_operating_period already
+        # accepts for the same value in the season panel.
+        time_match = re.search(
+            r"(\d{1,2}:\d{2})\s*[-–—]\s*(\d{1,2}:\d{2})", op_hours_text
+        )
         if time_match:
             area_data["operating_hours_start"] = time_match.group(1)
             area_data["operating_hours_end"] = time_match.group(2)

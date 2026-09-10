@@ -75,3 +75,41 @@ def test_accepts_en_dash_between_dates():
     dashed = PANEL.replace("05.12.2025 - 12.04.2026", "05.12.2025 – 12.04.2026")
     data = parse_resort_page(dashed, "at")
     assert data["winter_season_end"] == date(2026, 4, 12)
+
+
+HOURS_DD = """
+<html><body>
+  <dl>
+    <dt>Orario</dt>
+    <dd>{hours}</dd>
+  </dl>
+</body></html>
+"""
+
+
+def test_reads_an_hour_without_a_leading_zero():
+    """bergfex prints "8:30", not "08:30", on the Italian pages.
+
+    The regex demanded two digits for the hour, so the whole opening time was
+    dropped - silently, because the operation_status text next to it still
+    parsed. See the bare "8:30 - 16:00" in tests/fixtures/airolo.html.
+    """
+    data = parse_resort_page(HOURS_DD.format(hours="8:30 - 16:00"), "/airolo/", "it")
+
+    assert data["operating_hours_start"] == "8:30"
+    assert data["operating_hours_end"] == "16:00"
+
+
+def test_reads_hours_separated_by_an_en_dash():
+    """The season panel already accepted a dash; this field did not."""
+    data = parse_resort_page(HOURS_DD.format(hours="09:00 – 16:45"), "/airolo/", "it")
+
+    assert data["operating_hours_start"] == "09:00"
+    assert data["operating_hours_end"] == "16:45"
+
+
+def test_a_padded_hour_still_reads():
+    data = parse_resort_page(HOURS_DD.format(hours="09:00 - 16:45"), "/airolo/", "it")
+
+    assert data["operating_hours_start"] == "09:00"
+    assert data["operating_hours_end"] == "16:45"
