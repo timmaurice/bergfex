@@ -20,12 +20,16 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from custom_components.bergfex.parser import (  # noqa: E402
-    evaluate_status,
-    parse_resort_page,
-)
+from _integration import import_integration_module  # noqa: E402
+
+# The workflow installs only requirements.txt, so Home Assistant is absent - and
+# the integration's package __init__ needs it. The parser does not.
+_parser = import_integration_module("parser")
+evaluate_status = _parser.evaluate_status
+parse_resort_page = _parser.parse_resort_page
 
 # Two questions, two groups, because they are answered weeks apart.
 #

@@ -13,30 +13,19 @@ import random
 import re
 import aiohttp
 from bs4 import BeautifulSoup
-from unittest.mock import MagicMock
 
-# This script runs in CI without Home Assistant installed. Stub it out only when
-# it is genuinely missing - unconditional stubbing would poison sys.modules for
-# anything that imports this module afterwards, the test suite included.
-try:  # pragma: no cover - depends on the environment, not on the code
-    import homeassistant  # noqa: F401
-except ImportError:  # pragma: no cover
-    for _name in (
-        "homeassistant",
-        "homeassistant.config_entries",
-        "homeassistant.const",
-        "homeassistant.core",
-        "homeassistant.helpers",
-        "homeassistant.helpers.aiohttp_client",
-        "homeassistant.helpers.update_coordinator",
-        "homeassistant.exceptions",
-    ):
-        sys.modules[_name] = MagicMock()
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, base_dir)
 
-from custom_components.bergfex.const import SUPPORTED_LANGUAGES, KEYWORDS
+from _integration import import_integration_module  # noqa: E402
+
+# This job installs only requirements.txt, so Home Assistant is absent - and the
+# integration's package __init__ needs it. The constants below do not.
+_const = import_integration_module("const")
+SUPPORTED_LANGUAGES = _const.SUPPORTED_LANGUAGES
+KEYWORDS = _const.KEYWORDS
 
 # Configuration of structural groups
 GROUPS = {
