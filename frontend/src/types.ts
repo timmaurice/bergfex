@@ -7,7 +7,7 @@ export interface HassDevice {
 
 export interface FrontendLocaleData {
   language: string;
-  number_format: 'comma_decimal' | 'decimal_comma' | 'space_comma' | 'system';
+  number_format: 'comma_decimal' | 'decimal_comma' | 'space_comma' | 'system' | 'language' | 'none';
   time_format: '12' | '24' | 'system' | 'am_pm';
   // You can expand this with more properties if needed
 }

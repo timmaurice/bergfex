@@ -242,6 +242,34 @@ describe('BergfexCard', () => {
       expect(element.shadowRoot?.querySelector('.resort-name')?.textContent).toBe('Ischgl');
     });
 
+    it('renders snow depths in the number format the user picked', async () => {
+      // The state went into the template as-is, so a German user read "12.5 cm"
+      // in a card sitting next to Home Assistant's own "12,5".
+      hass.locale = { language: 'de', number_format: 'decimal_comma', time_format: '24' };
+      const resort = createMockResort('ischgl', 'Ischgl', { status: 'Open', snow_mountain: '1234.5' });
+      await setupCard({ show_snow: true }, resort);
+
+      const text = element.shadowRoot!.textContent!.replace(/\s+/g, ' ');
+      expect(text).toContain('1.234,5');
+      expect(text).not.toContain('1234.5');
+    });
+
+    it('does not print a condition sensor that has no report', async () => {
+      // bergfex writes "no report" in the language of the page the resort was
+      // set up in; only the German phrase was recognised, so every other one was
+      // printed into the card as if it were a snow condition.
+      const resort = createMockResort('ischgl', 'Ischgl', {
+        status: 'Open',
+        snow_condition: 'no report',
+        slope_condition: 'geen melding',
+      });
+      await setupCard({ show_conditions: true, conditions_default_open: true }, resort);
+
+      const text = element.shadowRoot!.textContent!;
+      expect(text).not.toContain('no report');
+      expect(text).not.toContain('geen melding');
+    });
+
     it('should render a title if provided', async () => {
       const resort = createMockResort('ischgl', 'Ischgl', { status: 'Open' });
       await setupCard({ title: 'Ski Resorts' }, resort);

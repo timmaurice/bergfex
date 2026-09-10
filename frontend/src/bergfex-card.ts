@@ -11,7 +11,7 @@ import {
 import { classMap } from 'lit/directives/class-map.js';
 import { unsafeSVG } from 'lit/directives/unsafe-svg.js';
 import { localize } from './localize.js';
-import { fireEvent, formatRelativeTime, parseDate, fetchHistory } from './utils.js';
+import { fireEvent, formatNumber, formatRelativeTime, parseDate, fetchHistory } from './utils.js';
 import { ResolutionProblem, problemMessage, resolveResort } from './resolve.js';
 import styles from './styles/card.styles.scss';
 
@@ -51,6 +51,27 @@ interface Resort {
   snow_valley?: string;
   is_cross_country?: boolean;
 }
+
+/**
+ * Every spelling of "there is no report" this card can be handed.
+ *
+ * Home Assistant's own unknown/unavailable/none, plus what bergfex prints in
+ * each language the integration can be configured in. Compared lower-cased.
+ */
+const NO_REPORT_STATES = [
+  '',
+  'n/a',
+  'unknown',
+  'unavailable',
+  'none',
+  'keine meldung', // de
+  'no report', // en
+  'geen melding', // nl
+  'pas de rapport', // fr
+  'nessuna segnalazione', // it
+  'sin informe', // es
+  'brak informacji', // pl
+];
 
 type LovelaceCardConstructor = new () => LovelaceCard;
 const ELEMENT_NAME = 'bergfex-card';
@@ -446,12 +467,11 @@ export class BergfexCard extends LitElement implements LovelaceCard {
     } else if (dayOffset === 1) {
       return localize(this.hass, 'component.bergfex-card.card.forecast.tomorrow');
     } else {
-      // Format as "Mo., 02.12." for German or "Mon, 02.12" for English
-      const locale = this.hass.locale?.language || this.hass.language || 'de';
-      const weekday = date.toLocaleDateString(locale, { weekday: 'short' });
-      const day = date.getDate().toString().padStart(2, '0');
-      const month = (date.getMonth() + 1).toString().padStart(2, '0');
-      return `${weekday}, ${day}.${month}.`;
+      // The day and month were assembled by hand as "02.12.", which is the
+      // German order printed at every user regardless of their locale. Intl
+      // knows the right order and separator for each one.
+      const locale = this.hass.locale?.language || this.hass.language || 'en';
+      return date.toLocaleDateString(locale, { weekday: 'short', day: '2-digit', month: '2-digit' });
     }
   }
 
@@ -464,8 +484,17 @@ export class BergfexCard extends LitElement implements LovelaceCard {
     `;
   }
 
+  /**
+   * Whether a state carries no report at all.
+   *
+   * bergfex writes "no report" in the language of the page the resort was set
+   * up in, and Home Assistant has its own two words for it. Only the German one
+   * was listed, so a resort configured in English, French or Italian printed
+   * bergfex's own phrase - or "unavailable" - into the card as if it were a
+   * snow condition.
+   */
   private _isNA(state: string): boolean {
-    return ['N/A', 'keine Meldung', 'unknown'].includes(state);
+    return NO_REPORT_STATES.includes(state?.trim().toLowerCase());
   }
 
   /**
@@ -778,7 +807,7 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                                 snow_mountain && !isNaN(parseFloat(snow_mountain.state))
                                   ? html`<div class="value-row">
                                       <span
-                                        >${snow_mountain.state}
+                                        >${formatNumber(snow_mountain.state, this.hass)}
                                         ${snow_mountain.attributes.unit_of_measurement ?? ''}</span
                                       >
                                       ${this._renderTrend(snow_mountain.entity_id, snow_mountain.state)}
@@ -817,7 +846,8 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                                 snow_valley && !isNaN(parseFloat(snow_valley.state))
                                   ? html`<div class="value-row">
                                       <span
-                                        >${snow_valley.state} ${snow_valley.attributes.unit_of_measurement ?? ''}</span
+                                        >${formatNumber(snow_valley.state, this.hass)}
+                                        ${snow_valley.attributes.unit_of_measurement ?? ''}</span
                                       >
                                       ${this._renderTrend(snow_valley.entity_id, snow_valley.state)}
                                     </div>`
@@ -846,7 +876,10 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                               ${
                                 new_snow && !isNaN(parseFloat(new_snow.state))
                                   ? html`<div class="value-row">
-                                      <span>${new_snow.state} ${new_snow.attributes.unit_of_measurement ?? ''}</span>
+                                      <span
+                                        >${formatNumber(new_snow.state, this.hass)}
+                                        ${new_snow.attributes.unit_of_measurement ?? ''}</span
+                                      >
                                       ${this._renderTrend(new_snow.entity_id, new_snow.state)}
                                     </div>`
                                   : html`<span>N/A</span>`
@@ -889,13 +922,16 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                                                 : NaN;
                                               if (!isNaN(totalVal)) {
                                                 return html`<div class="value-row">
-                                                    <span>${openVal}/${totalVal} ${unit}</span>
+                                                    <span
+                                                      >${formatNumber(openVal, this.hass)}/${formatNumber(totalVal, this.hass)}
+                                                      ${unit}</span
+                                                    >
                                                     ${this._renderTrend(classical_open_km.entity_id, classical_open_km.state)}
                                                   </div>
                                                   ${this._renderProgressBar(openVal, totalVal)}`;
                                               }
                                               return html`<div class="value-row">
-                                                <span>${classical_open_km.state} ${unit}</span>
+                                                <span>${formatNumber(classical_open_km.state, this.hass)} ${unit}</span>
                                                 ${this._renderTrend(classical_open_km.entity_id, classical_open_km.state)}
                                               </div>`;
                                             })()
@@ -934,13 +970,16 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                                               const totalVal = skating_total ? parseFloat(String(skating_total)) : NaN;
                                               if (!isNaN(totalVal)) {
                                                 return html`<div class="value-row">
-                                                    <span>${openVal}/${totalVal} ${unit}</span>
+                                                    <span
+                                                      >${formatNumber(openVal, this.hass)}/${formatNumber(totalVal, this.hass)}
+                                                      ${unit}</span
+                                                    >
                                                     ${this._renderTrend(skating_open_km.entity_id, skating_open_km.state)}
                                                   </div>
                                                   ${this._renderProgressBar(openVal, totalVal)}`;
                                               }
                                               return html`<div class="value-row">
-                                                <span>${skating_open_km.state} ${unit}</span>
+                                                <span>${formatNumber(skating_open_km.state, this.hass)} ${unit}</span>
                                                 ${this._renderTrend(skating_open_km.entity_id, skating_open_km.state)}
                                               </div>`;
                                             })()
@@ -981,13 +1020,15 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                                               const totalVal = totalRaw ? parseFloat(String(totalRaw)) : NaN;
                                               if (!isNaN(totalVal)) {
                                                 return html`<div class="value-row">
-                                                    <span>${openVal}/${totalVal}</span>
+                                                    <span
+                                                      >${formatNumber(openVal, this.hass)}/${formatNumber(totalVal, this.hass)}</span
+                                                    >
                                                     ${this._renderTrend(lifts_open_entity.entity_id, lifts_open_entity.state)}
                                                   </div>
                                                   ${this._renderProgressBar(openVal, totalVal)}`;
                                               }
                                               return html`<div class="value-row">
-                                                <span>${lifts_open_entity.state}</span>
+                                                <span>${formatNumber(lifts_open_entity.state, this.hass)}</span>
                                                 ${this._renderTrend(lifts_open_entity.entity_id, lifts_open_entity.state)}
                                               </div>`;
                                             })()
@@ -1033,13 +1074,19 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                                                         slopes_open_km.attributes.unit_of_measurement ?? 'km';
                                                       if (!isNaN(totalVal)) {
                                                         return html`<div class="value-row">
-                                                            <span>${openVal}/${totalVal} ${unit}</span>
+                                                            <span
+                                                              >${formatNumber(openVal, this.hass)}/${formatNumber(totalVal, this.hass)}
+                                                              ${unit}</span
+                                                            >
                                                             ${this._renderTrend(slopes_open_km.entity_id, slopes_open_km.state)}
                                                           </div>
                                                           ${this._renderProgressBar(openVal, totalVal)}`;
                                                       }
                                                       return html`<div class="value-row">
-                                                        <span>${slopes_open_km.state} ${unit}</span>
+                                                        <span
+                                                          >${formatNumber(slopes_open_km.state, this.hass)}
+                                                          ${unit}</span
+                                                        >
                                                         ${this._renderTrend(slopes_open_km.entity_id, slopes_open_km.state)}
                                                       </div>`;
                                                     })()
@@ -1084,7 +1131,9 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                                                       const totalVal = totalRaw ? parseFloat(String(totalRaw)) : NaN;
                                                       if (!isNaN(totalVal)) {
                                                         return html`<div class="value-row">
-                                                            <span>${openVal}/${totalVal}</span>
+                                                            <span
+                                                              >${formatNumber(openVal, this.hass)}/${formatNumber(totalVal, this.hass)}</span
+                                                            >
                                                             ${this._renderTrend(
                                                               slopes_open_entity.entity_id,
                                                               slopes_open_entity.state,
@@ -1093,7 +1142,9 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                                                           ${this._renderProgressBar(openVal, totalVal)}`;
                                                       }
                                                       return html`<div class="value-row">
-                                                        <span>${slopes_open_entity.state}</span>
+                                                        <span
+                                                          >${formatNumber(slopes_open_entity.state, this.hass)}</span
+                                                        >
                                                         ${this._renderTrend(
                                                           slopes_open_entity.entity_id,
                                                           slopes_open_entity.state,
@@ -1132,7 +1183,9 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                                                 ${
                                                   slopes_open_entity && !isNaN(parseFloat(slopes_open_entity.state))
                                                     ? html`<div class="value-row">
-                                                        <span>${slopes_open_entity.state}</span>
+                                                        <span
+                                                          >${formatNumber(slopes_open_entity.state, this.hass)}</span
+                                                        >
                                                         ${this._renderTrend(
                                                           slopes_open_entity.entity_id,
                                                           slopes_open_entity.state,

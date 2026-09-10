@@ -34,6 +34,58 @@ export function parseDate(date: string | Date | null | undefined): Date | null {
 }
 
 /**
+ * The BCP 47 tag that matches the user's chosen number format.
+ *
+ * Home Assistant lets the number format be picked independently of the
+ * interface language, so the language alone is the wrong thing to format with:
+ * a German user reading an English interface still wants "12,5".
+ */
+function numberLocale(hass: HomeAssistant | undefined): string | undefined {
+  switch (hass?.locale?.number_format) {
+    case 'comma_decimal':
+      return 'en-US'; // 1,234.56
+    case 'decimal_comma':
+      return 'de-DE'; // 1.234,56
+    case 'space_comma':
+      return 'fr-FR'; // 1 234,56
+    case 'language':
+      return hass?.locale?.language || hass?.language;
+    case 'none':
+      return undefined; // caller falls back to the raw digits
+    default:
+      // 'system', or an option this card has not heard of: let the browser
+      // decide, which is what "system" means.
+      return hass?.language;
+  }
+}
+
+/**
+ * Renders a sensor value the way the rest of Home Assistant renders it.
+ *
+ * Snow depths and trail lengths were interpolated straight into the template,
+ * so every user saw the JavaScript spelling - "12.5" - next to a Home Assistant
+ * interface that had been showing them "12,5" everywhere else.
+ *
+ * Returns the input unchanged when it is not a number, so `unknown` and
+ * bergfex's own free text pass through rather than becoming "NaN".
+ */
+export function formatNumber(value: string | number | null | undefined, hass: HomeAssistant | undefined): string {
+  if (value === null || value === undefined || value === '') return '';
+
+  const numeric = typeof value === 'number' ? value : parseFloat(value);
+  if (Number.isNaN(numeric)) return String(value);
+
+  if (hass?.locale?.number_format === 'none') return String(numeric);
+
+  try {
+    return numeric.toLocaleString(numberLocale(hass), { maximumFractionDigits: 2 });
+  } catch {
+    // An unusable locale tag must not take the whole card down with it.
+    return String(numeric);
+  }
+}
+
+/**
  * Formats a date string or object into a locale-aware string.
  * If the date is today, only the time is shown.
  * @param date The date to format.
