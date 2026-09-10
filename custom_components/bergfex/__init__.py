@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import time
 from typing import Any
 from datetime import timedelta, datetime
 from urllib.parse import urljoin, urlparse
@@ -69,6 +70,18 @@ _SEASON_PANEL_KEYS = (
     "summer_operating_hours_end",
 )
 
+# A region's snow-forecast pages are the same pages for every resort in it, so
+# with several resorts from one region installed the integration was fetching
+# and re-parsing the identical six pages once per resort per poll. They are keyed
+# on the url and shared across coordinators.
+#
+# The TTL is generous on purpose: these are bergfex's own forecast graphics,
+# republished a few times a day, so a resort that joins the cycle a few minutes
+# late loses nothing by reading the parse the previous one just did. It is well
+# under MIN_UPDATE_INTERVAL's own reach, so a region is still refetched regularly.
+_FORECAST_CACHE: dict[str, tuple[float, dict[str, str]]] = {}
+_FORECAST_CACHE_TTL = 10 * 60
+
 CARD_FILENAME = "bergfex-card.js"
 CARD_URL_BASE = "/bergfex_frontend"
 
@@ -134,6 +147,39 @@ async def _async_reconcile_card_resource(resources, new_url: str) -> list[str]:
         await resources.async_update_item(own_resource.get("id"), {"url": new_url})
 
     return [item.get("url", "") for item in stale_resources]
+
+
+async def _async_forecast_images(
+    hass: HomeAssistant, session, forecast_url: str, page: int
+) -> dict[str, str] | None:
+    """Return one region forecast page's images, fetching it at most once per TTL.
+
+    Snow forecast pages are per region. With several resorts of one region
+    installed, every poll used to fetch and re-parse the identical six pages once
+    per resort, so the work grew with the number of resorts rather than with the
+    number of regions.
+
+    Returns None when the page could not be read, which the caller skips.
+    """
+    cached = _FORECAST_CACHE.get(forecast_url)
+    if cached is not None and (time.monotonic() - cached[0]) < _FORECAST_CACHE_TTL:
+        _LOGGER.debug("Reusing cached forecast page: %s", forecast_url)
+        return cached[1]
+
+    _LOGGER.debug("Fetching forecast images from: %s", forecast_url)
+    async with session.get(forecast_url, allow_redirects=True) as response:
+        if response.status != 200:
+            _LOGGER.warning(
+                "Could not fetch forecast page %d: %s", page, response.status
+            )
+            return None
+        forecast_html = await response.text()
+
+    image_data = await hass.async_add_executor_job(
+        parse_snow_forecast_images, forecast_html, page
+    )
+    _FORECAST_CACHE[forecast_url] = (time.monotonic(), image_data)
+    return image_data
 
 
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:
@@ -392,7 +438,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
                 parsed_data = {}
                 if resort_type == TYPE_CROSS_COUNTRY:
-                    parsed_data.update(parse_cross_country_resort_page(html, lang))
+                    parsed_data.update(
+                        await hass.async_add_executor_job(
+                            parse_cross_country_resort_page, html, lang
+                        )
+                    )
 
                     # Fetch total trail lengths from the overview page, as they are often not on the detail page.
                     if country_path:
@@ -408,8 +458,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                                 if response.status == 200:
                                     overview_html = await response.text()
                                     # This will parse totals for all resorts on the page
-                                    overview_data = parse_cross_country_overview_data(
-                                        overview_html, lang
+                                    overview_data = (
+                                        await hass.async_add_executor_job(
+                                            parse_cross_country_overview_data,
+                                            overview_html,
+                                            lang,
+                                        )
                                     )
                                     # Find our specific resort in the overview data and update totals
                                     # Find our specific resort in the overview data and update totals
@@ -489,7 +543,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                     )
                     return {area_path: parsed_data}
 
-                parsed_data = parse_resort_page(html, area_path, lang)
+                parsed_data = await hass.async_add_executor_job(
+                    parse_resort_page, html, area_path, lang
+                )
 
                 # Fetch main resort page if price or season is missing and we are on a known subpage
                 # e.g. /meribel/schneebericht/ -> /meribel/
@@ -521,8 +577,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                                 ) as response:
                                     if response.status == 200:
                                         main_html = await response.text()
-                                        main_data = parse_resort_page(
-                                            main_html, main_path, lang
+                                        main_data = (
+                                            await hass.async_add_executor_job(
+                                                parse_resort_page,
+                                                main_html,
+                                                main_path,
+                                                lang,
+                                            )
                                         )
                                         for key in [
                                             "price",
@@ -579,7 +640,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                         ) as response:
                             if response.status == 200:
                                 overview_html = await response.text()
-                                overview_data = parse_overview_data(overview_html, lang)
+                                overview_data = (
+                                    await hass.async_add_executor_job(
+                                        parse_overview_data, overview_html, lang
+                                    )
+                                )
                                 # The keys in overview_data are full paths e.g. /skimountaineering/tirol/hintertux/
                                 # area_path is e.g. /hintertux/
                                 # We need to find the matching entry
@@ -621,59 +686,49 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                             err,
                         )
 
-                # Fetch snow forecast images (pages 0-5)
-                for i in range(6):
-                    try:
-                        # Construct URL for forecast page using region_path
-                        region_path_from_data = parsed_data.get(
-                            "region_path", ""
-                        ).strip("/")
-                        if region_path_from_data:
+                # Fetch snow forecast images (pages 0-5). These pages belong
+                # to the region, not the resort, so every resort in a region
+                # asks for the same six urls - hence the shared cache.
+                region_path_from_data = parsed_data.get("region_path", "").strip("/")
+                if not region_path_from_data:
+                    _LOGGER.warning(
+                        "Region path not found for %s, cannot fetch forecast images.",
+                        area_path,
+                    )
+                else:
+                    for i in range(6):
+                        try:
                             forecast_url = urljoin(
                                 domain,
                                 f"/{region_path_from_data}/wetter/schneevorhersage/{i}/",
                             )
-                        else:
-                            _LOGGER.warning(
-                                "Region path not found for %s, cannot fetch forecast images.",
-                                area_path,
+                            image_data = await _async_forecast_images(
+                                hass, session, forecast_url, i
                             )
-                            continue
-                        _LOGGER.debug("Fetching forecast images from: %s", forecast_url)
-                        async with session.get(
-                            forecast_url, allow_redirects=True
-                        ) as response:
-                            if response.status == 200:
-                                forecast_html = await response.text()
-                                image_data = parse_snow_forecast_images(
-                                    forecast_html, i
+                            if image_data is None:
+                                continue
+
+                            # Flatten data into parsed_data
+                            if "daily_forecast_url" in image_data:
+                                parsed_data[f"forecast_image_day_{i}_url"] = image_data[
+                                    "daily_forecast_url"
+                                ]
+                                parsed_data[f"forecast_image_day_{i}_caption"] = (
+                                    image_data.get("daily_caption", "")
                                 )
 
-                                # Flatten data into parsed_data
-                                if "daily_forecast_url" in image_data:
-                                    parsed_data[f"forecast_image_day_{i}_url"] = (
-                                        image_data["daily_forecast_url"]
-                                    )
-                                    parsed_data[f"forecast_image_day_{i}_caption"] = (
-                                        image_data.get("daily_caption", "")
-                                    )
-
-                                if "summary_url" in image_data:
-                                    hours = (i + 1) * 24
-                                    parsed_data[f"summary_image_{hours}h_url"] = (
-                                        image_data["summary_url"]
-                                    )
-                                    parsed_data[f"summary_image_{hours}h_caption"] = (
-                                        image_data.get("summary_caption", "")
-                                    )
-                            else:
-                                _LOGGER.warning(
-                                    "Could not fetch forecast page %d: %s",
-                                    i,
-                                    response.status,
+                            if "summary_url" in image_data:
+                                hours = (i + 1) * 24
+                                parsed_data[f"summary_image_{hours}h_url"] = image_data[
+                                    "summary_url"
+                                ]
+                                parsed_data[f"summary_image_{hours}h_caption"] = (
+                                    image_data.get("summary_caption", "")
                                 )
-                    except Exception as err:
-                        _LOGGER.warning("Error fetching forecast page %d: %s", i, err)
+                        except Exception as err:
+                            _LOGGER.warning(
+                                "Error fetching forecast page %d: %s", i, err
+                            )
 
                 _LOGGER.debug("Parsed resort data for %s: %s", area_path, parsed_data)
                 return {area_path: parsed_data}
