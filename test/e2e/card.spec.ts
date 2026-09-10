@@ -53,6 +53,16 @@ test.beforeAll(async () => {
         cards: [{ type: 'custom:bergfex-card', title: 'E2E resorts', resorts: [resort.deviceId] }],
       },
       { title: 'Elsewhere', cards: [{ type: 'markdown', content: 'nothing here' }] },
+      {
+        title: 'Missing',
+        cards: [
+          {
+            type: 'custom:bergfex-card',
+            title: 'Gone',
+            resorts: ['device-that-does-not-exist', resort.deviceId],
+          },
+        ],
+      },
     ],
   });
 });
@@ -90,5 +100,22 @@ test.describe('The card on a real dashboard', () => {
 
     await page.getByRole('tab', { name: 'Resorts' }).click();
     await expect(name).toHaveText(resortName, { timeout: 30_000 });
+  });
+
+  test('names the resort it cannot resolve instead of rendering an empty card', async ({ page }) => {
+    // A device id that no longer resolves used to be dropped in silence, so the
+    // card rendered as an empty box. Only a browser shows that the warning row
+    // reaches the screen and that the resorts beside it still render.
+    await page.goto(`/${urlPath}/2`);
+
+    const card = page.locator('bergfex-card');
+    await expect(card.locator('ha-card')).toBeVisible({ timeout: 60_000 });
+
+    const warning = card.locator('.warning');
+    await expect(warning).toHaveCount(1);
+    await expect(warning).toContainText('device-that-does-not-exist');
+
+    // The resort that does resolve is still drawn next to it.
+    await expect(card.locator('.resort-name')).toHaveText(resortName);
   });
 });
