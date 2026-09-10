@@ -146,4 +146,70 @@ describe('BergfexCardEditor', () => {
       expect(config.resorts).toEqual([{ device: 'device-a', name: 'My Resort' }, 'device-new']);
     });
   });
+
+  describe('not baking the defaults into what it saves', () => {
+    it('saves only what the user changed', async () => {
+      // The editor used to write its whole working copy back, so toggling one
+      // switch saved eleven settings the user never touched - and froze today's
+      // defaults into that card, where a later change to a default could never
+      // reach it.
+      await setConfig({ type: 'custom:bergfex-card', resorts: ['device-a'] } as BergfexCardConfig);
+
+      const config = await emit({ show_snow: false } as Partial<BergfexCardConfig>);
+
+      expect(config).toEqual({ type: 'custom:bergfex-card', resorts: ['device-a'], show_snow: false });
+    });
+
+    it('drops a setting again once it is put back to its default', async () => {
+      await setConfig({
+        type: 'custom:bergfex-card',
+        resorts: ['device-a'],
+        show_snow: false,
+      } as BergfexCardConfig);
+
+      const config = await emit({ show_snow: true } as Partial<BergfexCardConfig>);
+
+      expect('show_snow' in config).toBe(false);
+    });
+
+    it('drops an emptied title rather than saving an empty string', async () => {
+      await setConfig({ type: 'custom:bergfex-card', resorts: ['device-a'], title: 'Snow' } as BergfexCardConfig);
+
+      const config = await emit({ title: '' } as Partial<BergfexCardConfig>);
+
+      expect('title' in config).toBe(false);
+    });
+
+    it('still shows the defaults on the form', async () => {
+      // Stripping them from what is saved must not turn the toggles off.
+      await setConfig({ type: 'custom:bergfex-card', resorts: ['device-a'] } as BergfexCardConfig);
+      const data = formData() as unknown as Record<string, unknown>;
+
+      for (const [option, value] of Object.entries(DEFAULT_CONFIG)) {
+        expect({ option, value: data[option] }).toEqual({ option, value });
+      }
+    });
+  });
+
+  describe('the add button', () => {
+    it('does not write an empty resort while the new slot is still blank', async () => {
+      await setConfig({ type: 'custom:bergfex-card', resorts: ['device-a'] } as BergfexCardConfig);
+
+      const config = await emit({
+        resorts: ['device-a', ''],
+      } as unknown as Partial<BergfexCardConfig>);
+
+      expect(config.resorts).toEqual(['device-a']);
+    });
+
+    it('drops a blank object entry too', async () => {
+      await setConfig({ type: 'custom:bergfex-card', resorts: ['device-a'] } as BergfexCardConfig);
+
+      const config = await emit({
+        resorts: ['device-a', { device: '' }],
+      } as unknown as Partial<BergfexCardConfig>);
+
+      expect(config.resorts).toEqual(['device-a']);
+    });
+  });
 });

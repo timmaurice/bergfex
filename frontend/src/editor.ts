@@ -1,6 +1,13 @@
 import { LitElement, html, css, TemplateResult, unsafeCSS } from 'lit';
 import { property, state } from 'lit/decorators.js';
-import { HomeAssistant, LovelaceCardEditor, BergfexCardConfig, ResortConfig, DEFAULT_CONFIG } from './types';
+import {
+  HomeAssistant,
+  LovelaceCardEditor,
+  BergfexCardConfig,
+  ResortConfig,
+  DEFAULT_CONFIG,
+  withoutDefaults,
+} from './types';
 import { localize } from './localize';
 import { fireEvent } from './utils';
 import editorStyles from './styles/editor.styles.scss';
@@ -57,10 +64,10 @@ export class BergfexCardEditor extends LitElement implements LovelaceCardEditor 
   @state() private _config!: BergfexCardConfig;
 
   public setConfig(config: BergfexCardConfig): void {
-    this._config = {
-      ...DEFAULT_CONFIG,
-      ...config,
-    };
+    // Kept as the user's own config, not merged with the defaults. Merging here
+    // is what wrote every default back out again on the next edit; the defaults
+    // are applied for display only, in render().
+    this._config = config;
   }
 
   /**
@@ -91,14 +98,19 @@ export class BergfexCardEditor extends LitElement implements LovelaceCardEditor 
         }
       }
 
-      value.resorts = value.resorts.filter(Boolean).map((resort) => {
-        const device = toDeviceId(resort);
-        const name = customNames.get(device);
-        return name ? { device, name } : device;
-      });
+      // "Add" hands back an empty slot until a device is picked in it. Emitting
+      // that would write a blank resort into the config, which the card then has
+      // to resolve and warn about.
+      value.resorts = value.resorts
+        .filter((resort) => Boolean(resort) && Boolean(toDeviceId(resort)))
+        .map((resort) => {
+          const device = toDeviceId(resort);
+          const name = customNames.get(device);
+          return name ? { device, name } : device;
+        });
     }
 
-    fireEvent(this, 'config-changed', { config: { ...this._config, ...value } });
+    fireEvent(this, 'config-changed', { config: withoutDefaults({ ...this._config, ...value }) });
   }
 
   protected render(): TemplateResult {
@@ -159,7 +171,11 @@ export class BergfexCardEditor extends LitElement implements LovelaceCardEditor 
 
     // Normalise resorts for the form; the object form renders as "[object Object]"
     // in the device picker and matches no device.
+    // The defaults belong here and only here: the form has to show a toggle in
+    // the position the card actually renders, without that position being
+    // written back into the saved config.
     const formData = {
+      ...DEFAULT_CONFIG,
       ...this._config,
       resorts: (this._config.resorts ?? []).filter(Boolean).map(toDeviceId),
     };

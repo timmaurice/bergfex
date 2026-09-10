@@ -91,6 +91,31 @@ export const DEFAULT_CONFIG = {
   forecast_default_open: false,
 } as const;
 
+/**
+ * Drop everything from a config that only restates a default.
+ *
+ * The editor used to write its whole working copy back, defaults and all, so
+ * adding a card and toggling one switch saved eleven settings the user never
+ * touched - and froze today's defaults into that card forever, so a later change
+ * to a default could never reach it.
+ */
+export function withoutDefaults(config: BergfexCardConfig): BergfexCardConfig {
+  const stripped = { ...config } as Record<string, unknown>;
+
+  for (const [key, value] of Object.entries(DEFAULT_CONFIG)) {
+    if (stripped[key] === value) delete stripped[key];
+  }
+
+  // An empty text field is not a setting either. `sort_by` has no entry in
+  // DEFAULT_CONFIG because "unsorted" is the absence of the key, not a value.
+  for (const key of ['title', 'sort_by']) {
+    const value = stripped[key];
+    if (value === undefined || value === '' || value === 'none') delete stripped[key];
+  }
+
+  return stripped as BergfexCardConfig;
+}
+
 export interface BergfexCardConfig extends LovelaceCardConfig {
   hide_closed_resorts?: boolean;
   resorts: ResortConfig[];
