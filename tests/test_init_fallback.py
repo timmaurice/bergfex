@@ -9,6 +9,7 @@ from custom_components.bergfex.__init__ import (
     async_remove_entry,
     async_setup_entry,
 )
+from custom_components.bergfex.config_flow import entry_area_name
 from custom_components.bergfex.const import DOMAIN, COORDINATORS
 from custom_components.bergfex.unique_id import coordinator_key
 from pytest_homeassistant_custom_component.common import MockConfigEntry
@@ -486,3 +487,60 @@ async def test_the_repair_deletes_the_duplicate_entry(
     remaining = hass.config_entries.async_entries(DOMAIN)
     assert [entry.entry_id for entry in remaining] == [first.entry_id]
     assert ir.async_get(hass).async_get_issue(DOMAIN, issue_id) is None
+
+
+@pytest.mark.asyncio
+async def test_setup_survives_an_entry_without_a_name(hass: HomeAssistant):
+    """An entry whose data has no "name" must still set up.
+
+    The config flow always writes the key, but a hand-edited entry or one
+    restored from an older backup does not have it, and reading it unguarded
+    aborted setup with a bare KeyError instead of a usable message.
+    """
+    entry = MockConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test Resort",
+        data={
+            "country": "Italien",
+            "ski_area": "/it/test/schneebericht/",
+            "language": "it",
+            "type": "alpine",
+        },
+        source="user",
+        entry_id="nameless_entry",
+    )
+    entry.add_to_hass(hass)
+
+    with patch(
+        "custom_components.bergfex.__init__.async_get_clientsession",
+        return_value=_StubSession(),
+    ), patch(
+        "homeassistant.helpers.update_coordinator.DataUpdateCoordinator.async_config_entry_first_refresh"
+    ), patch(
+        "homeassistant.config_entries.ConfigEntries.async_forward_entry_setups",
+        return_value=None,
+    ):
+        assert await async_setup_entry(hass, entry) is True
+
+    assert coordinator_key("/it/test/schneebericht/") in hass.data[DOMAIN][COORDINATORS]
+
+
+def test_entry_area_name_falls_back_to_the_resort_slug():
+    """The fallback is the name the flow itself writes for an unlisted resort.
+
+    Anything else would hand legacy_unique_id_prefixes a string the flow never
+    wrote, so the entity migration would look for prefixes that never existed.
+    """
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        data={"ski_area": "/oesterreich/ischgl/schneebericht/"},
+    )
+    assert entry_area_name(entry) == "ischgl"
+
+    named = MockConfigEntry(
+        domain=DOMAIN,
+        data={"name": "Ischgl", "ski_area": "/oesterreich/ischgl/schneebericht/"},
+    )
+    assert entry_area_name(named) == "Ischgl"

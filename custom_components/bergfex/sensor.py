@@ -33,6 +33,7 @@ from .const import (
     TYPE_ALPINE,
     TYPE_CROSS_COUNTRY,
 )
+from .config_flow import entry_area_name
 from .parser import parse_overview_data, parse_resort_page
 from .unique_id import build_unique_id, coordinator_key
 
@@ -239,7 +240,8 @@ class BergfexSensor(SensorEntity):
         self.coordinator = coordinator
         self.entity_description = description
         self._resort_type = entry.data.get(CONF_TYPE, TYPE_ALPINE)
-        self._initial_area_name = entry.data["name"]  # Store initial name as fallback
+        # Store initial name as fallback
+        self._initial_area_name = entry_area_name(entry)
         self._area_name = self._initial_area_name  # Current name, can be updated
         self._area_path = entry.data[CONF_SKI_AREA]
         self._domain = entry.data.get(CONF_DOMAIN, BASE_URL)

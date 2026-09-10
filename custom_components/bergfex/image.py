@@ -13,6 +13,7 @@ from urllib.parse import urljoin
 from homeassistant.util import dt as dt_util
 from homeassistant.util import slugify
 
+from .config_flow import entry_area_name
 from .unique_id import build_unique_id, coordinator_key
 from .const import (
     BASE_URL,
@@ -96,7 +97,7 @@ class BergfexImage(ImageEntity):
         super().__init__(coordinator.hass)
         self.coordinator = coordinator
         self._resort_type = entry.data.get(CONF_TYPE)
-        self._initial_area_name = entry.data["name"]
+        self._initial_area_name = entry_area_name(entry)
         self._area_name = self._initial_area_name
         self._area_path = entry.data[CONF_SKI_AREA]
         self._domain = entry.data.get(CONF_DOMAIN, BASE_URL)

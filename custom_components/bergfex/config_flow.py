@@ -145,6 +145,31 @@ def ski_area_name_from_path(ski_area_path: str) -> str:
     return segments[-1] if segments else ski_area_path.strip("/")
 
 
+def entry_area_name(entry: config_entries.ConfigEntry) -> str:
+    """Return the resort name an entry was created with.
+
+    Every entry the flow writes carries "name", so this only falls back for an
+    entry that was hand-edited or restored from a backup predating the key.
+    Reading it unguarded turned such an entry into a bare KeyError during setup,
+    which the user sees as an unexplained "Error setting up entry".
+
+    The fallback is the slug from the resort path, because that is the very
+    string the flow itself writes when the fetched list has no name for a path -
+    so for a hand-entered resort it reproduces the original name exactly. It
+    cannot promise that for a resort taken from the list, whose display name may
+    differ from its path ("Solden" vs "soelden"), and legacy_unique_id_prefixes
+    derives the migration prefixes from this name. A prefix that misses simply
+    matches no entity and leaves it under its old id, untouched - the same place
+    an un-migrated entity sits today. Guessing wrong therefore costs nothing,
+    while the alternative, the raw path, would match no legacy prefix at all and
+    would also surface in the log and the device name as "/oesterreich/ischgl/".
+    """
+    name = entry.data.get("name")
+    if name:
+        return name
+    return ski_area_name_from_path(entry.data.get(CONF_SKI_AREA, ""))
+
+
 async def get_ski_areas(
     hass: HomeAssistant, country_path: str, domain: str = BASE_URL
 ) -> dict[str, str]:

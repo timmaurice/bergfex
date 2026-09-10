@@ -38,6 +38,7 @@ from .const import (
     CONF_UPDATE_INTERVAL,
     DEFAULT_UPDATE_INTERVAL,
 )
+from .config_flow import entry_area_name
 from .unique_id import (
     coordinator_key,
     legacy_unique_id_prefixes,
@@ -350,7 +351,7 @@ async def _async_migrate_unique_ids(hass: HomeAssistant, entry: ConfigEntry) -> 
     name, the area and the recorder statistics all stay attached to it.
     """
     new_prefix = unique_id_prefix(entry.data[CONF_SKI_AREA])
-    legacy_prefixes = legacy_unique_id_prefixes(entry.data["name"])
+    legacy_prefixes = legacy_unique_id_prefixes(entry_area_name(entry))
     registry = er.async_get(hass)
 
     @callback
@@ -408,7 +409,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data[DOMAIN].setdefault(COORDINATORS, {})
 
     country_name = entry.data.get(CONF_COUNTRY, "Österreich")
-    area_name = entry.data["name"]
+    area_name = entry_area_name(entry)
     area_path = entry.data[CONF_SKI_AREA]
     domain = entry.data.get(CONF_DOMAIN, BASE_URL)
     lang = entry.data.get(CONF_LANGUAGE, "at")
