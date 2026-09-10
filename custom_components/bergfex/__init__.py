@@ -733,7 +733,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 _LOGGER.debug("Parsed resort data for %s: %s", area_path, parsed_data)
                 return {area_path: parsed_data}
             except Exception as err:
-                _LOGGER.error(
+                # No error log here: the coordinator logs the UpdateFailed itself,
+                # once, and then stays quiet while the failure persists. Logging
+                # it again would print the same failure twice on every poll.
+                _LOGGER.debug(
                     "Error fetching or parsing resort data for %s: %s",
                     area_path,
                     err,
@@ -754,7 +757,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         try:
             await coordinator.async_config_entry_first_refresh()
         except Exception as err:
-            _LOGGER.error(
+            # Home Assistant already reports ConfigEntryNotReady, with a retry
+            # notice, so an error line here only duplicates it.
+            _LOGGER.debug(
                 "Failed to refresh resort coordinator for %s: %s", area_name, err
             )
             raise ConfigEntryNotReady from err

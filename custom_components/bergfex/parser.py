@@ -121,7 +121,10 @@ def parse_overview_data(html: str, lang: str = "at") -> dict[str, dict[str, Any]
 
     table = soup.find("table", class_="snow")
     if not table:
-        _LOGGER.warning("Could not find overview data table with class 'snow'")
+        # Regions and cross-country areas simply have no snow table out of
+        # season, so this is the normal summer-long state rather than a fault.
+        # Warning about it once per poll fills the log from spring to winter.
+        _LOGGER.debug("Could not find overview data table with class 'snow'")
         return {}
 
     for row in table.find_all("tr")[1:]:  # Skip header row
