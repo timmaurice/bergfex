@@ -29,14 +29,22 @@ def test_manifest_declares_the_lovelace_dependency():
 
 
 def test_hacs_declares_a_minimum_home_assistant_version():
-    """async_register_static_paths does not exist before 2024.7."""
+    """The declared minimum is the core CI actually validates.
+
+    This is a support decision, not only a technical floor. The technical floor
+    is lower: 2024.12 for `OptionsFlowHandler` reading `self.config_entry`, and
+    2025.2 before that for `hass.data["lovelace"]` being an object rather than a
+    plain dict - below which the bundled card silently never registers itself.
+    Since CI resolves and exercises only the current core, declaring anything
+    older would promise support nobody verifies.
+    """
     hacs = json.loads((ROOT / "hacs.json").read_text())
 
     minimum = hacs.get("homeassistant")
     assert minimum, "HACS would otherwise offer the integration to any version"
 
     major, minor = (int(part) for part in minimum.split(".")[:2])
-    assert (major, minor) >= (2024, 7)
+    assert (major, minor) >= (2026, 9)
 
 
 TRANSLATIONS = ROOT / "custom_components" / "bergfex" / "translations"
