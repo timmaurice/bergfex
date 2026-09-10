@@ -111,15 +111,74 @@ export class BergfexCard extends LitElement implements LovelaceCard {
     return document.createElement(EDITOR_ELEMENT_NAME) as LovelaceCardEditor;
   }
 
-  public static getStubConfig(): Record<string, unknown> {
-    return {
-      title: 'Bergfex',
-      resorts: [],
-    };
+  /**
+   * The config the card picker previews, and the one "add card" starts from.
+   *
+   * Home Assistant calls this before the element has a hass of its own, and on
+   * an instance that may have no bergfex resort at all, so nothing in here may
+   * throw - a stub that throws leaves the picker showing an error tile.
+   *
+   * It returns `resorts` and nothing else on purpose. Every other setting has a
+   * default in DEFAULT_CONFIG, and writing those into the saved config would
+   * freeze today's defaults into every card anyone ever adds.
+   */
+  public static getStubConfig(hass?: HomeAssistant, entities?: string[]): Record<string, unknown> {
+    const firstResort = BergfexCard._firstResortDevice(hass, entities);
+    return { resorts: firstResort ? [firstResort] : [] };
   }
 
+  /** The device of the first bergfex entity on offer, if there is one. */
+  private static _firstResortDevice(hass?: HomeAssistant, entities?: string[]): string | undefined {
+    if (!hass?.entities) return undefined;
+
+    // The picker hands over the entities it thinks are relevant; fall back to
+    // the whole registry so the stub still finds a resort when it hands over
+    // nothing.
+    const candidates = entities?.length ? entities : Object.keys(hass.entities);
+
+    for (const entityId of candidates) {
+      const entry = hass.entities[entityId];
+      if (entry?.platform === 'bergfex' && entry.device_id) return entry.device_id;
+    }
+    return undefined;
+  }
+
+  /**
+   * How tall the card is in a masonry column, in rows of roughly 50px.
+   *
+   * A fixed 3 made a card with six resorts claim the height of a card with one,
+   * so masonry packed the column wrongly and the layout jumped once the real
+   * card rendered.
+   */
   public getCardSize(): number {
-    return 3;
+    const resorts = this._config?.resorts?.length ?? 0;
+    if (resorts === 0) return 1;
+
+    // Header, then per resort: the name and status line, plus whichever
+    // sections are switched on.
+    let perResort = 2;
+    if (this._config.show_snow) perResort += 1;
+    if (this._config.show_lifts_slopes) perResort += 1;
+    if (this._config.show_trails) perResort += 1;
+    if (this._config.show_conditions) perResort += this._config.conditions_default_open ? 2 : 1;
+    if (this._config.show_forecast) perResort += this._config.forecast_default_open ? 3 : 1;
+
+    return 1 + resorts * perResort;
+  }
+
+  /**
+   * How the card asks to be placed on a sections dashboard.
+   *
+   * Without this a section gives every custom card the same default box, so a
+   * six-resort card was cropped and a one-resort card floated in whitespace.
+   */
+  public getGridOptions(): Record<string, number> {
+    return {
+      columns: 12,
+      min_columns: 6,
+      rows: this.getCardSize(),
+      min_rows: 2,
+    };
   }
 
   private _getResorts(hass: HomeAssistant, config: BergfexCardConfig): Record<string, Resort> {
