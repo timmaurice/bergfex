@@ -92,6 +92,58 @@ docker compose up -d
 docker restart ha-bergfex-test   # after editing Python
 ```
 
+### When the container cannot verify bergfex's certificate
+
+Two separate things cause this, and the symptom is the same: setup fails, or the
+forecast images never arrive, and the log carries a certificate verification
+error such as `unable to get local issuer certificate` or
+`self-signed certificate in certificate chain`.
+
+- `vcdn.bergfex.at`, which serves the forecast images, sometimes answers without
+  the intermediate certificate of its chain. A client with no cached copy of that
+  intermediate cannot complete the chain on its own.
+- A corporate TLS-inspecting proxy - ZScaler and its like - re-signs every
+  connection with a root the container has never heard of.
+
+The fix for both is to hand the container a CA bundle that contains what it is
+missing, rather than turning verification off in the integration. Neither
+`verify_ssl=False` nor a pinned certificate belongs in shipped code: users are
+not behind your proxy, and a pin expires.
+
+Build the bundle from the public roots plus the certificates your environment
+needs, and mount it:
+
+```bash
+# 1. Start from the public roots - certifi's bundle, or your system's.
+./venv/bin/python -c "import certifi, shutil; shutil.copy(certifi.where(), 'config/custom_cert.pem')"
+
+# 2. Append what is missing. For the bergfex CDN, take the intermediate from the
+#    chain the server does serve:
+openssl s_client -showcerts -connect vcdn.bergfex.at:443 -servername vcdn.bergfex.at </dev/null \
+  | openssl x509 -outform pem >> config/custom_cert.pem
+
+# 3. Behind an inspecting proxy, append that proxy's root as well, exported from
+#    the system keychain or supplied by IT.
+cat zscaler-root.pem >> config/custom_cert.pem
+```
+
+Then point the container at it, under the `homeassistant` service in
+`docker-compose.yml`:
+
+```yaml
+environment:
+  - SSL_CERT_FILE=/config/custom_cert.pem
+  - REQUESTS_CA_BUNDLE=/config/custom_cert.pem
+```
+
+Append to the public roots - never replace them. A bundle holding only a
+corporate root breaks every connection that proxy does not intercept, which is
+the common trap here: bergfex starts working and everything else stops.
+
+`config/` and `*.pem` are both gitignored, so the bundle stays local. The same
+appended-bundle approach fixes `pip`, `npm` and `git` on the host behind such a
+proxy; only the environment variable names differ.
+
 The card is cached by the browser under a URL carrying the manifest version, so a
 plain reload will not pick up a rebuild during development. Force one:
 
