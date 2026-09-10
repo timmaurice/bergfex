@@ -70,6 +70,12 @@ The `2.4.0` line was never released. Its three betas (`2.4.0b1`, `2.4.0b2`,
   and corrected `operating_hours` and `slope_condition` translations.
 - A `null` entry in the card's `resorts` config no longer throws while resolving
   device IDs.
+- The card missed a locale change. `shouldUpdate` compared only `hass.language`,
+  while the forecast date and the season teaser format against `hass.locale` and
+  every number goes through `locale.number_format`, so a locale-only profile
+  change left the old format on screen until something else re-rendered the card.
+- Forecast dates name the month (`Fri, 12 Apr`) instead of numbering it
+  (`Fri, 12/04`), matching the season teaser rather than contradicting it.
 - A config entry that failed to set up said nothing at all: Home Assistant
   reports `ConfigEntryNotReady` at INFO, which the default log level hides, and
   the reason was not carried in the exception either, so the entry page showed

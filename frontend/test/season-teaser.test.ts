@@ -1,11 +1,16 @@
 /**
  * The season teaser's date.
  *
- * It was formatted with `{ day: '2-digit', month: '2-digit' }` against
- * `hass.language`, so a season starting on 12 April read "ab 12/04" - which is
- * the 4th of December to most of the world. A season start is precisely the
- * value nobody can infer from context, and the interface language is not what
- * decides date format in Home Assistant; the locale is.
+ * It was formatted with `{ day: '2-digit', month: '2-digit' }`, so a season
+ * starting on 12 April read "ab 12/04" - which is the 4th of December to most
+ * of the world. A season start is precisely the value nobody can infer from
+ * context, so the month is named: `month: 'short'` is the fix.
+ *
+ * The source now reads `hass.locale.language` in preference to `hass.language`.
+ * That is cosmetic - both are the same profile language - and the setting that
+ * really decides date format, `locale.date_format`, is not read by this card at
+ * all. The test below pins the preference order anyway so it cannot silently
+ * regress to the interface language.
  */
 import { describe, expect, it, vi } from 'vitest';
 

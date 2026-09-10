@@ -380,7 +380,19 @@ export class BergfexCard extends LitElement implements LovelaceCard {
         this._fetchHistory();
       }
 
-      return hasChanged || oldHass.language !== this.hass.language || changedProperties.has('_historyState');
+      // The language is not the only thing the card reads off `hass`: the
+      // forecast date and the season teaser format against `locale.language`,
+      // and every number goes through `locale.number_format`. Watching only
+      // `language` meant a profile change that touched just the locale left the
+      // card showing the previous format until something else happened to
+      // re-render it.
+      const localeChanged =
+        oldHass.language !== this.hass.language ||
+        oldHass.locale?.language !== this.hass.locale?.language ||
+        oldHass.locale?.number_format !== this.hass.locale?.number_format ||
+        oldHass.locale?.time_format !== this.hass.locale?.time_format;
+
+      return hasChanged || localeChanged || changedProperties.has('_historyState');
     }
 
     return true; // First render
@@ -491,8 +503,14 @@ export class BergfexCard extends LitElement implements LovelaceCard {
       // The day and month were assembled by hand as "02.12.", which is the
       // German order printed at every user regardless of their locale. Intl
       // knows the right order and separator for each one.
+      //
+      // The month is named for the same reason the season teaser names it: an
+      // all-numeric "12/04" is the 12th of April or the 4th of December
+      // depending on who reads it. A forecast date is only five days out, so
+      // context narrows it - but there is no reason for the two dates in one
+      // card to disagree on the format.
       const locale = this.hass.locale?.language || this.hass.language || 'en';
-      return date.toLocaleDateString(locale, { weekday: 'short', day: '2-digit', month: '2-digit' });
+      return date.toLocaleDateString(locale, { weekday: 'short', day: 'numeric', month: 'short' });
     }
   }
 
@@ -570,9 +588,13 @@ export class BergfexCard extends LitElement implements LovelaceCard {
 
     // "ab 12/04" is either the 12th of April or the 4th of December depending
     // on who is reading it, and a season start is exactly the value nobody can
-    // guess from context. A named month cannot be read the wrong way round, and
-    // the locale - not the interface language - is what decides date format
-    // everywhere else in Home Assistant, and at line 473 in this card.
+    // guess from context. Naming the month is the fix; it cannot be read the
+    // wrong way round.
+    //
+    // `hass.locale.language` is preferred over `hass.language` only for form's
+    // sake - both are the same profile language, so it changes nothing today.
+    // The setting that actually decides date format is `locale.date_format`,
+    // which this card does not read at all.
     const locale = this.hass.locale?.language || this.hass.language || 'en';
     const formatted = new Intl.DateTimeFormat(locale, {
       day: 'numeric',
