@@ -80,6 +80,55 @@ def _is_bergfex_card_resource(url: str) -> bool:
     return urlparse(url).path.rsplit("/", 1)[-1] == CARD_FILENAME
 
 
+async def _async_reconcile_card_resource(resources, new_url: str) -> list[str]:
+    """Leave exactly one Lovelace resource pointing at the bundled card.
+
+    Returns the URLs of the resources that were removed.
+    """
+    # The resource store is loaded lazily: until something awaits it,
+    # async_items() returns an empty list. Reconciling off that empty list
+    # appended another copy of our resource on every restart.
+    #
+    # Default to False, not True: assuming a collection we cannot recognise is
+    # already loaded would let us reconcile against an empty item list and save
+    # a store that has lost every other card's resource. Missing async_load
+    # raises instead, and the caller skips registration.
+    if not getattr(resources, "loaded", False):
+        await resources.async_load()
+        resources.loaded = True
+
+    # Collect first, mutate after: async_items() must not change while iterating.
+    own_resource = None
+    stale_resources = []
+
+    for item in resources.async_items():
+        url = item.get("url", "")
+        if not _is_bergfex_card_resource(url):
+            continue
+        if url.startswith(f"{CARD_URL_BASE}/") and own_resource is None:
+            own_resource = item
+        else:
+            # Anything else pointing at a bergfex-card.js is a leftover: the
+            # HACS copy, a hand-added /local/ entry, or a duplicate of ours.
+            # Leaving it in place loads a second bundle that fights ours over
+            # the bergfex-card element name.
+            stale_resources.append(item)
+
+    for item in stale_resources:
+        _LOGGER.info(
+            "Removing stale Bergfex card resource %s; the card now ships with the integration",
+            item.get("url"),
+        )
+        await resources.async_delete_item(item.get("id"))
+
+    if own_resource is None:
+        await resources.async_create_item({"res_type": "module", "url": new_url})
+    elif own_resource.get("url") != new_url:
+        await resources.async_update_item(own_resource.get("id"), {"url": new_url})
+
+    return [item.get("url", "") for item in stale_resources]
+
+
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     """Set up the Bergfex component and register the Lovelace card."""
     from homeassistant.components.http import StaticPathConfig
@@ -119,41 +168,12 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
             )
             return
 
-        # Collect first, mutate after: async_items() must not change while iterating.
-        own_resource = None
-        stale_resources = []
-
-        for item in resources.async_items():
-            url = item.get("url", "")
-            if not _is_bergfex_card_resource(url):
-                continue
-            if url.startswith(f"{CARD_URL_BASE}/") and own_resource is None:
-                own_resource = item
-            else:
-                # Anything else pointing at a bergfex-card.js is a leftover: the
-                # HACS copy, a hand-added /local/ entry, or a duplicate of ours.
-                # Leaving it in place loads a second bundle that fights ours over
-                # the bergfex-card element name.
-                stale_resources.append(item)
-
-        for item in stale_resources:
-            _LOGGER.info(
-                "Removing stale Bergfex card resource %s; the card now ships with the integration",
-                item.get("url"),
-            )
-            await resources.async_delete_item(item.get("id"))
-
-        if own_resource is None:
-            await resources.async_create_item({"res_type": "module", "url": new_url})
-        elif own_resource.get("url") != new_url:
-            await resources.async_update_item(own_resource.get("id"), {"url": new_url})
+        removed_urls = await _async_reconcile_card_resource(resources, new_url)
 
         # Dropping the resource does not uninstall the HACS repository: its files
         # stay in www/community and HACS keeps offering updates for them. Ask the
         # user to remove it so the two copies cannot diverge.
-        if any(
-            "lovelace-bergfex-card" in item.get("url", "") for item in stale_resources
-        ):
+        if any("lovelace-bergfex-card" in url for url in removed_urls):
             ir.async_create_issue(
                 hass,
                 DOMAIN,
