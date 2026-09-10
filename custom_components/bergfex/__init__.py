@@ -262,7 +262,9 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
 
 
 @callback
-def _async_backfill_unique_id(hass: HomeAssistant, entry: ConfigEntry) -> None:
+def _async_backfill_unique_id(
+    hass: HomeAssistant, entry: ConfigEntry, *, ignore_entry_id: str | None = None
+) -> None:
     """Give a pre-unique-id entry the resort path as its id, if it is still free.
 
     A user who hit the duplicate bug has two entries for one resort. Backfilling
@@ -278,13 +280,20 @@ def _async_backfill_unique_id(hass: HomeAssistant, entry: ConfigEntry) -> None:
     unique_id = entry.data[CONF_SKI_AREA]
     issue_id = f"{DUPLICATE_ENTRY_ISSUE_ID}_{entry.entry_id}"
 
+    # `ignore_entry_id` is the entry that is being removed right now. Older Home
+    # Assistant versions drop it from the registry only after async_remove_entry
+    # has returned, so without this it is still listed, still holding the id it
+    # is about to give up - and the lookup below would see a collision that no
+    # longer exists.
+    ignored = {entry.entry_id, ignore_entry_id}
+
     # No await between the lookup and the update, so no second entry can claim
     # the id in between.
     taken_by = next(
         (
             other
             for other in hass.config_entries.async_entries(DOMAIN)
-            if other.entry_id != entry.entry_id and other.unique_id == unique_id
+            if other.entry_id not in ignored and other.unique_id == unique_id
         ),
         None,
     )
@@ -825,10 +834,13 @@ async def async_remove_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
     keyed on an entry that no longer exists.
 
     The user may just as well delete the other one, the entry that won the
-    resort's unique id. Home Assistant has already dropped the removed entry from
-    the registry by the time this runs, so the id is free right now: hand it to
-    the leftover here rather than leaving it unidentifiable, and its repair issue
-    raised, until the next restart.
+    resort's unique id. Hand it to the leftover here rather than leaving it
+    unidentifiable, and its repair issue raised, until the next restart.
+
+    Whether the removed entry is still listed at this point depends on the Home
+    Assistant version: 2025.1 drops it from the registry only after this callback
+    returns, later versions before. So the handover names it explicitly rather
+    than trusting it to be gone.
     """
     ir.async_delete_issue(hass, DOMAIN, f"{DUPLICATE_ENTRY_ISSUE_ID}_{entry.entry_id}")
 
@@ -842,7 +854,7 @@ async def async_remove_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
         if other.unique_id is None and other.data.get(CONF_SKI_AREA) == ski_area:
             # Backfilling re-runs the same first-come rule, so with three entries
             # for one resort the remaining leftover keeps its issue.
-            _async_backfill_unique_id(hass, other)
+            _async_backfill_unique_id(hass, other, ignore_entry_id=entry.entry_id)
 
 
 async def async_remove_config_entry_device(
