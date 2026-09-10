@@ -251,6 +251,24 @@ _SEASON_RANGE_RE = re.compile(
     r"(\d{1,2}[./]\d{1,2}[./]\d{4})\s*[-–—]\s*(\d{1,2}[./]\d{1,2}[./]\d{4})"
 )
 
+# "09:00 - 16:45", "8:30 – 16:00". bergfex does not always pad the hour - the
+# Italian pages in particular print "8:30" - and it separates the two with a
+# hyphen or an en/em dash depending on the page.
+_TIME_RANGE_RE = re.compile(r"(\d{1,2}:\d{2})\s*[-–—]\s*(\d{1,2}:\d{2})")
+
+
+def _normalise_time(raw: str) -> str:
+    """Zero-pad an hour so "8:30" and "09:00" cannot sit next to each other.
+
+    bergfex pads inconsistently between pages, and the card prints these values
+    verbatim, so two resorts in one card would otherwise disagree on the format.
+    """
+    hour, _, minute = raw.partition(":")
+    try:
+        return f"{int(hour):02d}:{minute}"
+    except ValueError:
+        return raw
+
 
 def _parse_operating_period(soup: BeautifulSoup, tab: str) -> dict[str, Any]:
     """Read one tab of the "Betriebszeiten" panel.
@@ -272,12 +290,10 @@ def _parse_operating_period(soup: BeautifulSoup, tab: str) -> dict[str, Any]:
 
     period = {}
 
-    hours = re.search(
-        r"(\d{1,2}:\d{2})\s*[-–—]\s*(\d{1,2}:\d{2})", block.get_text(" ", strip=True)
-    )
+    hours = _TIME_RANGE_RE.search(block.get_text(" ", strip=True))
     if hours:
-        period["hours_start"] = hours.group(1)
-        period["hours_end"] = hours.group(2)
+        period["hours_start"] = _normalise_time(hours.group(1))
+        period["hours_end"] = _normalise_time(hours.group(2))
 
     for name, raw in (("start", match.group(1)), ("end", match.group(2))):
         for fmt in ("%d.%m.%Y", "%d/%m/%Y"):
@@ -564,18 +580,21 @@ def parse_resort_page(
     op_hours_kw = keywords.get("operating_hours", "Betrieb")
     op_hours_text = get_text_from_dd(soup, op_hours_kw)
     if op_hours_text:
-        area_data["operation_status"] = _translate_value(op_hours_text, lang)
-        # Try to extract start/end times: "09:00 - 16:45", or "8:30 - 16:00".
-        # bergfex does not always pad the hour - the Italian pages in particular
-        # print "8:30" - and it separates the two with a hyphen or an en/em dash
-        # depending on the page. Both are what _parse_operating_period already
-        # accepts for the same value in the season panel.
-        time_match = re.search(
-            r"(\d{1,2}:\d{2})\s*[-–—]\s*(\d{1,2}:\d{2})", op_hours_text
-        )
+        time_match = _TIME_RANGE_RE.search(op_hours_text)
         if time_match:
-            area_data["operating_hours_start"] = time_match.group(1)
-            area_data["operating_hours_end"] = time_match.group(2)
+            area_data["operating_hours_start"] = _normalise_time(time_match.group(1))
+            area_data["operating_hours_end"] = _normalise_time(time_match.group(2))
+
+        # Whatever is left once the times are taken out is the actual status word
+        # ("täglich", "Geschlossen"). The Italian pages carry nothing but the
+        # times, and "08:30 - 16:00" is not a status - a field that is supposed
+        # to say whether the resort runs would then read as an opening time. So
+        # the status stays unset there and the times live in the hours fields.
+        status = _TIME_RANGE_RE.sub("", op_hours_text)
+        status = re.sub(r"(?i)\buhr\b", "", status)
+        status = status.strip().strip(",;:-–—").strip()
+        if status:
+            area_data["operation_status"] = _translate_value(status, lang)
 
     # Snow condition (Schneezustand)
     snow_condition = get_text_from_dd(soup, keywords["snow_condition"])

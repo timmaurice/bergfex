@@ -96,7 +96,7 @@ def test_reads_an_hour_without_a_leading_zero():
     """
     data = parse_resort_page(HOURS_DD.format(hours="8:30 - 16:00"), "/airolo/", "it")
 
-    assert data["operating_hours_start"] == "8:30"
+    assert data["operating_hours_start"] == "08:30"
     assert data["operating_hours_end"] == "16:00"
 
 
@@ -113,3 +113,46 @@ def test_a_padded_hour_still_reads():
 
     assert data["operating_hours_start"] == "09:00"
     assert data["operating_hours_end"] == "16:45"
+
+
+def test_pads_a_bare_hour_so_two_resorts_agree():
+    """"8:30" and "09:00" in one card looked like two different formats."""
+    data = parse_resort_page(HOURS_DD.format(hours="8:30 - 9:05"), "/airolo/", "it")
+
+    assert data["operating_hours_start"] == "08:30"
+    assert data["operating_hours_end"] == "09:05"
+
+
+def test_pads_the_season_panel_hours_too():
+    panel = PANEL.replace("09:00 - 16:15", "8:30 - 9:05")
+    data = parse_resort_page(panel, "at")
+
+    assert data["winter_operating_hours_start"] == "08:30"
+    assert data["winter_operating_hours_end"] == "09:05"
+
+
+def test_bare_opening_times_are_not_an_operation_status():
+    """The Italian pages print only the times under the hours label.
+
+    Putting them into operation_status made the field read "08:30 - 16:00"
+    where the card expects a word such as "täglich".
+    """
+    data = parse_resort_page(HOURS_DD.format(hours="8:30 - 16:00"), "/airolo/", "it")
+
+    assert "operation_status" not in data
+
+
+def test_a_status_word_next_to_the_times_still_becomes_the_status():
+    data = parse_resort_page(
+        HOURS_DD.format(hours="täglich 08:30 - 16:00"), "/airolo/", "it"
+    )
+
+    assert data["operation_status"] == "täglich"
+    assert data["operating_hours_start"] == "08:30"
+
+
+def test_a_status_word_without_times_is_unchanged():
+    data = parse_resort_page(HOURS_DD.format(hours="täglich"), "/airolo/", "it")
+
+    assert data["operation_status"] == "täglich"
+    assert "operating_hours_start" not in data
