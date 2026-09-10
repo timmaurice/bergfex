@@ -176,13 +176,12 @@
       "description": "La tarjeta Bergfex ahora se incluye con esta integración. La \"Bergfex Card\" independiente sigue instalada mediante HACS y carga una segunda copia en conflicto. Abre HACS, desinstala \"Bergfex Card\" y reinicia Home Assistant."
     },
     "duplicate_resort_entry": {
-      "title": "Estación de Bergfex configurada dos veces",
-      "description": "La estación \"{resort}\" ({path}) está configurada más de una vez. Ambas entradas generan las mismas entidades, por lo que solo una puede funcionar y la otra queda rota. Esta reparación se refiere a la entrada con el ID {entry_id}, la que no puede funcionar. Selecciona \"Reparar\" abajo para eliminar exactamente esa entrada; la otra sigue funcionando.",
+      "title": "Estación de Bergfex \"{resort}\" configurada dos veces",
       "fix_flow": {
         "step": {
           "confirm": {
             "title": "Eliminar la entrada duplicada",
-            "description": "¿Eliminar la entrada duplicada de Bergfex para \"{resort}\" ({path})? Solo se elimina la entrada con el ID {entry_id}. La otra entrada de esta estación conserva sus dispositivos y entidades y asume la estación de inmediato."
+            "description": "La estación \"{resort}\" ({path}) está configurada más de una vez. Ambas entradas generan las mismas entidades, por lo que solo una puede funcionar y la otra queda rota. ¿Eliminar la entrada con el ID {entry_id}, la que no puede funcionar? Solo se elimina esa entrada. La otra conserva sus dispositivos y entidades y asume la estación de inmediato."
           }
         }
       }

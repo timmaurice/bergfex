@@ -176,13 +176,12 @@
       "description": "Karta Bergfex jest teraz częścią tej integracji. Osobna „Bergfex Card” jest nadal zainstalowana przez HACS i ładuje drugą, konfliktową kopię. Otwórz HACS, odinstaluj „Bergfex Card”, a następnie uruchom ponownie Home Assistant."
     },
     "duplicate_resort_entry": {
-      "title": "Ośrodek Bergfex skonfigurowany dwukrotnie",
-      "description": "Ośrodek „{resort}” ({path}) jest skonfigurowany więcej niż raz. Oba wpisy tworzą te same encje, więc tylko jeden z nich może działać, a drugi pozostaje uszkodzony. Ta naprawa dotyczy wpisu o identyfikatorze {entry_id} - tego, który nie może działać. Wybierz poniżej „Napraw”, aby usunąć dokładnie ten wpis; drugi działa dalej.",
+      "title": "Ośrodek Bergfex „{resort}” skonfigurowany dwukrotnie",
       "fix_flow": {
         "step": {
           "confirm": {
             "title": "Usuń zduplikowany wpis",
-            "description": "Usunąć zduplikowany wpis Bergfex dla ośrodka „{resort}” ({path})? Usunięty zostanie tylko wpis o identyfikatorze {entry_id}. Drugi wpis tego ośrodka zachowa swoje urządzenia i encje i od razu przejmie ośrodek."
+            "description": "Ośrodek „{resort}” ({path}) jest skonfigurowany więcej niż raz. Oba wpisy tworzą te same encje, więc tylko jeden z nich może działać, a drugi pozostaje uszkodzony. Usunąć wpis o identyfikatorze {entry_id} - ten, który nie może działać? Usunięty zostanie tylko ten wpis. Drugi zachowa swoje urządzenia i encje i od razu przejmie ośrodek."
           }
         }
       }

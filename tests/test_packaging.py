@@ -39,6 +39,45 @@ def test_hacs_declares_a_minimum_home_assistant_version():
     assert (major, minor) >= (2024, 7)
 
 
+TRANSLATIONS = ROOT / "custom_components" / "bergfex" / "translations"
+
+
+@pytest.mark.parametrize(
+    "path", sorted(TRANSLATIONS.glob("*.json")), ids=lambda path: path.name
+)
+def test_a_repair_issue_carries_a_description_or_a_fix_flow(path: Path):
+    """hassfest rejects an issue that carries both, and CI runs hassfest.
+
+    A repair issue either explains itself and leaves the user to act (title plus
+    description) or hands them a repair flow (title plus fix_flow). Carrying both
+    is the one shape hassfest refuses - vol.Exclusive on the "fixable" group -
+    and it fails the whole integration, not just the file.
+    """
+    issues = json.loads(path.read_text(encoding="utf-8")).get("issues", {})
+    assert issues, f"{path.name} declares no issues"
+
+    for key, issue in issues.items():
+        where = f"{path.name}:{key}"
+        assert issue.get("title"), f"{where} has no title"
+        assert ("description" in issue) != ("fix_flow" in issue), (
+            f"{where} must carry exactly one of description/fix_flow"
+        )
+
+
+def test_every_language_declares_the_same_repair_issues():
+    """A missing key falls back to English, a stray one is dead weight."""
+    reference = json.loads((TRANSLATIONS / "en.json").read_text(encoding="utf-8"))
+    expected = {
+        key: sorted(issue) for key, issue in reference.get("issues", {}).items()
+    }
+
+    for path in sorted(TRANSLATIONS.glob("*.json")):
+        issues = json.loads(path.read_text(encoding="utf-8")).get("issues", {})
+        assert {
+            key: sorted(issue) for key, issue in issues.items()
+        } == expected, f"{path.name} does not match en.json"
+
+
 @pytest.fixture
 def mock_config_entry():
     return MockConfigEntry(

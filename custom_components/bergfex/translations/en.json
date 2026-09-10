@@ -176,13 +176,12 @@
       "description": "The Bergfex card now ships with this integration. The separate \"Bergfex Card\" is still installed via HACS and loads a second, conflicting copy. Open HACS, uninstall \"Bergfex Card\", then restart Home Assistant."
     },
     "duplicate_resort_entry": {
-      "title": "Bergfex resort configured twice",
-      "description": "The resort \"{resort}\" ({path}) is set up more than once. Both entries produce the same entities, so only one of them can work and the other one stays broken. This repair is about the entry with the ID {entry_id} - the one that cannot work. Select \"Fix\" below to delete exactly that entry; the other one keeps working.",
+      "title": "Bergfex resort \"{resort}\" configured twice",
       "fix_flow": {
         "step": {
           "confirm": {
             "title": "Delete the duplicate entry",
-            "description": "Delete the duplicate Bergfex entry for \"{resort}\" ({path})? Only the entry with the ID {entry_id} is removed. The other entry for this resort keeps its devices and entities and takes the resort over right away."
+            "description": "The resort \"{resort}\" ({path}) is set up more than once. Both entries produce the same entities, so only one of them can work and the other one stays broken. Delete the entry with the ID {entry_id} - the one that cannot work? Only that entry is removed. The other entry keeps its devices and entities and takes the resort over right away."
           }
         }
       }

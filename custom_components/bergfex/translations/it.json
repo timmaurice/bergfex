@@ -176,13 +176,12 @@
       "description": "La scheda Bergfex è ora inclusa in questa integrazione. La \"Bergfex Card\" separata è ancora installata tramite HACS e carica una seconda copia in conflitto. Apri HACS, disinstalla \"Bergfex Card\" e riavvia Home Assistant."
     },
     "duplicate_resort_entry": {
-      "title": "Comprensorio Bergfex configurato due volte",
-      "description": "Il comprensorio \"{resort}\" ({path}) è configurato più di una volta. Entrambe le voci generano le stesse entità, quindi solo una può funzionare e l'altra resta non funzionante. Questa riparazione riguarda la voce con l'ID {entry_id}, quella che non può funzionare. Seleziona \"Ripara\" qui sotto per eliminare esattamente quella voce; l'altra continua a funzionare.",
+      "title": "Comprensorio Bergfex \"{resort}\" configurato due volte",
       "fix_flow": {
         "step": {
           "confirm": {
             "title": "Elimina la voce duplicata",
-            "description": "Eliminare la voce Bergfex duplicata per \"{resort}\" ({path})? Viene rimossa solo la voce con l'ID {entry_id}. L'altra voce di questo comprensorio mantiene i suoi dispositivi ed entità e prende subito in carico il comprensorio."
+            "description": "Il comprensorio \"{resort}\" ({path}) è configurato più di una volta. Entrambe le voci generano le stesse entità, quindi solo una può funzionare e l'altra resta non funzionante. Eliminare la voce con l'ID {entry_id}, quella che non può funzionare? Viene rimossa solo quella voce. L'altra mantiene i suoi dispositivi ed entità e prende subito in carico il comprensorio."
           }
         }
       }

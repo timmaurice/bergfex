@@ -176,13 +176,12 @@
       "description": "De Bergfex-kaart wordt nu met deze integratie meegeleverd. De aparte \"Bergfex Card\" is nog via HACS geïnstalleerd en laadt een tweede, conflicterende kopie. Open HACS, verwijder \"Bergfex Card\" en start Home Assistant opnieuw op."
     },
     "duplicate_resort_entry": {
-      "title": "Bergfex-skigebied dubbel ingesteld",
-      "description": "Het skigebied \"{resort}\" ({path}) is meer dan één keer ingesteld. Beide items maken dezelfde entiteiten aan, dus slechts één ervan kan werken en de andere blijft kapot. Deze reparatie gaat over het item met ID {entry_id}, het item dat niet kan werken. Kies hieronder \"Oplossen\" om precies dat item te verwijderen; het andere blijft werken.",
+      "title": "Bergfex-skigebied \"{resort}\" dubbel ingesteld",
       "fix_flow": {
         "step": {
           "confirm": {
             "title": "Dubbel item verwijderen",
-            "description": "Het dubbele Bergfex-item voor \"{resort}\" ({path}) verwijderen? Alleen het item met ID {entry_id} wordt verwijderd. Het andere item voor dit skigebied behoudt zijn apparaten en entiteiten en neemt het gebied meteen over."
+            "description": "Het skigebied \"{resort}\" ({path}) is meer dan één keer ingesteld. Beide items maken dezelfde entiteiten aan, dus slechts één ervan kan werken en de andere blijft kapot. Het item met ID {entry_id} - het item dat niet kan werken - verwijderen? Alleen dat item wordt verwijderd. Het andere behoudt zijn apparaten en entiteiten en neemt het gebied meteen over."
           }
         }
       }
