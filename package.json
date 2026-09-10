@@ -21,9 +21,11 @@
     "format": "prettier . --write",
     "lint": "eslint frontend/ scripts/ *.config.mjs rollup.config.js",
     "test": "NODE_ENV=production vitest run",
-    "watch": "rollup -c -w"
+    "watch": "rollup -c -w",
+    "test:e2e": "playwright test"
   },
   "devDependencies": {
+    "@playwright/test": "^1.62.1",
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^16.0.3",
     "@rollup/plugin-terser": "^1.0.0",

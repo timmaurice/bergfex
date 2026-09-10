@@ -14,3 +14,6 @@ bergfex.zip
 # Frontend build tooling
 node_modules/
 bun.lock
+# Playwright
+test-results/
+playwright-report/
