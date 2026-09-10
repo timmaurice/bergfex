@@ -31,8 +31,14 @@ function _getTranslation(language: string, keys: string[]): string | undefined {
   return typeof translation === 'string' ? translation : undefined;
 }
 
-export function localize(hass: HomeAssistant, key: string, placeholders: Record<string, string | number> = {}): string {
-  const lang = hass.language || 'en';
+export function localize(
+  hass: HomeAssistant | undefined,
+  key: string,
+  placeholders: Record<string, string | number> = {},
+): string {
+  // The card picker renders a preview before it hands the element its hass, so
+  // every localized string has to survive that first pass.
+  const lang = hass?.language || 'en';
   const translationKey = key.replace('component.bergfex-card.', '');
   const keyParts = translationKey.split('.');
 

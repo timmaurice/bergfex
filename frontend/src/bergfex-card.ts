@@ -76,7 +76,10 @@ export class BergfexCard extends LitElement implements LovelaceCard {
   @state() private _historyState: Record<string, string> = {}; // entity_id -> state 24h ago
 
   public setConfig(config: BergfexCardConfig): void {
-    if (!config || !config.resorts || !Array.isArray(config.resorts) || config.resorts.length === 0) {
+    // An empty list is allowed: the card picker configures the card from
+    // getStubConfig() to build its preview, long before a resort is picked.
+    // Throwing there would leave the picker with a broken tile.
+    if (!config || !config.resorts || !Array.isArray(config.resorts)) {
       throw new Error(localize(this.hass, 'common.errors.no_resorts'));
     }
     this._config = {
@@ -502,8 +505,21 @@ export class BergfexCard extends LitElement implements LovelaceCard {
   }
 
   protected render(): TemplateResult {
-    if (!this._config || !this.hass) {
+    if (!this._config) {
       return html``;
+    }
+
+    // The picker previews the card without hass and without a resort. Render the
+    // empty card with the hint instead of nothing, so the preview tile shows
+    // what the card is rather than a blank box.
+    if (!this.hass || this._config.resorts.length === 0) {
+      return html`
+        <ha-card .header=${this._config.title} tabindex="0">
+          <div class="card-content">
+            <div class="warning">${localize(this.hass, 'common.errors.no_resorts')}</div>
+          </div>
+        </ha-card>
+      `;
     }
 
     let resortEntries = Object.entries(this._getResorts(this.hass, this._config));
