@@ -15,9 +15,10 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.bergfex.const import DOMAIN
+from custom_components.bergfex.const import COORDINATORS, DOMAIN
 from custom_components.bergfex.unique_id import (
     build_unique_id,
+    coordinator_key,
     legacy_unique_id_prefixes,
     unique_id_prefix,
 )
@@ -346,3 +347,31 @@ async def test_duplicate_entries_do_not_abort_setup(
     survivor = registry.async_get(stale.entity_id)
     assert survivor is not None
     assert survivor.unique_id == "bergfex_achensee_bergbahnen_status"
+
+
+@pytest.mark.asyncio
+async def test_same_name_resorts_get_their_own_coordinator(
+    hass: HomeAssistant, enable_custom_integrations
+):
+    """Sharing a name must not mean sharing a coordinator.
+
+    The coordinator store was keyed on the display name as well, so the second
+    resort found the first one's coordinator already there and reused it - and a
+    coordinator only ever fetches the path it was built for. Both resorts then
+    reported the first one's snow.
+    """
+    first = _entry(name="Bergbahnen", path="/first-valley/schneebericht/", entry_id="a")
+    second = _entry(
+        name="Bergbahnen", path="/second-valley/schneebericht/", entry_id="b"
+    )
+
+    await _setup(hass, first)
+    await _setup(hass, second)
+
+    coordinators = hass.data[DOMAIN][COORDINATORS]
+    first_coordinator = coordinators[coordinator_key("/first-valley/schneebericht/")]
+    second_coordinator = coordinators[coordinator_key("/second-valley/schneebericht/")]
+
+    assert first_coordinator is not second_coordinator
+    assert "/first-valley/schneebericht/" in first_coordinator.data
+    assert "/second-valley/schneebericht/" in second_coordinator.data

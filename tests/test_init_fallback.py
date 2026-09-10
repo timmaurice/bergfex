@@ -10,6 +10,7 @@ from custom_components.bergfex.__init__ import (
     async_setup_entry,
 )
 from custom_components.bergfex.const import DOMAIN, COORDINATORS
+from custom_components.bergfex.unique_id import coordinator_key
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 
@@ -112,7 +113,7 @@ async def test_async_update_data_resort_fallback(
         mock_config_entry.add_to_hass(hass)
         await async_setup_entry(hass, mock_config_entry)
 
-        coordinator = hass.data[DOMAIN][COORDINATORS]["bergfex_Test Resort"]
+        coordinator = hass.data[DOMAIN][COORDINATORS][coordinator_key("/it/test/schneebericht/")]
         # Manually trigger the update method since we mocked first_refresh
         await coordinator.async_refresh()
 
@@ -212,7 +213,7 @@ async def test_async_update_data_resort_fallback_active_season(
         mock_config_entry.add_to_hass(hass)
         await async_setup_entry(hass, mock_config_entry)
 
-        coordinator = hass.data[DOMAIN][COORDINATORS]["bergfex_Test Resort"]
+        coordinator = hass.data[DOMAIN][COORDINATORS][coordinator_key("/it/test/schneebericht/")]
         # Manually trigger the update method since we mocked first_refresh
         await coordinator.async_refresh()
 

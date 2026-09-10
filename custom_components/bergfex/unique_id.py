@@ -56,3 +56,14 @@ def legacy_unique_id_prefixes(area_name: str) -> tuple[str, ...]:
             )
         )
     )
+
+
+def coordinator_key(area_path: str) -> str:
+    """Return the key a resort's coordinator is stored under.
+
+    The store used to be keyed on the display name. Two resorts sharing a name
+    therefore shared one coordinator, and since a coordinator only ever fetches
+    the path it was built for, the second resort silently reported the first
+    one's snow. The path is per-entry unique, so it cannot alias.
+    """
+    return f"bergfex_{area_path.strip('/')}"

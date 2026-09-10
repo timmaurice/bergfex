@@ -34,7 +34,7 @@ from .const import (
     TYPE_CROSS_COUNTRY,
 )
 from .parser import parse_overview_data, parse_resort_page
-from .unique_id import build_unique_id
+from .unique_id import build_unique_id, coordinator_key
 
 
 @dataclass
@@ -197,7 +197,7 @@ async def async_setup_entry(
 ) -> None:
     """Set up the Bergfex sensor entry."""
     # Get the coordinator stored in hass.data by the integration setup
-    resort_coordinator_name = f"bergfex_{entry.data.get('name')}"
+    resort_coordinator_name = coordinator_key(entry.data[CONF_SKI_AREA])
     coordinator = hass.data[DOMAIN][COORDINATORS].get(resort_coordinator_name)
     if coordinator is None:
         _LOGGER.error("Coordinator not found for %s", resort_coordinator_name)

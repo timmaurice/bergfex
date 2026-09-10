@@ -36,7 +36,11 @@ from .const import (
     CONF_UPDATE_INTERVAL,
     DEFAULT_UPDATE_INTERVAL,
 )
-from .unique_id import legacy_unique_id_prefixes, unique_id_prefix
+from .unique_id import (
+    coordinator_key,
+    legacy_unique_id_prefixes,
+    unique_id_prefix,
+)
 from .parser import (
     evaluate_status,
     parse_cross_country_resort_page,
@@ -345,7 +349,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         country_path = COUNTRIES.get(country_name)
 
     # Always create a resort-specific coordinator to get detail page data
-    resort_coordinator_name = f"bergfex_{area_name}"
+    resort_coordinator_name = coordinator_key(area_path)
     coordinator = hass.data[DOMAIN][COORDINATORS].get(resort_coordinator_name)
 
     if coordinator is None:
@@ -707,7 +711,9 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # Forward the unloading to the sensor platform
     if unload_ok := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
         if DOMAIN in hass.data and COORDINATORS in hass.data[DOMAIN]:
-            hass.data[DOMAIN][COORDINATORS].pop(f"bergfex_{entry.data['name']}", None)
+            hass.data[DOMAIN][COORDINATORS].pop(
+                coordinator_key(entry.data[CONF_SKI_AREA]), None
+            )
     return unload_ok
 
 

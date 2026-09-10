@@ -13,7 +13,7 @@ from urllib.parse import urljoin
 from homeassistant.util import dt as dt_util
 from homeassistant.util import slugify
 
-from .unique_id import build_unique_id
+from .unique_id import build_unique_id, coordinator_key
 from .const import (
     BASE_URL,
     CONF_DOMAIN,
@@ -36,7 +36,7 @@ async def async_setup_entry(
 ) -> None:
     """Set up the Bergfex image platform."""
     # Get the coordinator stored in hass.data by the integration setup
-    resort_coordinator_name = f"bergfex_{entry.data.get('name')}"
+    resort_coordinator_name = coordinator_key(entry.data[CONF_SKI_AREA])
     coordinator = hass.data[DOMAIN][COORDINATORS].get(resort_coordinator_name)
     if coordinator is None:
         _LOGGER.error("Coordinator not found for %s", resort_coordinator_name)
