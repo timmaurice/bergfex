@@ -117,15 +117,27 @@ needs, and mount it:
 # 1. Start from the public roots - certifi's bundle, or your system's.
 ./venv/bin/python -c "import certifi, shutil; shutil.copy(certifi.where(), 'config/custom_cert.pem')"
 
-# 2. Append what is missing. For the bergfex CDN, take the intermediate from the
-#    chain the server does serve:
-openssl s_client -showcerts -connect vcdn.bergfex.at:443 -servername vcdn.bergfex.at </dev/null \
-  | openssl x509 -outform pem >> config/custom_cert.pem
+# 2. Append what is missing. For the bergfex CDN, take the intermediates out of
+#    the chain the server does serve - everything after the first certificate.
+#    `openssl x509` would read only that first one, which is the leaf: appending
+#    the server certificate supplies no issuer and expires in about 90 days.
+openssl s_client -showcerts -connect vcdn.bergfex.at:443 -servername vcdn.bergfex.at </dev/null 2>/dev/null \
+  | awk '/-----BEGIN CERTIFICATE-----/{n++; inc=(n>1)} inc; /-----END CERTIFICATE-----/{inc=0}' \
+  >> config/custom_cert.pem
+
+# Check what you appended before trusting it - the subject must be a CA, not
+# CN=*.bergfex.at:
+openssl storeutl -noout -text -certs config/custom_cert.pem | grep 'Subject:' | tail -2
 
 # 3. Behind an inspecting proxy, append that proxy's root as well, exported from
 #    the system keychain or supplied by IT.
 cat zscaler-root.pem >> config/custom_cert.pem
 ```
+
+Behind such a proxy step 2 hands you the proxy's own intermediates rather than
+bergfex's, because the proxy is what terminated the connection - that is the same
+certificate set step 3 is about, and step 2 has nothing to add. Run step 2 from a
+network that is not intercepted, or skip it.
 
 Then point the container at it, under the `homeassistant` service in
 `docker-compose.yml`:
