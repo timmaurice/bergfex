@@ -70,6 +70,20 @@ The `2.4.0` line was never released. Its three betas (`2.4.0b1`, `2.4.0b2`,
   and corrected `operating_hours` and `slope_condition` translations.
 - A `null` entry in the card's `resorts` config no longer throws while resolving
   device IDs.
+- **New `operation_status` attribute** on the resort status sensor, carrying
+  bergfex's own operating word ("täglich", "ogni giorno", "Geschlossen") rather
+  than the opening times it used to be mixed up with.
+- Opening times were not read on most pages. bergfex labels them differently
+  almost everywhere - `Betriebszeiten`, `Opening times`, `Ouverture`, `Godziny` -
+  and on the German and Italian pages the keyword in `const.py` names the status
+  field instead, so a resort carrying both fields yielded no
+  `operating_hours_start` / `_end` at all. They are now read from the value that
+  is a time range and nothing else, which holds in every language.
+- A resort that closes over lunch lost its afternoon: only the first of the two
+  published ranges was read.
+- `operation_status` could be a fragment of the times rather than a status -
+  "von" out of "von 09:00 - 16:45 Uhr", or a whole malformed "9:5 - 16:00". It
+  stays unset when what is left is not a plausible status.
 - The card missed a locale change. `shouldUpdate` compared only `hass.language`,
   while the forecast date and the season teaser format against `hass.locale` and
   every number goes through `locale.number_format`, so a locale-only profile

@@ -251,10 +251,65 @@ _SEASON_RANGE_RE = re.compile(
     r"(\d{1,2}[./]\d{1,2}[./]\d{4})\s*[-–—]\s*(\d{1,2}[./]\d{1,2}[./]\d{4})"
 )
 
-# "09:00 - 16:45", "8:30 – 16:00". bergfex does not always pad the hour - the
-# Italian pages in particular print "8:30" - and it separates the two with a
-# hyphen or an en/em dash depending on the page.
+# "09:00 - 16:45", "8:30 – 16:00". The hour may or may not be padded and the
+# two are separated by a hyphen or an en/em dash depending on the page. Every
+# fixture in tests/fixtures pads the hour; the one-digit form is accepted
+# because the pattern costs nothing, not because a page is known to use it.
 _TIME_RANGE_RE = re.compile(r"(\d{1,2}:\d{2})\s*[-–—]\s*(\d{1,2}:\d{2})")
+
+# A <dd> that is nothing but a time range. bergfex labels the opening times
+# differently on almost every page - "Betriebszeiten", "Opening times",
+# "Ouverture", "Godziny" - and on the German and Italian pages the keyword in
+# const.py names the *status* field instead ("Betrieb", "Orario"), so a keyword
+# lookup misses the times entirely or, where a page carries both fields, stops
+# at the status one. A value that consists of a time range and nothing else is
+# the opening times in every language, and across all 27 fixtures no other <dd>
+# looks like that.
+_TIME_RANGE_ONLY_RE = re.compile(
+    r"\s*\d{1,2}:\d{2}\s*[-–—]\s*\d{1,2}:\d{2}\s*\Z"
+)
+
+# Words for "o'clock" that sit after a time range and are not a status.
+_HOUR_WORD_RE = re.compile(r"(?i)\b(uhr|hrs?|hours|ore|horas|godz)\b\.?")
+
+# Prepositions and connectors that introduce a time range. On their own they are
+# not a status: "von 09:00 - 16:45 Uhr" must not leave "von" behind as the value
+# of a field that is supposed to say whether the resort is running.
+_STATUS_FILLER = frozenset(
+    {
+        "ab",
+        "alle",
+        "and",
+        "au",
+        "bis",
+        "da",
+        "dalle",
+        "de",
+        "desde",
+        "do",
+        "du",
+        "et",
+        "fra",
+        "from",
+        "hasta",
+        "il",
+        "od",
+        "og",
+        "och",
+        "tot",
+        "til",
+        "to",
+        "und",
+        "van",
+        "von",
+        "zwischen",
+        "à",
+        "и",
+        "до",
+        "от",
+        "с",
+    }
+)
 
 
 def _normalise_time(raw: str) -> str:
@@ -268,6 +323,63 @@ def _normalise_time(raw: str) -> str:
         return f"{int(hour):02d}:{minute}"
     except ValueError:
         return raw
+
+
+def _time_span(text: str) -> tuple[str, str] | None:
+    """The outer bounds of every time range in `text`.
+
+    A resort that closes over lunch publishes two ranges - "Vormittag
+    08:00 - 12:00, Nachmittag 13:00 - 17:00". Reading only the first one threw
+    the afternoon away and reported the resort as shut from noon.
+    """
+    ranges = _TIME_RANGE_RE.findall(text)
+    if not ranges:
+        return None
+    return _normalise_time(ranges[0][0]), _normalise_time(ranges[-1][1])
+
+
+def _opening_times(soup: BeautifulSoup) -> tuple[str, str] | None:
+    """The times from the <dd> that carries nothing but a time range."""
+    for dd in soup.find_all("dd"):
+        text = dd.get_text(" ", strip=True)
+        if _TIME_RANGE_ONLY_RE.fullmatch(text):
+            return _time_span(text)
+    return None
+
+
+def _residual_status(text: str) -> str | None:
+    """What is left of an operating-hours field once the times are removed.
+
+    Usually a status word - "täglich", "Geschlossen", "ogni giorno". Sometimes
+    nothing: the two les-saisies fixtures carry the times alone, and
+    "09:00 - 16:30" is not an answer to whether the resort is running.
+
+    And sometimes a fragment, which is worse than nothing. "von 09:00 - 16:45
+    Uhr" leaves "von"; a malformed "9:5 - 16:00" matches no range at all and
+    left the whole broken string as the status. A dangling preposition or a
+    stray digit in a status field is a bug the user can see, so the field stays
+    unset instead.
+    """
+    residue = _TIME_RANGE_RE.sub(" ", text)
+    residue = _HOUR_WORD_RE.sub(" ", residue)
+    if any(ch.isdigit() for ch in residue):
+        # The field was not "status + times": either a time survived the
+        # removal because it is malformed, or there is a number here that no
+        # status word explains. Publishing it would print an opening time in
+        # the status field.
+        return None
+
+    parts = []
+    for segment in residue.split(","):
+        tokens = [t for t in re.split(r"\s+", segment.strip(" ;:-–—")) if t]
+        while tokens and tokens[0].lower().strip(".") in _STATUS_FILLER:
+            tokens.pop(0)
+        while tokens and tokens[-1].lower().strip(".") in _STATUS_FILLER:
+            tokens.pop()
+        if tokens:
+            parts.append(" ".join(tokens))
+
+    return ", ".join(parts) or None
 
 
 def _parse_operating_period(soup: BeautifulSoup, tab: str) -> dict[str, Any]:
@@ -576,23 +688,30 @@ def parse_resort_page(
             area_data[f"{tab}_operating_hours_start"] = period["hours_start"]
             area_data[f"{tab}_operating_hours_end"] = period["hours_end"]
 
-    # Operating Hours (Betrieb)
+    # Operating hours and operation status. These are two fields on the page,
+    # not one, and bergfex does not label them consistently: the German pages
+    # carry "Betrieb" (täglich) next to "Betriebszeiten" (08:30 - 16:00), the
+    # English ones "Operation" next to "Opening times", the Polish ones
+    # "Godziny pracy w sezonie" next to "Godziny". The keyword in const.py
+    # names whichever of the two that language happened to be recorded from, so
+    # the times are read structurally instead - see _opening_times.
     op_hours_kw = keywords.get("operating_hours", "Betrieb")
     op_hours_text = get_text_from_dd(soup, op_hours_kw)
-    if op_hours_text:
-        time_match = _TIME_RANGE_RE.search(op_hours_text)
-        if time_match:
-            area_data["operating_hours_start"] = _normalise_time(time_match.group(1))
-            area_data["operating_hours_end"] = _normalise_time(time_match.group(2))
 
-        # Whatever is left once the times are taken out is the actual status word
-        # ("täglich", "Geschlossen"). The Italian pages carry nothing but the
-        # times, and "08:30 - 16:00" is not a status - a field that is supposed
-        # to say whether the resort runs would then read as an opening time. So
-        # the status stays unset there and the times live in the hours fields.
-        status = _TIME_RANGE_RE.sub("", op_hours_text)
-        status = re.sub(r"(?i)\buhr\b", "", status)
-        status = status.strip().strip(",;:-–—").strip()
+    # Times written into the labelled field itself win: they are the value of
+    # the field that was asked for.
+    span = _time_span(op_hours_text) if op_hours_text else None
+    if span is None:
+        span = _opening_times(soup)
+    if span:
+        area_data["operating_hours_start"], area_data["operating_hours_end"] = span
+
+    if op_hours_text:
+        # Whatever is left once the times are taken out is the status word
+        # ("täglich", "ogni giorno", "Geschlossen"). The two les-saisies
+        # fixtures carry the times alone, and "09:00 - 16:30" is not a status,
+        # so the field stays unset there rather than reading as an opening time.
+        status = _residual_status(op_hours_text)
         if status:
             area_data["operation_status"] = _translate_value(status, lang)
 
