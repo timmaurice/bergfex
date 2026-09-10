@@ -27,6 +27,24 @@ SKI_AREA_PATH = "/serfaus-fiss-ladis/schneebericht/"
 SKI_AREAS = {SKI_AREA_PATH: "Serfaus - Fiss - Ladis"}
 
 
+@pytest.fixture(autouse=True)
+def _never_really_set_up():
+    """Keep a CREATE_ENTRY from setting the integration up for real.
+
+    These tests are about the flow. Letting the created entry set up runs the
+    whole integration: it builds Home Assistant's shared aiohttp session, whose
+    aiodns resolver opens a c-ares channel and leaves that library's watchdog
+    thread behind. pytest-socket cannot block it - c-ares resolves in C, below
+    the Python sockets it patches - and the test harness then fails teardown
+    over a thread no test can clean up.
+    """
+    with patch(
+        "custom_components.bergfex.async_setup_entry",
+        AsyncMock(return_value=True),
+    ):
+        yield
+
+
 def _existing_entry(hass: HomeAssistant, ski_area: str) -> MockConfigEntry:
     """Register a resort that is already set up."""
     entry = MockConfigEntry(
