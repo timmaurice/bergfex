@@ -4,6 +4,11 @@
   flex-direction: column;
   gap: 12px;
   padding: 16px;
+
+  // Nothing here ever set a wrapping rule, so a resort name without spaces -
+  // and bergfex has plenty of hyphen-free compounds - ran straight off the
+  // right edge of the card instead of breaking.
+  overflow-wrap: anywhere;
 }
 
 .resort {
@@ -23,18 +28,23 @@
 .resort-header {
   align-items: center;
   display: flex;
+  gap: 8px;
   justify-content: space-between;
 }
 
 .resort-name {
   font-size: 1.2em;
   font-weight: 500;
+  // A flex item will not shrink below its content, so a long title pushed the
+  // status badge out of the card rather than wrapping.
+  min-width: 0;
 }
 
 .resort-status-group {
   align-items: flex-end;
   display: flex;
   flex-direction: column;
+  flex-shrink: 0;
   gap: 2px;
 }
 
@@ -52,6 +62,9 @@
   font-weight: 500;
   padding: 2px 6px;
   text-transform: uppercase;
+  // "SUMMER SEASON" broke across two lines at 400px, which turned the badge
+  // into a two-storey block and pushed the header out of alignment.
+  white-space: nowrap;
 
   &.open {
     background-color: var(--label-badge-green);
@@ -126,12 +139,22 @@
   display: flex;
   flex-direction: column;
   font-size: 1.1em;
-  width: calc(100% - 32px);
+  // Was a hard-coded calc(100% - 32px), which assumed the icon is exactly 32px
+  // wide and still refused to shrink below its content. At 400px that pushed
+  // the column wider than its grid track, so a label such as "Slopes (Total)"
+  // escaped from under its progress bar. Letting the item shrink keeps the
+  // label, the value and the bar in one column.
+  flex: 1 1 auto;
+  min-width: 0;
+  width: auto;
 }
 
 .detail-item-label {
   color: var(--secondary-text-color);
   font-size: 0.8em;
+  // The bar spans the whole column, so the label must stay inside it too.
+  max-width: 100%;
+  overflow-wrap: anywhere;
 }
 
 .detail-item.n-a {
