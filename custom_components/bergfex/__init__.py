@@ -15,6 +15,7 @@ from homeassistant.exceptions import ConfigEntryNotReady
 
 
 import homeassistant.helpers.config_validation as cv
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers import issue_registry as ir
 
 from .const import (
@@ -35,6 +36,7 @@ from .const import (
     CONF_UPDATE_INTERVAL,
     DEFAULT_UPDATE_INTERVAL,
 )
+from .unique_id import legacy_unique_id_prefixes, unique_id_prefix
 from .parser import (
     evaluate_status,
     parse_cross_country_resort_page,
@@ -257,6 +259,65 @@ def _async_backfill_unique_id(hass: HomeAssistant, entry: ConfigEntry) -> None:
     )
 
 
+
+async def _async_migrate_unique_ids(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Move this entry's entities onto path-based unique ids.
+
+    The entities were keyed on the display name, which is not unique, so two
+    resorts whose names slugify alike collided and Home Assistant kept only the
+    first resort's entities. Re-keying them onto the resort path fixes that, but
+    only a migration makes it safe: registering the new ids bare would leave
+    every existing entity behind as an orphan, and with it the user's history,
+    their customisations and every dashboard that names them.
+
+    Rewriting the id in place keeps the registry entry - so the entity_id, the
+    name, the area and the recorder statistics all stay attached to it.
+    """
+    new_prefix = unique_id_prefix(entry.data[CONF_SKI_AREA])
+    legacy_prefixes = legacy_unique_id_prefixes(entry.data["name"])
+    registry = er.async_get(hass)
+
+    @callback
+    def _migrate(registry_entry: er.RegistryEntry) -> dict[str, str] | None:
+        old_id = registry_entry.unique_id
+
+        legacy_prefix = next(
+            (prefix for prefix in legacy_prefixes if old_id.startswith(prefix)), None
+        )
+        if legacy_prefix is None:
+            # Already migrated, which is the normal case from the second restart
+            # onwards. Returning None leaves the entry untouched.
+            return None
+
+        new_id = f"{new_prefix}{old_id[len(legacy_prefix) :]}"
+        if new_id == old_id:
+            # A resort whose name and path happen to agree is already correct.
+            return None
+
+        # Two entries for the same resort - the duplicate bug the repair issue
+        # is about - would both migrate onto the same ids, and the registry
+        # rejects the second with a ValueError that would abort setup. The
+        # leftover entry keeps its old ids until the repair removes it.
+        if registry.async_get_entity_id(
+            registry_entry.domain, registry_entry.platform, new_id
+        ):
+            _LOGGER.debug(
+                "Not migrating %s: unique id %s is already taken",
+                registry_entry.entity_id,
+                new_id,
+            )
+            return None
+
+        _LOGGER.debug(
+            "Migrating %s from unique id %s to %s",
+            registry_entry.entity_id,
+            old_id,
+            new_id,
+        )
+        return {"new_unique_id": new_id}
+
+    await er.async_migrate_entries(hass, entry.entry_id, _migrate)
+
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Bergfex from a config entry."""
     # Entries created before the config flow set a unique id carry None, so the
@@ -264,6 +325,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # installed. The resort path is stable across domains and languages.
     if entry.unique_id is None:
         _async_backfill_unique_id(hass, entry)
+
+    await _async_migrate_unique_ids(hass, entry)
 
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN].setdefault(COORDINATORS, {})

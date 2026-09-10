@@ -34,6 +34,7 @@ from .const import (
     TYPE_CROSS_COUNTRY,
 )
 from .parser import parse_overview_data, parse_resort_page
+from .unique_id import build_unique_id
 
 
 @dataclass
@@ -244,16 +245,19 @@ class BergfexSensor(SensorEntity):
         self._domain = entry.data.get(CONF_DOMAIN, BASE_URL)
         self._config_url = urljoin(self._domain, self._area_path)
 
-        # Use slugified name for a stable prefix that matches typical HA defaults
-        # This helps in "reusing" IDs that were automatically generated from the name
-        resort_prefix = slugify(self._initial_area_name)
+        # Keyed on the resort path, which is unique per entry. The display name
+        # is not: two resorts that slugify the same used to produce the same
+        # unique ids, and Home Assistant then dropped the second resort's
+        # entities. Existing installs are carried over by the registry
+        # migration in __init__.py.
+        self._attr_unique_id = build_unique_id(self._area_path, description.key)
 
-        # unique_id should be stable and English-keyed
-        # We use the resort_prefix to stay compatible with earlier registry entries if possible
-        self._attr_unique_id = f"bergfex_{resort_prefix}_{description.key}"
-
-        # Explicitly set entity_id to the desired English format
-        self.entity_id = f"sensor.{resort_prefix}_{description.key}"
+        # The entity_id stays keyed on the name on purpose. It is what users
+        # have in their automations and dashboards, and the registry hands a
+        # migrated entity its recorded entity_id back regardless of what is
+        # suggested here - so this only ever names entities on a fresh install,
+        # where changing the scheme would buy nothing and surprise everyone.
+        self.entity_id = f"sensor.{slugify(self._initial_area_name)}_{description.key}"
 
         # suggested_object_id provides a hint for new entity creation
         self._attr_suggested_object_id = description.key

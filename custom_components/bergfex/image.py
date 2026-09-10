@@ -13,6 +13,7 @@ from urllib.parse import urljoin
 from homeassistant.util import dt as dt_util
 from homeassistant.util import slugify
 
+from .unique_id import build_unique_id
 from .const import (
     BASE_URL,
     CONF_DOMAIN,
@@ -102,22 +103,17 @@ class BergfexImage(ImageEntity):
         self._config_url = urljoin(self._domain, self._area_path)
         self._data_key = data_key
 
-        # Use English slug for suggested_object_id
         english_key = data_key.replace("_url", "")
         self._attr_translation_key = english_key
         self._attr_suggested_object_id = english_key
 
-        # English slug for keys
-        english_key = data_key.replace("_url", "")
-        self._attr_translation_key = english_key
-        self._attr_suggested_object_id = english_key
+        # Keyed on the resort path for the same reason as the sensors: the
+        # display name is not unique, so it cannot identify a resort. See
+        # unique_id.py.
+        self._attr_unique_id = build_unique_id(self._area_path, english_key)
 
-        # Use slugified name for stable IDs
-        resort_prefix = slugify(self._initial_area_name)
-        self.entity_id = f"image.{resort_prefix}_{english_key}"
-
-        # Initialize Unique ID matching sensor.py pattern
-        self._attr_unique_id = f"bergfex_{resort_prefix}_{english_key}"
+        # Name-keyed entity_id, left alone deliberately - see sensor.py.
+        self.entity_id = f"image.{slugify(self._initial_area_name)}_{english_key}"
 
         self._client = async_get_clientsession(coordinator.hass)
 
@@ -195,7 +191,7 @@ class BergfexImage(ImageEntity):
         self.async_write_ha_state()
 
     def _update_names(self) -> None:
-        """Update the area name, unique ID, and entity name based on coordinator data."""
+        """Update the area name based on coordinator data."""
         if self.coordinator.data and self._area_path in self.coordinator.data:
             area_data = self.coordinator.data[self._area_path]
             if "resort_name" in area_data:
@@ -205,4 +201,7 @@ class BergfexImage(ImageEntity):
         else:
             self._area_name = self._initial_area_name
 
-        self._attr_unique_id = f"bergfex_{self._initial_area_name.lower().replace(' ', '_')}_{self._attr_suggested_object_id}"
+        # This used to reassign _attr_unique_id here, to a third scheme again.
+        # A unique id is what the registry looks an entity up by; rewriting it
+        # after registration cannot move the registry entry, it only makes the
+        # entity disagree with its own record. The id is set once, in __init__.
