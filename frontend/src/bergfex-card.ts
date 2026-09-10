@@ -64,11 +64,32 @@ const NO_REPORT_STATES = [
   'unknown',
   'unavailable',
   'none',
-  'keine meldung', // de
+  // The wording is taken from the integration's own KEYWORDS map in
+  // const.py, which is what bergfex actually prints on each language's pages.
+  // Seven languages were listed here and eleven were not, so a resort set up
+  // in Hungarian showed "nincs jelentés" as if it were a snow condition.
+  'keine meldung', // at/de
   'no report', // en
   'geen melding', // nl
-  'pas de rapport', // fr
+  'pas de signalement', // fr
+  "pas d'info", // fr
+  'aucune information', // fr
   'nessuna segnalazione', // it
+  'sin información', // es
+  'brak komunikatu', // pl
+  'nincs jelentés', // hu
+  'žádná zpráva', // cz
+  'žiadna správa', // sk
+  'nema izvješća', // hr
+  'ni poročila', // si
+  'нет данных', // ru
+  'fără raport', // ro
+  'ingen rapport', // se
+  'ingen melding', // no/dk
+  'ei raporttia', // fi
+  // Spellings this card carried before the map above was consulted. Kept
+  // because bergfex is not always consistent between its own pages.
+  'pas de rapport', // fr
   'sin informe', // es
   'brak informacji', // pl
 ];
@@ -547,9 +568,15 @@ export class BergfexCard extends LitElement implements LovelaceCard {
     const date = new Date(`${start}T00:00:00`);
     if (Number.isNaN(date.getTime())) return undefined;
 
-    const formatted = new Intl.DateTimeFormat(this.hass.language, {
-      day: '2-digit',
-      month: '2-digit',
+    // "ab 12/04" is either the 12th of April or the 4th of December depending
+    // on who is reading it, and a season start is exactly the value nobody can
+    // guess from context. A named month cannot be read the wrong way round, and
+    // the locale - not the interface language - is what decides date format
+    // everywhere else in Home Assistant, and at line 473 in this card.
+    const locale = this.hass.locale?.language || this.hass.language || 'en';
+    const formatted = new Intl.DateTimeFormat(locale, {
+      day: 'numeric',
+      month: 'short',
     }).format(date);
 
     if (start > today) {
