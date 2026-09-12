@@ -41,7 +41,7 @@ jobs:
 
       - name: Raise an issue when skiing starts
         if: steps.check.outputs.glacier_started == 'true' || steps.check.outputs.valley_started == 'true'
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const groups = [
