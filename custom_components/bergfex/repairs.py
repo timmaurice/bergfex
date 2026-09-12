@@ -7,7 +7,12 @@ from homeassistant.components.repairs import RepairsFlow
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResult
 
-from . import DUPLICATE_ENTRY_ISSUE_ID
+from . import (
+    DUPLICATE_ENTRY_ISSUE_ID,
+    ORPHANED_ENTITIES_ISSUE_ID,
+    _async_orphaned_registry_entries,
+)
+from homeassistant.helpers import entity_registry as er
 from .const import CONF_SKI_AREA
 
 
@@ -57,6 +62,57 @@ class DuplicateEntryRepairFlow(RepairsFlow):
         )
 
 
+class OrphanedEntitiesRepairFlow(RepairsFlow):
+    """Delete the registry rows a superseded unique id scheme left behind.
+
+    Deliberately a repair rather than something setup does on its own. The rows
+    carry the user's renames, their area assignments and their recorder history,
+    and an integration that quietly deletes registry entries on start has no way
+    to give any of that back. So the destructive half is opt-in, and the card
+    ignores the rows in the meantime.
+    """
+
+    def __init__(self, entry_id: str) -> None:
+        """Remember which entry this issue is about."""
+        self._entry_id = entry_id
+
+    async def async_step_init(
+        self, user_input: dict[str, str] | None = None
+    ) -> FlowResult:
+        """Start the fix flow."""
+        return await self.async_step_confirm()
+
+    async def async_step_confirm(
+        self, user_input: dict[str, str] | None = None
+    ) -> FlowResult:
+        """Confirm, then remove the leftover rows."""
+        entry = self.hass.config_entries.async_get_entry(self._entry_id)
+
+        if entry is None:
+            # The entry went away, and its registry rows with it.
+            return self.async_create_entry(data={})
+
+        orphans = _async_orphaned_registry_entries(self.hass, entry)
+
+        if user_input is not None:
+            registry = er.async_get(self.hass)
+            for row in orphans:
+                registry.async_remove(row.entity_id)
+            return self.async_create_entry(data={})
+
+        # Recomputed rather than read from the issue, so the list the user
+        # confirms is the list that gets deleted even if a restart changed it.
+        return self.async_show_form(
+            step_id="confirm",
+            data_schema=vol.Schema({}),
+            description_placeholders={
+                "resort": entry.title,
+                "count": str(len(orphans)),
+                "entities": "\n".join(f"- {row.entity_id}" for row in orphans),
+            },
+        )
+
+
 async def async_create_fix_flow(
     hass: HomeAssistant,
     issue_id: str,
@@ -66,6 +122,12 @@ async def async_create_fix_flow(
     entry_id = ""
     if data:
         entry_id = str(data.get("entry_id") or "")
+
+    if issue_id.startswith(f"{ORPHANED_ENTITIES_ISSUE_ID}_"):
+        if not entry_id:
+            entry_id = issue_id[len(ORPHANED_ENTITIES_ISSUE_ID) + 1 :]
+        return OrphanedEntitiesRepairFlow(entry_id)
+
     if not entry_id and issue_id.startswith(f"{DUPLICATE_ENTRY_ISSUE_ID}_"):
         # Issues raised before the id was carried in `data` are keyed on it.
         entry_id = issue_id[len(DUPLICATE_ENTRY_ISSUE_ID) + 1 :]

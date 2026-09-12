@@ -185,6 +185,17 @@
           }
         }
       }
+    },
+    "orphaned_registry_entries": {
+      "title": "Bergfex \"{resort}\": {count} entità residue",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Elimina le entità residue",
+            "description": "Le versioni precedenti di questa integrazione nominavano le entità in modo diverso. {count} voci del registro per \"{resort}\" usano ancora uno schema non più in uso: nulla le alimenta, Home Assistant le ripristina come non disponibili e nella scheda possono comparire come immagini di previsione duplicate che non si caricano mai.\n\n{entities}\n\nEliminarle? Nomi, aree e cronologia registrata vengono persi con loro e l'operazione è irreversibile. Tenerle non causa problemi: la scheda le ignora già."
+          }
+        }
+      }
     }
   }
 }

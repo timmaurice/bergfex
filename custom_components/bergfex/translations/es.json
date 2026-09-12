@@ -185,6 +185,17 @@
           }
         }
       }
+    },
+    "orphaned_registry_entries": {
+      "title": "Bergfex \"{resort}\": {count} entidades sobrantes",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Eliminar las entidades sobrantes",
+            "description": "Las versiones anteriores de esta integración nombraban las entidades de otra forma. {count} entradas del registro de \"{resort}\" siguen usando un esquema que ya no se utiliza: nada las alimenta, Home Assistant las restaura como no disponibles y en la tarjeta pueden aparecer como imágenes de previsión duplicadas que nunca cargan.\n\n{entities}\n\n¿Eliminarlas? Sus nombres, sus áreas y su historial registrado se pierden con ellas, y no se puede deshacer. Conservarlas no causa ningún problema: la tarjeta ya las ignora."
+          }
+        }
+      }
     }
   }
 }

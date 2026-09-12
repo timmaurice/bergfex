@@ -185,6 +185,17 @@
           }
         }
       }
+    },
+    "orphaned_registry_entries": {
+      "title": "Bergfex \"{resort}\": {count} leftover entities",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Delete the leftover entities",
+            "description": "Earlier versions of this integration keyed its entities differently. {count} registry entries for \"{resort}\" still use a scheme that is no longer in use, so nothing supplies them: Home Assistant restores them as unavailable, and they can appear in the card as duplicate, never-loading forecast images.\n\n{entities}\n\nDelete them? Their names, area assignments and recorded history go with them, and this cannot be undone. Keeping them is harmless - the card already ignores them."
+          }
+        }
+      }
     }
   }
 }

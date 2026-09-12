@@ -185,6 +185,17 @@
           }
         }
       }
+    },
+    "orphaned_registry_entries": {
+      "title": "Bergfex \"{resort}\": {count} achtergebleven entiteiten",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Achtergebleven entiteiten verwijderen",
+            "description": "Eerdere versies van deze integratie benoemden hun entiteiten anders. {count} registervermeldingen voor \"{resort}\" gebruiken nog een schema dat niet meer in gebruik is: niets vult ze nog, Home Assistant herstelt ze als niet beschikbaar en in de kaart kunnen ze verschijnen als dubbele voorspellingsafbeeldingen die nooit laden.\n\n{entities}\n\nVerwijderen? Hun namen, gebiedstoewijzingen en opgenomen geschiedenis gaan mee verloren, en dit kan niet ongedaan worden gemaakt. Ze houden kan geen kwaad - de kaart negeert ze al."
+          }
+        }
+      }
     }
   }
 }

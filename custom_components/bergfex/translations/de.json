@@ -185,6 +185,17 @@
           }
         }
       }
+    },
+    "orphaned_registry_entries": {
+      "title": "Bergfex \"{resort}\": {count} übrig gebliebene Entitäten",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Übrig gebliebene Entitäten löschen",
+            "description": "Frühere Versionen dieser Integration haben ihre Entitäten anders benannt. {count} Registry-Einträge für \"{resort}\" verwenden noch ein Schema, das nicht mehr benutzt wird - sie werden von nichts mehr befüllt: Home Assistant stellt sie als \"nicht verfügbar\" wieder her, und in der Karte können sie als doppelte, nie ladende Vorhersagebilder auftauchen.\n\n{entities}\n\nLöschen? Ihre Namen, Bereichszuordnungen und aufgezeichnete Historie gehen mit verloren, das lässt sich nicht rückgängig machen. Sie zu behalten schadet nicht - die Karte ignoriert sie bereits."
+          }
+        }
+      }
     }
   }
 }

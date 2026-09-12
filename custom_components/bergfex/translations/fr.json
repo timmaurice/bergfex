@@ -185,6 +185,17 @@
           }
         }
       }
+    },
+    "orphaned_registry_entries": {
+      "title": "Bergfex \"{resort}\" : {count} entités résiduelles",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Supprimer les entités résiduelles",
+            "description": "Les versions précédentes de cette intégration nommaient les entités autrement. {count} entrées du registre pour \"{resort}\" utilisent encore un schéma abandonné : plus rien ne les alimente, Home Assistant les restaure comme indisponibles et elles peuvent apparaître dans la carte sous forme d'images de prévision en double qui ne se chargent jamais.\n\n{entities}\n\nLes supprimer ? Leurs noms, leurs zones et leur historique enregistré disparaissent avec elles, et l'opération est irréversible. Les conserver ne pose aucun problème : la carte les ignore déjà."
+          }
+        }
+      }
     }
   }
 }

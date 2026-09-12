@@ -94,6 +94,7 @@ CARD_URL_BASE = "/bergfex_frontend"
 
 LEGACY_CARD_ISSUE_ID = "standalone_card_installed"
 DUPLICATE_ENTRY_ISSUE_ID = "duplicate_resort_entry"
+ORPHANED_ENTITIES_ISSUE_ID = "orphaned_registry_entries"
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
@@ -394,6 +395,73 @@ async def _async_migrate_unique_ids(hass: HomeAssistant, entry: ConfigEntry) -> 
         return {"new_unique_id": new_id}
 
     await er.async_migrate_entries(hass, entry.entry_id, _migrate)
+
+
+@callback
+def _async_orphaned_registry_entries(
+    hass: HomeAssistant, entry: ConfigEntry
+) -> list[er.RegistryEntry]:
+    """Registry rows for this entry that no entity can claim any more.
+
+    The integration has keyed its entities three ways over its life, and
+    `_async_migrate_unique_ids` deliberately declines to re-key a row whose new
+    id is already taken - two rows cannot share one unique id. Where an install
+    carries rows from more than one scheme the superseded ones stay on the
+    device with nothing behind them: Home Assistant restores them as
+    `unavailable` forever, and the card used to render them as duplicate,
+    never-loading forecast images.
+
+    Everything the integration registers today starts with the path-based
+    prefix, so a row that does not is a leftover no code path can revive.
+    """
+    prefix = unique_id_prefix(entry.data[CONF_SKI_AREA])
+    registry = er.async_get(hass)
+    return [
+        row
+        for row in er.async_entries_for_config_entry(registry, entry.entry_id)
+        if not row.unique_id.startswith(prefix)
+    ]
+
+
+@callback
+def _async_report_orphaned_entities(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Offer to delete the leftovers, without ever deleting them unasked.
+
+    Removing registry rows is destructive - the user may have renamed them,
+    referenced them from a dashboard or an automation, or be keeping their
+    recorder history - so this raises a repair the user can read and dismiss.
+    Nothing is removed until they confirm the fix flow.
+    """
+    issue_id = f"{ORPHANED_ENTITIES_ISSUE_ID}_{entry.entry_id}"
+    orphans = _async_orphaned_registry_entries(hass, entry)
+
+    if not orphans:
+        # Also covers the run right after the fix flow cleared them.
+        ir.async_delete_issue(hass, DOMAIN, issue_id)
+        return
+
+    _LOGGER.debug(
+        "%s carries %s registry rows from a superseded unique id scheme",
+        entry.title,
+        len(orphans),
+    )
+    ir.async_create_issue(
+        hass,
+        DOMAIN,
+        issue_id,
+        is_fixable=True,
+        data={"entry_id": entry.entry_id},
+        # Setup re-raises this every start, but `data` is dropped for a
+        # non-persistent issue and the fix flow needs the entry id.
+        is_persistent=True,
+        severity=ir.IssueSeverity.WARNING,
+        translation_key=ORPHANED_ENTITIES_ISSUE_ID,
+        translation_placeholders={
+            "resort": entry.title,
+            "count": str(len(orphans)),
+        },
+    )
+
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Bergfex from a config entry."""
@@ -807,6 +875,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
+    # Needs the platforms to have run: a row is only a leftover once the
+    # entities that could still claim it have been added.
+    _async_report_orphaned_entities(hass, entry)
+
     entry.async_on_unload(entry.add_update_listener(async_reload_entry))
 
     # Setup got through, so the next outage deserves its warning again.
@@ -844,6 +916,11 @@ async def async_remove_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
     than trusting it to be gone.
     """
     ir.async_delete_issue(hass, DOMAIN, f"{DUPLICATE_ENTRY_ISSUE_ID}_{entry.entry_id}")
+    # Removing the entry takes its registry rows with it, leftovers included, so
+    # the orphan repair has nothing left to fix either.
+    ir.async_delete_issue(
+        hass, DOMAIN, f"{ORPHANED_ENTITIES_ISSUE_ID}_{entry.entry_id}"
+    )
 
     ski_area = entry.data.get(CONF_SKI_AREA)
     if ski_area is None:

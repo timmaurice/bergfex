@@ -185,6 +185,17 @@
           }
         }
       }
+    },
+    "orphaned_registry_entries": {
+      "title": "Bergfex \"{resort}\": {count} pozostawionych encji",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Usuń pozostawione encje",
+            "description": "Wcześniejsze wersje tej integracji nazywały encje inaczej. {count} wpisów rejestru dla \"{resort}\" nadal używa schematu, który nie jest już stosowany: nic ich nie zasila, Home Assistant przywraca je jako niedostępne, a na karcie mogą pojawiać się jako zdublowane obrazy prognozy, które nigdy się nie ładują.\n\n{entities}\n\nUsunąć je? Ich nazwy, przypisania do obszarów i zapisana historia zostaną utracone, a operacji nie da się cofnąć. Ich zachowanie niczemu nie szkodzi - karta już je pomija."
+          }
+        }
+      }
     }
   }
 }
