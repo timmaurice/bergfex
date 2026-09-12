@@ -29,14 +29,22 @@ def test_manifest_declares_the_lovelace_dependency():
 
 
 def test_hacs_declares_a_minimum_home_assistant_version():
-    """async_register_static_paths does not exist before 2024.7."""
+    """The declared minimum is the core CI actually validates.
+
+    This is a support decision, not only a technical floor. The technical floor
+    is lower: 2024.12 for `OptionsFlowHandler` reading `self.config_entry`, and
+    2025.2 before that for `hass.data["lovelace"]` being an object rather than a
+    plain dict - below which the bundled card silently never registers itself.
+    Since CI resolves and exercises only the current core, declaring anything
+    older would promise support nobody verifies.
+    """
     hacs = json.loads((ROOT / "hacs.json").read_text())
 
     minimum = hacs.get("homeassistant")
     assert minimum, "HACS would otherwise offer the integration to any version"
 
     major, minor = (int(part) for part in minimum.split(".")[:2])
-    assert (major, minor) >= (2024, 7)
+    assert (major, minor) >= (2026, 9)
 
 
 TRANSLATIONS = ROOT / "custom_components" / "bergfex" / "translations"
@@ -145,3 +153,27 @@ async def test_an_entry_without_a_ski_area_deletes_nothing(
     live = _device(hass, entry, AREA_PATH)
 
     assert not await async_remove_config_entry_device(hass, entry, live)
+
+
+def test_the_manifest_pins_what_requirements_txt_pins():
+    """manifest.json is what Home Assistant installs; requirements.txt is not.
+
+    The two drifted once already, and in the direction that matters: the
+    CHANGELOG recorded lxml being raised to >=6.1.1 for CVE-2026-41066, but only
+    requirements.txt moved. Users kept installing >=6.1.0, so a security fix that
+    was written down had never actually shipped.
+    """
+    manifest = json.loads(
+        (ROOT / "custom_components" / "bergfex" / "manifest.json").read_text()
+    )
+    declared = dict(
+        requirement.split(">=") for requirement in manifest["requirements"]
+    )
+
+    pinned = dict(
+        line.split(">=")
+        for line in (ROOT / "requirements.txt").read_text().split()
+        if ">=" in line
+    )
+
+    assert declared == pinned
