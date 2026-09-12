@@ -1,3 +1,4 @@
+# Local AI context files, personal to whoever is working here
 CLAUDE.md
 
 # Docker test environment
@@ -5,15 +6,22 @@ docker-compose.yml
 config/
 *.pem
 
+# Python
 *__pycache__*
 .pytest_cache/
-
-# Release artifact
-bergfex.zip
 
 # Frontend build tooling
 node_modules/
 bun.lock
-# Playwright
-test-results/
+
+# Release artifact, rebuilt by the release workflow
+bergfex.zip
+
+# Playwright output
 playwright-report/
+test-results/
+
+# Playwright session state. These hold live Home Assistant access and refresh
+# tokens, so they are matched by name at any depth rather than by path.
+.auth.json
+.storage-state.json
