@@ -1,0 +1,41 @@
+name: Frontend
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Check formatting
+        run: npm run check-format
+
+      - name: Test
+        run: npm run test
+
+      - name: Build card
+        run: npm run build
+
+      # Catches archive regressions on the PR rather than at tag time, when the
+      # only way out is a new tag.
+      - name: Verify release archive
+        run: npm run build:release

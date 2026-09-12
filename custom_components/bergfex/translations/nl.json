@@ -52,10 +52,24 @@
     "error": {
       "cannot_connect": "Verbinding met Bergfex mislukt. Controleer je internetverbinding.",
       "no_areas_found": "Geen skigebieden gevonden voor het geselecteerde land. Mogelijk zijn er momenteel geen sneeuwberichte beschikbaar.",
-      "no_selection": "Selecteer een skigebied uit de lijst of geef een handmatig pad op."
+      "no_selection": "Selecteer een skigebied uit de lijst of geef een handmatig pad op.",
+      "invalid_path": "Dit adres verwijst niet naar een skigebied. Voer een gebiedspad in zoals \"/ischgl/schneebericht/\" of plak de volledige URL van de gebiedspagina.",
+      "invalid_webhook": "Dat is geen geldig webhook-adres. Gebruik een volledige http:// of https:// URL, of laat het veld leeg."
     },
     "abort": {
       "already_configured": "Dit skigebied is al geconfigureerd."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Instellingen",
+        "description": "Update-interval in minuten. Bergfex kan IP-adressen blokkeren die te vaak opvragen. De taal bepaalt ook welk Bergfex-domein wordt gebruikt; wijzigen herlaadt de integratie.",
+        "data": {
+          "update_interval": "Update-interval (minuten)",
+          "language": "Taal"
+        }
+      }
     }
   },
   "entity": {
@@ -113,17 +127,39 @@
       }
     },
     "image": {
-      "forecast_image_day_0": { "name": "Sneeuwverwachting dag 0" },
-      "forecast_image_day_1": { "name": "Sneeuwverwachting dag 1" },
-      "forecast_image_day_2": { "name": "Sneeuwverwachting dag 2" },
-      "forecast_image_day_3": { "name": "Sneeuwverwachting dag 3" },
-      "forecast_image_day_4": { "name": "Sneeuwverwachting dag 4" },
-      "forecast_image_day_5": { "name": "Sneeuwverwachting dag 5" },
-      "summary_image_48h": { "name": "Overzicht sneeuwverwachting 48h" },
-      "summary_image_72h": { "name": "Overzicht sneeuwverwachting 72h" },
-      "summary_image_96h": { "name": "Overzicht sneeuwverwachting 96h" },
-      "summary_image_120h": { "name": "Overzicht sneeuwverwachting 120h" },
-      "summary_image_144h": { "name": "Overzicht sneeuwverwachting 144h" }
+      "forecast_image_day_0": {
+        "name": "Sneeuwverwachting dag 0"
+      },
+      "forecast_image_day_1": {
+        "name": "Sneeuwverwachting dag 1"
+      },
+      "forecast_image_day_2": {
+        "name": "Sneeuwverwachting dag 2"
+      },
+      "forecast_image_day_3": {
+        "name": "Sneeuwverwachting dag 3"
+      },
+      "forecast_image_day_4": {
+        "name": "Sneeuwverwachting dag 4"
+      },
+      "forecast_image_day_5": {
+        "name": "Sneeuwverwachting dag 5"
+      },
+      "summary_image_48h": {
+        "name": "Overzicht sneeuwverwachting 48h"
+      },
+      "summary_image_72h": {
+        "name": "Overzicht sneeuwverwachting 72h"
+      },
+      "summary_image_96h": {
+        "name": "Overzicht sneeuwverwachting 96h"
+      },
+      "summary_image_120h": {
+        "name": "Overzicht sneeuwverwachting 120h"
+      },
+      "summary_image_144h": {
+        "name": "Overzicht sneeuwverwachting 144h"
+      }
     }
   },
   "selector": {
@@ -131,6 +167,23 @@
       "options": {
         "alpine": "Alpineskigebied",
         "cross_country": "Langlaufen"
+      }
+    }
+  },
+  "issues": {
+    "standalone_card_installed": {
+      "title": "Verwijder de losse Bergfex Card",
+      "description": "De Bergfex-kaart wordt nu met deze integratie meegeleverd. De aparte \"Bergfex Card\" is nog via HACS geïnstalleerd en laadt een tweede, conflicterende kopie. Open HACS, verwijder \"Bergfex Card\" en start Home Assistant opnieuw op."
+    },
+    "duplicate_resort_entry": {
+      "title": "Bergfex-skigebied \"{resort}\" dubbel ingesteld",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Dubbel item verwijderen",
+            "description": "Het skigebied \"{resort}\" ({path}) is meer dan één keer ingesteld. Beide items maken dezelfde entiteiten aan, dus slechts één ervan kan werken en de andere blijft kapot. Het item met ID {entry_id} - het item dat niet kan werken - verwijderen? Alleen dat item wordt verwijderd. Het andere behoudt zijn apparaten en entiteiten en neemt het gebied meteen over."
+          }
+        }
       }
     }
   }

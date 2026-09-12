@@ -1,0 +1,88 @@
+{
+  "editor": {
+    "groups": {
+      "core": "Configuration",
+      "display": "Affichage",
+      "ski_only": "Options station de ski",
+      "cross_country_only": "Options pour le ski de fond"
+    },
+    "title": "Titre (optionnel)",
+    "resorts": "Stations de ski",
+    "show_snow": "Afficher les info sur la neige",
+    "show_lifts_slopes": "Afficher statistiques remontées & pistes",
+    "show_conditions": "Afficher la section des conditions",
+    "conditions_default_open": "Section conditions développée par défaut",
+    "show_forecast": "Afficher les prévisions de neige",
+    "forecast_default_open": "Prévisions de neige développées par défaut",
+    "show_trend": "Afficher les tendances (24 h)",
+    "show_last_updated": "Afficher la dernière mise à jour",
+    "show_link": "Afficher le lien",
+    "hide_closed_resorts": "Masquer les stations fermées",
+    "hide_closed_resorts_helper": "Masque uniquement les stations situées entre la saison d'hiver et celle d'été. Les stations en exploitation estivale restent visibles, même si le ski y est impossible.",
+    "sort_by": "Trier par",
+    "sort_by_options": {
+      "mountain": "Neige (au sommet)",
+      "valley": "Neige (dans la vallée)",
+      "new": "Dernière chute de neige",
+      "lift": "Remontées ouvertes",
+      "classical": "Pistes classiques",
+      "skating": "Back-country",
+      "update": "Dernière mise à jour"
+    },
+    "show_trails": "Afficher les statistiques de pistes"
+  },
+  "card": {
+    "resort_not_found": "Station non trouvée : {resort}",
+    "lifts_open": "Remontées ouvertes",
+    "header": {
+      "snow_mountain": "Sommet",
+      "snow_valley": "Vallée",
+      "new_snow": "Dernière chute de neige",
+      "snow_condition": "État de la neige",
+      "slope_condition": "État des pistes",
+      "avalanche_warning": "Risque avalanche",
+      "last_snowfall": "Dernière chute de neige",
+      "slopes_info": "Pistes",
+      "slopes_info_km": "Pistes (km)",
+      "slopes_open_km": "Ouvertes",
+      "slopes_total": "Total",
+      "classical_trails": "Pistes classiques",
+      "skating_trails": "Pistes de skating",
+      "classical_condition": "État classique",
+      "skating_condition": "État backcountry",
+      "operation_status": "Statut",
+      "link_title": "Ouvrir la page bergfex de {resortName}"
+    },
+    "forecast": {
+      "daily": "Quotidien",
+      "summary": "Résumé",
+      "hour": "{hours} heure(s)",
+      "today": "Aujourd’hui",
+      "tomorrow": "Demain"
+    },
+    "accordion": {
+      "conditions": "Conditions",
+      "forecast": "Prévisions de neige"
+    },
+    "status": {
+      "open": "Ouvert",
+      "closed": "Fermé",
+      "unknown": "Inconnu",
+      "winter_season": "Saison hivernale",
+      "summer_season": "Saison estivale",
+      "season_from": "à partir du {date}",
+      "season_last_year": "l'an dernier : {date}"
+    },
+    "warnings": {
+      "not_found": "Station introuvable : {subject}",
+      "unavailable": "Aucune donnée n’est remontée pour {subject}.",
+      "wrong_domain": "{subject} est une entité {actual}, mais une entité {expected} est attendue.",
+      "not_numeric": "{subject} ne renvoie pas de nombre (la valeur est « {state} »)."
+    }
+  },
+  "common": {
+    "errors": {
+      "no_resorts": "Vous devez définir au moins une station de ski."
+    }
+  }
+}

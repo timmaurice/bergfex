@@ -52,7 +52,9 @@
     "error": {
       "cannot_connect": "Verbindung zu Bergfex fehlgeschlagen. Bitte überprüfen Sie Ihre Internetverbindung.",
       "no_areas_found": "Keine Skigebiete für das ausgewählte Land gefunden. Möglicherweise sind aktuell keine Schneeberichte verfügbar.",
-      "no_selection": "Bitte wählen Sie ein Skigebiet aus der Liste oder geben Sie einen manuellen Pfad an."
+      "no_selection": "Bitte wählen Sie ein Skigebiet aus der Liste oder geben Sie einen manuellen Pfad an.",
+      "invalid_path": "Diese Adresse benennt kein Skigebiet. Gib einen Gebietspfad wie \"/ischgl/schneebericht/\" ein oder füge die vollständige URL der Gebietsseite ein.",
+      "invalid_webhook": "Das ist keine gültige Webhook-Adresse. Gib eine vollständige http:// oder https:// URL an oder lass das Feld leer."
     },
     "abort": {
       "already_configured": "Dieses Skigebiet ist bereits konfiguriert."
@@ -61,10 +63,11 @@
   "options": {
     "step": {
       "init": {
-        "title": "Aktualisierungsintervall konfigurieren",
-        "description": "Legen Sie das Aktualisierungsintervall in Minuten fest. Bergfex blockiert möglicherweise IP-Adressen, die zu häufig abfragen.",
+        "title": "Einstellungen",
+        "description": "Aktualisierungsintervall in Minuten. Bergfex blockiert möglicherweise IP-Adressen, die zu häufig abfragen. Die Sprache bestimmt auch die verwendete Bergfex-Domain; eine Änderung lädt die Integration neu.",
         "data": {
-          "update_interval": "Aktualisierungsintervall (Minuten)"
+          "update_interval": "Aktualisierungsintervall (Minuten)",
+          "language": "Sprache"
         }
       }
     }
@@ -124,17 +127,39 @@
       }
     },
     "image": {
-      "forecast_image_day_0": { "name": "Schneeprognose Tag 0" },
-      "forecast_image_day_1": { "name": "Schneeprognose Tag 1" },
-      "forecast_image_day_2": { "name": "Schneeprognose Tag 2" },
-      "forecast_image_day_3": { "name": "Schneeprognose Tag 3" },
-      "forecast_image_day_4": { "name": "Schneeprognose Tag 4" },
-      "forecast_image_day_5": { "name": "Schneeprognose Tag 5" },
-      "summary_image_48h": { "name": "Schneeprognose Zusammenfassung 48h" },
-      "summary_image_72h": { "name": "Schneeprognose Zusammenfassung 72h" },
-      "summary_image_96h": { "name": "Schneeprognose Zusammenfassung 96h" },
-      "summary_image_120h": { "name": "Schneeprognose Zusammenfassung 120h" },
-      "summary_image_144h": { "name": "Schneeprognose Zusammenfassung 144h" }
+      "forecast_image_day_0": {
+        "name": "Schneeprognose Tag 0"
+      },
+      "forecast_image_day_1": {
+        "name": "Schneeprognose Tag 1"
+      },
+      "forecast_image_day_2": {
+        "name": "Schneeprognose Tag 2"
+      },
+      "forecast_image_day_3": {
+        "name": "Schneeprognose Tag 3"
+      },
+      "forecast_image_day_4": {
+        "name": "Schneeprognose Tag 4"
+      },
+      "forecast_image_day_5": {
+        "name": "Schneeprognose Tag 5"
+      },
+      "summary_image_48h": {
+        "name": "Schneeprognose Zusammenfassung 48h"
+      },
+      "summary_image_72h": {
+        "name": "Schneeprognose Zusammenfassung 72h"
+      },
+      "summary_image_96h": {
+        "name": "Schneeprognose Zusammenfassung 96h"
+      },
+      "summary_image_120h": {
+        "name": "Schneeprognose Zusammenfassung 120h"
+      },
+      "summary_image_144h": {
+        "name": "Schneeprognose Zusammenfassung 144h"
+      }
     }
   },
   "selector": {
@@ -142,6 +167,23 @@
       "options": {
         "alpine": "Skigebiet",
         "cross_country": "Langlaufen"
+      }
+    }
+  },
+  "issues": {
+    "standalone_card_installed": {
+      "title": "Eigenständige Bergfex Card entfernen",
+      "description": "Die Bergfex-Karte ist jetzt Teil dieser Integration. Die separate \"Bergfex Card\" ist weiterhin über HACS installiert und lädt eine zweite, konfliktbehaftete Kopie. Öffne HACS, deinstalliere \"Bergfex Card\" und starte Home Assistant neu."
+    },
+    "duplicate_resort_entry": {
+      "title": "Bergfex Skigebiet \"{resort}\" doppelt eingerichtet",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Doppelten Eintrag löschen",
+            "description": "Das Skigebiet \"{resort}\" ({path}) ist mehrfach eingerichtet. Beide Einträge erzeugen dieselben Entitäten, deshalb kann nur einer davon funktionieren, der andere bleibt defekt. Den Eintrag mit der ID {entry_id} - den defekten - löschen? Entfernt wird nur dieser Eintrag. Der andere behält seine Geräte und Entitäten und übernimmt das Gebiet sofort."
+          }
+        }
       }
     }
   }

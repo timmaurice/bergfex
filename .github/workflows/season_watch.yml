@@ -1,0 +1,111 @@
+name: Season Watch
+
+# The HTML fixtures were captured mid-winter and describe a page shape bergfex
+# does not serve in summer, so the suite can stay green while live parsing is
+# broken. This watches for the point at which refreshing them is worthwhile and
+# opens an issue then, so nobody has to remember to look.
+on:
+  schedule:
+    # Midday, so opening hours are satisfied when the status is evaluated.
+    # September through December only - outside that the answer is never in doubt.
+    - cron: "0 11 * 9-12 *"
+  workflow_dispatch:
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          # No Home Assistant here: this job installs requirements.txt only, so
+          # nothing pins a core and there is no resolution to drift. 3.14 is for
+          # parity with the test job - the scripts share the integration's parser,
+          # and running them on an interpreter the suite never exercises would let
+          # a 3.14-only break reach a scheduled, unwatched run.
+          python-version: "3.14"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Check the reference resorts
+        id: check
+        run: PYTHONPATH=. python scripts/check_season_start.py
+
+      - name: Raise an issue when skiing starts
+        if: steps.check.outputs.glacier_started == 'true' || steps.check.outputs.valley_started == 'true'
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const groups = [
+              {
+                key: 'glacier',
+                started: '${{ steps.check.outputs.glacier_started }}' === 'true',
+                resorts: '${{ steps.check.outputs.glacier_resorts }}',
+                title: 'Glacier skiing has started — first live check',
+                lead: 'is running prepared piste. Glacier operation depends on the first real snowfall, so this is the earliest the live pages carry a full winter snow report.',
+                tasks: [
+                  'Capture a fixture from a running glacier — the suite has no populated page from outside the main season',
+                  'Verify the card against real snow depths, lift and piste counts',
+                  'Sweep for dead `tw-` selectors, which the winter fixtures cannot reveal',
+                  'Check the per-language "no report" strings `_isNA` does not recognise',
+                ],
+              },
+              {
+                key: 'valley',
+                started: '${{ steps.check.outputs.valley_started }}' === 'true',
+                resorts: '${{ steps.check.outputs.valley_resorts }}',
+                title: 'Season has started — refresh the HTML fixtures',
+                lead: 'is running prepared piste, so the ordinary season has begun and the live pages match what most users see.',
+                tasks: [
+                  'Refresh all 27 fixtures, committed separately so parser drift stays reviewable',
+                  'Fix whatever the season markup broke',
+                  'Verify trend indicators against real 24 h history',
+                  'Verify snow sorting against real values rather than injected ones',
+                  'Full end-to-end in the docker instance with a running resort',
+                ],
+              },
+            ];
+
+            const open = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              per_page: 100,
+            });
+
+            for (const group of groups) {
+              if (!group.started) continue;
+
+              const marker = `<!-- season-watch:${group.key} -->`;
+              if (open.data.some((issue) => (issue.body ?? '').includes(marker))) {
+                core.info(`${group.key}: issue already open`);
+                continue;
+              }
+
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: group.title,
+                body: [
+                  marker,
+                  `**${group.resorts}** ${group.lead}`,
+                  '',
+                  'The fixtures in `tests/fixtures/` date from last winter. Until they are refreshed the',
+                  'test suite can stay green while live parsing is broken — which is how the dropped',
+                  'Tailwind `tw-` prefix went unnoticed for months.',
+                  '',
+                  ...group.tasks.map((task) => `- [ ] ${task}`),
+                  '',
+                  'Raised by `.github/workflows/season_watch.yml`.',
+                ].join('\n'),
+              });
+              core.info(`${group.key}: issue created`);
+            }

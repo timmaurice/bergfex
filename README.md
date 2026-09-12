@@ -7,9 +7,13 @@
 [![GH-code-size](https://img.shields.io/github/languages/code-size/timmaurice/bergfex.svg?style=flat-square)](https://github.com/timmaurice/bergfex)
 ![GitHub](https://img.shields.io/github/license/timmaurice/bergfex?style=flat-square)
 
-This custom integration for Home Assistant fetches snow reports and ski resort data directly from [Bergfex](https://www.bergfex.com). Since Bergfex does not provide a public API, this component scrapes the data from their website.
+This custom integration for Home Assistant fetches snow reports and ski resort data directly from [Bergfex](https://www.bergfex.com). Since Bergfex does not provide a public API, this component scrapes the data from their website. It includes a bundled Lovelace card for visualising resort conditions at a glance.
+
+<img src="https://raw.githubusercontent.com/timmaurice/bergfex/main/image.png" alt="Card Screenshot" />
 
 ## Features
+
+### Integration
 
 - **Multi-language Support**: Use Bergfex in your preferred language. Now supporting **18 languages** with full keyword parsing and translation for sensor data.
 - **Localized Setup**: The configuration flow is translated into **major languages** (German, English, French, Italian, Spanish, Dutch, Polish).
@@ -21,11 +25,22 @@ This custom integration for Home Assistant fetches snow reports and ski resort d
 - **Device per Ski Area**: Creates a dedicated device in Home Assistant for each monitored ski area.
 - **Detailed Sensors**: Provides comprehensive sensors for snow depths, lift status, slope conditions, and avalanche warnings.
 
+### Lovelace Card
+
+- Table-like layout for easy comparison between resorts.
+- Automatically detects resort type and shows appropriate information (snow/lifts/slopes for ski resorts, tracks/conditions for cross-country areas).
+- Show/hide resort details like snow depth, lifts, slopes, track lengths, and last update time.
+- Option to hide resorts that are currently closed.
+- Status badge color changes based on whether the resort is open or closed.
+- Optional 24h trend indicators (↗️/↘️) for snow depths, lift/slope counts, and track lengths.
+- Sort resorts by various criteria (snow depth, open lifts, track lengths, etc.).
+- Fully customizable through the visual editor.
+
 ## Installation
 
 ### HACS (Recommended)
 
-This card is available in the [Home Assistant Community Store (HACS)](https://hacs.xyz/).
+This integration is available in the [Home Assistant Community Store (HACS)](https://hacs.xyz/).
 
 <a href="https://my.home-assistant.io/redirect/hacs_repository/?owner=timmaurice&repository=bergfex&category=integration" target="_blank" rel="noreferrer noopener"><img src="https://my.home-assistant.io/badges/hacs_repository.svg" alt="Open your Home Assistant instance and open a repository inside the Home Assistant Community Store." /></a>
 
@@ -34,11 +49,43 @@ This card is available in the [Home Assistant Community Store (HACS)](https://ha
 
 1.  Using the tool of your choice, copy the `bergfex` folder from `custom_components` in this repository into your Home Assistant's `custom_components` directory.
 2.  Restart Home Assistant.
+
 </details>
 
-### Related lovelace card:
+The Bergfex card is bundled with this integration and registered automatically — no separate installation needed.
 
-https://github.com/timmaurice/lovelace-bergfex-card
+### Migrating from the standalone Bergfex Card
+
+Up to version 2.x the card lived in its own repository, [timmaurice/lovelace-bergfex-card](https://github.com/timmaurice/lovelace-bergfex-card). From 3.0.0 it ships with the integration, so that repository is no longer needed. If you have it installed:
+
+1.  Update the integration to 3.0.0 and restart Home Assistant.
+2.  Open **HACS** → **Frontend** → **Bergfex Card** → **Uninstall**.
+3.  Reload your browser with a cache-bypassing refresh (<kbd>Ctrl</kbd>/<kbd>Cmd</kbd> + <kbd>Shift</kbd> + <kbd>R</kbd>).
+
+**Your dashboard configuration does not change.** The card type is still `custom:bergfex-card` and every option keeps its meaning, so your existing YAML and any cards placed through the UI keep working.
+
+Two things happen on their own, so you do not need to touch them:
+
+- The stale Lovelace resource pointing at `/hacsfiles/lovelace-bergfex-card/bergfex-card.js` (or a hand-added `/local/bergfex-card.js`) is removed on startup.
+- A repair notice appears under **Settings** → **System** → **Repairs** reminding you to uninstall the HACS repository, because removing the resource does not uninstall the files.
+
+Until you complete step 2 both copies define the same `bergfex-card` element. Whichever loads second stays inactive and logs a warning to the browser console — the card keeps working, but you may be looking at the older version.
+
+<details>
+<summary>If your Lovelace runs in YAML mode</summary>
+
+Automatic resource registration only works in storage mode. In YAML mode the integration logs a warning and you add the resource yourself:
+
+```yaml
+lovelace:
+  resources:
+    - url: /bergfex_frontend/bergfex-card.js
+      type: module
+```
+
+Remove any earlier `lovelace-bergfex-card` entry at the same time.
+
+</details>
 
 ## Configuration
 
@@ -55,29 +102,101 @@ Configuration is done entirely through the Home Assistant UI.
 
 A new device will be created for the ski area, containing all the sensors listed below. You can repeat this process to add multiple ski areas.
 
+## Lovelace Card
+
+Add the card to your dashboard via the GUI editor, or YAML:
+
+```yaml
+type: custom:bergfex-card
+title: Ski Resorts & Cross-Country Areas
+hide_closed_resorts: true
+show_snow: true
+show_lifts_slopes: true
+show_trails: true
+show_conditions: true
+sort_by: mountain
+resorts:
+  - device: 2bf48bbf7b0c6a5d40ac7c0dfa2c4178 # Replace with your ski resort device ID
+    name: My Favorite Ski Resort
+  - device: abc123def456ghi789 # Replace with your cross-country area device ID
+    name: Local Cross-Country Trails
+```
+
+### Card Configuration
+
+| Name                      | Type                    | Default      | Description                                                                                                       |
+| ------------------------- | ----------------------- | ------------ | ----------------------------------------------------------------------------------------------------------------- |
+| `type`                    | string                  | **Required** | `custom:bergfex-card`                                                                                             |
+| `title`                   | string                  | `(none)`     | The title of the card.                                                                                            |
+| `resorts`                 | list (string or object) | **Required** | A list of device IDs. To set a custom name, use an object: `{ device: '...', name: '...' }`.                      |
+| `show_snow`               | boolean                 | `true`       | Show snow depth information (mountain, valley, new) for ski resorts.                                              |
+| `show_lifts_slopes`       | boolean                 | `true`       | Show lift and slope statistics for ski resorts.                                                                   |
+| `show_trails`             | boolean                 | `true`       | Show classical and skating track lengths for cross-country areas.                                                 |
+| `show_conditions`         | boolean                 | `true`       | Show conditions section (snow/slope/track conditions, avalanche warning, operation status).                       |
+| `conditions_default_open` | boolean                 | `false`      | Show the conditions section expanded rather than collapsed.                                                       |
+| `show_forecast`           | boolean                 | `false`      | Show snow forecast carousel with daily and summary views.                                                         |
+| `forecast_default_open`   | boolean                 | `false`      | Show the snow forecast expanded rather than collapsed.                                                            |
+| `show_last_updated`       | boolean                 | `true`       | Show the last updated timestamp.                                                                                  |
+| `show_trend`              | boolean                 | `false`      | Show 24h trend indicators for numeric values (Snow, Lifts, Slopes, Tracks).                                       |
+| `show_link`               | boolean                 | `true`       | Show a link to the Bergfex detail page for the resort.                                                            |
+| `hide_closed_resorts`     | boolean                 | `false`      | Hide resorts that are between seasons. Resorts in summer operation stay visible, since they are not closed.       |
+| `sort_by`                 | string                  | `(none)`     | Sort resorts by a specific value. Options: `mountain`, `valley`, `new`, `lift`, `classical`, `skating`, `update`. |
+
+### Resort Object Parameters
+
+| Name     | Type   | Required     | Description                                         |
+| -------- | ------ | ------------ | --------------------------------------------------- |
+| `device` | string | **Required** | The device ID of the Bergfex resort.                |
+| `name`   | string | `(none)`     | A custom name to overwrite the default resort name. |
+
+### Cross-country sensors
+
+The card recognises cross-country trail sensors and reads totals from the sensor attributes.
+
+- Preferred sensor names:
+  - `_classical_trails_open` — open classical trail length (km)
+  - `_skating_trails_open` — open skating trail length (km)
+- The card reads the `total` attribute on the open sensor (e.g., `attributes.total`).
+- Units: `km` is assumed; the card will display the `unit_of_measurement` attribute when available.
+
+### Card Localization
+
+The visual editor is available in the following languages: Danish, English, French, German, Polish.
+
+<details>
+<summary>Contributing Translations</summary>
+
+1.  Fork the repository on GitHub.
+2.  In `frontend/src/translation/`, copy `en.json` and rename it to your language code (e.g., `fr.json` for French).
+3.  Translate all the values in the new file.
+4.  Import the new file in `frontend/src/localize.ts` and add it to the `translations` array.
+5.  Submit a pull request with your changes.
+
+</details>
+
 ## Created Sensors
 
 For each configured ski area, the following sensors will be created:
 
-| Sensor                    | Description                                   | Attributes                                                                                    | Example Value         |
-| :------------------------ | :-------------------------------------------- | :-------------------------------------------------------------------------------------------- | :-------------------- |
-| **Status**                | The current operational status of the resort. | `link`, `price`, `season_start`, `season_end`, `operating_hours_start`, `operating_hours_end` | `Open`                |
-| **Snow Valley**           | Snow depth in the valley, in cm.              | `elevation`                                                                                   | `35`                  |
-| **Snow Mountain**         | Snow depth on the mountain, in cm.            | `elevation`                                                                                   | `110`                 |
-| **New Snow**              | Fresh snow in the last 24h, in cm.            |                                                                                               | `15`                  |
-| **Snow Condition**        | Condition of the snow.                        |                                                                                               | `Pulver`              |
-| **Last Snowfall**         | Date of the last snowfall.                    |                                                                                               | `28.11.`              |
-| **Avalanche Warning**     | Current avalanche warning level.              |                                                                                               | `2 - mäßig`           |
-| **Lifts Open**            | The number of currently open lifts.           | `total`                                                                                       | `14` (total: `26`)    |
-| **Slopes Open (km)**      | Kilometers of open slopes.                    | `total`                                                                                       | `45.5` (total: `60`)  |
-| **Slopes Open**           | Number of open slopes.                        | `open_pistes`, `total`                                                                        | `20` (total: `30`)    |
-| **Slope Condition**       | Condition of the slopes.                      |                                                                                               | `gut`                 |
-| **Classical Trails Open** | Kilometers of open classical trails.          | `total`                                                                                       | `30` (total: `50`)    |
-| **Classical Condition**   | Condition of the classical trails.            |                                                                                               | `gespurt (sehr gut)`  |
-| **Skating Trails Open**   | Kilometers of open skating trails.            | `total`                                                                                       | `25` (total: `40`)    |
-| **Skating Condition**     | Condition of the skating trails.              |                                                                                               | `gespurt (sehr gut)`  |
-| **Operation Status**      | The current operational status of the trails. |                                                                                               | `täglich`             |
-| **Last Update**           | The timestamp of the last data report.        |                                                                                               | `2024-10-28 21:54:24` |
+| Sensor                    | Description                                   | Attributes                                                                                                                                                                                                                                                                                              | Example Value         |
+| :------------------------ | :-------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :-------------------- |
+| **Status**                | The current operational status of the resort. | `link`, `price`, `operation_status`, `operating_hours_start`, `operating_hours_end`, `winter_season_start`, `winter_season_end`, `winter_operating_hours_start`, `winter_operating_hours_end`, `summer_season_start`, `summer_season_end`, `summer_operating_hours_start`, `summer_operating_hours_end` | `Open`                |
+| **Snow Valley**           | Snow depth in the valley, in cm.              | `elevation`                                                                                                                                                                                                                                                                                             | `35`                  |
+| **Snow Mountain**         | Snow depth on the mountain, in cm.            | `elevation`                                                                                                                                                                                                                                                                                             | `110`                 |
+| **New Snow**              | Fresh snow in the last 24h, in cm.            |                                                                                                                                                                                                                                                                                                         | `15`                  |
+| **Snow Condition**        | Condition of the snow.                        |                                                                                                                                                                                                                                                                                                         | `Pulver`              |
+| **Last Snowfall**         | Date of the last snowfall.                    |                                                                                                                                                                                                                                                                                                         | `28.11.`              |
+| **Avalanche Warning**     | Current avalanche warning level.              |                                                                                                                                                                                                                                                                                                         | `2 - mäßig`           |
+| **Lifts Open**            | The number of currently open lifts.           | `total`                                                                                                                                                                                                                                                                                                 | `14` (total: `26`)    |
+| **Slopes Open (km)**      | Kilometers of open slopes.                    | `total`                                                                                                                                                                                                                                                                                                 | `45.5` (total: `60`)  |
+| **Slopes Open**           | Number of open slopes.                        | `open_pistes`, `total`                                                                                                                                                                                                                                                                                  | `20` (total: `30`)    |
+| **Slope Condition**       | Condition of the slopes.                      |                                                                                                                                                                                                                                                                                                         | `gut`                 |
+| **Classical Trails Open** | Kilometers of open classical trails.          | `total`                                                                                                                                                                                                                                                                                                 | `30` (total: `50`)    |
+| **Classical Condition**   | Condition of the classical trails.            |                                                                                                                                                                                                                                                                                                         | `gespurt (sehr gut)`  |
+| **Skating Trails Open**   | Kilometers of open skating trails.            | `total`                                                                                                                                                                                                                                                                                                 | `25` (total: `40`)    |
+| **Skating Condition**     | Condition of the skating trails.              |                                                                                                                                                                                                                                                                                                         | `gespurt (sehr gut)`  |
+| **Operation Status**      | The current operational status of the trails. |                                                                                                                                                                                                                                                                                                         | `täglich`             |
+| **Last Update**           | The timestamp of the last data report.        |                                                                                                                                                                                                                                                                                                         | `2024-10-28 21:54:24` |
 
 ## Image Entities
 
@@ -90,15 +209,58 @@ In addition to sensors, the integration provides image entities for snow forecas
 
 > **Note on `open_pistes`**: The `open_pistes` attribute on the Slopes Open sensor is a list of objects containing detailed information about each open or partially open slope. Each object includes the `name`, `number`, `length`, and `difficulty` (with an `id` and localized `description`).
 
+## Development
+
+### Frontend (Lovelace Card)
+
+The Node version is pinned in `.nvmrc`; `nvm use` picks it up.
+
+```bash
+# Install dependencies
+npm ci
+
+# Build the card (output: custom_components/bergfex/bergfex-card.js)
+npm run build
+
+# Run tests
+npm run test
+
+# Lint and formatting
+npm run lint
+npm run check-format
+npm run format
+
+# Rebuild on change
+npm run watch
+
+# Build and verify the HACS archive, as the release workflow does
+npm run build:release
+node scripts/build-release-zip.mjs --dry-run   # inspect without writing
+```
+
+### Backend (Python integration)
+
+```bash
+PYTHONPATH=. pytest tests
+```
+
+### Local Docker Testing
+
+```bash
+docker compose up -d
+docker restart ha-bergfex-test   # after editing Python files
+docker compose down
+```
+
 ## Contributions
 
 Contributions are welcome! If you find a bug or have a feature request, please open an issue on the GitHub repository.
 
+For the repository layout, local setup and the conventions behind them, see [CONTRIBUTING.md](CONTRIBUTING.md).
+
 ---
 
 For further assistance or to [report issues](https://github.com/timmaurice/bergfex/issues), please visit the [GitHub repository](https://github.com/timmaurice/bergfex).
-
-![Star History Chart](https://api.star-history.com/svg?repos=timmaurice/bergfex&type=Date)
 
 ## ☕ Support My Work
 

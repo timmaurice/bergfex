@@ -52,7 +52,9 @@
     "error": {
       "cannot_connect": "Failed to connect to Bergfex. Please check your internet connection.",
       "no_areas_found": "Could not find any ski areas for the selected country. There might be no current snow reports available.",
-      "no_selection": "Please select a ski area from the list or provide a manual path."
+      "no_selection": "Please select a ski area from the list or provide a manual path.",
+      "invalid_path": "That address does not name a ski area. Enter a resort path such as \"/ischgl/schneebericht/\", or paste the full URL of the resort's page.",
+      "invalid_webhook": "That is not a valid webhook address. Use a full http:// or https:// URL, or leave the field empty."
     },
     "abort": {
       "already_configured": "This ski area is already configured."
@@ -61,10 +63,11 @@
   "options": {
     "step": {
       "init": {
-        "title": "Configure Update Interval",
-        "description": "Set the update interval in minutes. Bergfex might block IP addresses querying too frequently.",
+        "title": "Settings",
+        "description": "Update interval in minutes. Bergfex may block IP addresses that poll too often. The language also selects which Bergfex domain is used; changing it reloads the integration.",
         "data": {
-          "update_interval": "Update Interval (minutes)"
+          "update_interval": "Update interval (minutes)",
+          "language": "Language"
         }
       }
     }
@@ -124,17 +127,39 @@
       }
     },
     "image": {
-      "forecast_image_day_0": { "name": "Snow Forecast Day 0" },
-      "forecast_image_day_1": { "name": "Snow Forecast Day 1" },
-      "forecast_image_day_2": { "name": "Snow Forecast Day 2" },
-      "forecast_image_day_3": { "name": "Snow Forecast Day 3" },
-      "forecast_image_day_4": { "name": "Snow Forecast Day 4" },
-      "forecast_image_day_5": { "name": "Snow Forecast Day 5" },
-      "summary_image_48h": { "name": "Snow Forecast Summary 48h" },
-      "summary_image_72h": { "name": "Snow Forecast Summary 72h" },
-      "summary_image_96h": { "name": "Snow Forecast Summary 96h" },
-      "summary_image_120h": { "name": "Snow Forecast Summary 120h" },
-      "summary_image_144h": { "name": "Snow Forecast Summary 144h" }
+      "forecast_image_day_0": {
+        "name": "Snow Forecast Day 0"
+      },
+      "forecast_image_day_1": {
+        "name": "Snow Forecast Day 1"
+      },
+      "forecast_image_day_2": {
+        "name": "Snow Forecast Day 2"
+      },
+      "forecast_image_day_3": {
+        "name": "Snow Forecast Day 3"
+      },
+      "forecast_image_day_4": {
+        "name": "Snow Forecast Day 4"
+      },
+      "forecast_image_day_5": {
+        "name": "Snow Forecast Day 5"
+      },
+      "summary_image_48h": {
+        "name": "Snow Forecast Summary 48h"
+      },
+      "summary_image_72h": {
+        "name": "Snow Forecast Summary 72h"
+      },
+      "summary_image_96h": {
+        "name": "Snow Forecast Summary 96h"
+      },
+      "summary_image_120h": {
+        "name": "Snow Forecast Summary 120h"
+      },
+      "summary_image_144h": {
+        "name": "Snow Forecast Summary 144h"
+      }
     }
   },
   "selector": {
@@ -142,6 +167,23 @@
       "options": {
         "alpine": "Alpine ski resort",
         "cross_country": "Cross country skiing"
+      }
+    }
+  },
+  "issues": {
+    "standalone_card_installed": {
+      "title": "Remove the standalone Bergfex Card",
+      "description": "The Bergfex card now ships with this integration. The separate \"Bergfex Card\" is still installed via HACS and loads a second, conflicting copy. Open HACS, uninstall \"Bergfex Card\", then restart Home Assistant."
+    },
+    "duplicate_resort_entry": {
+      "title": "Bergfex resort \"{resort}\" configured twice",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Delete the duplicate entry",
+            "description": "The resort \"{resort}\" ({path}) is set up more than once. Both entries produce the same entities, so only one of them can work and the other one stays broken. Delete the entry with the ID {entry_id} - the one that cannot work? Only that entry is removed. The other entry keeps its devices and entities and takes the resort over right away."
+          }
+        }
       }
     }
   }

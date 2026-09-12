@@ -1,0 +1,88 @@
+{
+  "editor": {
+    "groups": {
+      "core": "Grundeinstellungen",
+      "display": "Anzeige",
+      "ski_only": "Optionen für Skigebiete",
+      "cross_country_only": "Optionen für Loipengebiete"
+    },
+    "title": "Titel (Optional)",
+    "resorts": "Skigebiete",
+    "show_snow": "Schneeinformationen anzeigen",
+    "show_lifts_slopes": "Lift- & Pistenstatistiken anzeigen",
+    "show_conditions": "Bedingungen anzeigen",
+    "conditions_default_open": "Bedingungen standardmäßig ausgeklappt",
+    "show_forecast": "Schneevorhersage anzeigen",
+    "forecast_default_open": "Schneevorhersage standardmäßig ausgeklappt",
+    "show_trend": "Trend-Indikatoren anzeigen (24h)",
+    "show_last_updated": "Zuletzt aktualisiert anzeigen",
+    "show_link": "Link-Symbol anzeigen",
+    "hide_closed_resorts": "Geschlossene Skigebiete ausblenden",
+    "hide_closed_resorts_helper": "Blendet nur Skigebiete aus, die zwischen Winter- und Sommersaison liegen. Gebiete im Sommerbetrieb bleiben sichtbar, auch wenn nicht Ski gefahren werden kann.",
+    "sort_by": "Sortieren nach",
+    "sort_by_options": {
+      "mountain": "Schnee (Berg)",
+      "valley": "Schnee (Tal)",
+      "new": "Neuschnee",
+      "lift": "Offene Lifte",
+      "classical": "Klassische Loipen",
+      "skating": "Skating-Loipen",
+      "update": "Letzte Aktualisierung"
+    },
+    "show_trails": "Loipenstatistiken anzeigen"
+  },
+  "card": {
+    "resort_not_found": "Skigebiet nicht gefunden: {resort}",
+    "lifts_open": "Lifte",
+    "header": {
+      "snow_mountain": "Berg",
+      "snow_valley": "Tal",
+      "new_snow": "Neu",
+      "snow_condition": "Schneezustand",
+      "slope_condition": "Pistenzustand",
+      "avalanche_warning": "Lawinenwarnstufe",
+      "last_snowfall": "Letzter Schneefall",
+      "slopes_info": "Pisten",
+      "slopes_info_km": "Pisten (km)",
+      "slopes_open_km": "Offen",
+      "slopes_total": "Gesamt",
+      "classical_trails": "Klassische Loipen",
+      "skating_trails": "Skating-Loipen",
+      "classical_condition": "Klassischer Zustand",
+      "skating_condition": "Skating-Zustand",
+      "operation_status": "Betriebsstatus",
+      "link_title": "{resortName} Detailseite auf bergfex öffnen"
+    },
+    "forecast": {
+      "daily": "Täglich",
+      "summary": "Zusammenfassung",
+      "hour": "{hours} Stunden",
+      "today": "Heute",
+      "tomorrow": "Morgen"
+    },
+    "accordion": {
+      "conditions": "Bedingungen",
+      "forecast": "Schneevorhersage"
+    },
+    "status": {
+      "open": "Offen",
+      "closed": "Geschlossen",
+      "unknown": "Unbekannt",
+      "winter_season": "Wintersaison",
+      "summer_season": "Sommersaison",
+      "season_from": "ab {date}",
+      "season_last_year": "letztes Jahr: {date}"
+    },
+    "warnings": {
+      "not_found": "Skigebiet nicht gefunden: {subject}",
+      "unavailable": "Für {subject} werden keine Daten gemeldet.",
+      "wrong_domain": "{subject} ist eine {actual}-Entität, benötigt wird eine {expected}.",
+      "not_numeric": "{subject} meldet keine Zahl (der Wert ist „{state}“)."
+    }
+  },
+  "common": {
+    "errors": {
+      "no_resorts": "Sie müssen mindestens ein Skigebiet definieren."
+    }
+  }
+}

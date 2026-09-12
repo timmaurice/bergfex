@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "useDefineForClassFields": false,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "outDir": "custom_components/bergfex",
+    "declaration": false,
+    "sourceMap": true,
+    "lib": ["ES2022", "DOM"],
+    "types": ["node", "vitest/globals"]
+  },
+  "include": ["frontend/src/**/*.ts", "frontend/test/**/*.ts", "vitest.config.ts", "frontend/src/declarations.d.ts"],
+  "exclude": ["node_modules", "custom_components/bergfex/bergfex-card.js"]
+}

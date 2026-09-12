@@ -14,7 +14,12 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v7
         with:
-          python-version: "3.12"
+          # No Home Assistant here: this job installs requirements.txt only, so
+          # nothing pins a core and there is no resolution to drift. 3.14 is for
+          # parity with the test job - the scripts share the integration's parser,
+          # and running them on an interpreter the suite never exercises would let
+          # a 3.14-only break reach a scheduled, unwatched run.
+          python-version: "3.14"
 
       - name: Install dependencies
         run: |
@@ -22,6 +27,8 @@ jobs:
           pip install -r requirements.txt
           pip install aiohttp
 
+      # Fails on a keyword mismatch, on missing year-round structure, and on a
+      # missing snow report during the season. Off-season it reports the snow
+      # report as unverifiable without failing - see scripts/check_live_site.py.
       - name: Run Live Site Validation
-        run: |
-          python scripts/check_live_site.py
+        run: PYTHONPATH=. python scripts/check_live_site.py

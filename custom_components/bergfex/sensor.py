@@ -33,7 +33,9 @@ from .const import (
     TYPE_ALPINE,
     TYPE_CROSS_COUNTRY,
 )
+from .config_flow import entry_area_name
 from .parser import parse_overview_data, parse_resort_page
+from .unique_id import build_unique_id, coordinator_key
 
 
 @dataclass
@@ -196,7 +198,7 @@ async def async_setup_entry(
 ) -> None:
     """Set up the Bergfex sensor entry."""
     # Get the coordinator stored in hass.data by the integration setup
-    resort_coordinator_name = f"bergfex_{entry.data.get('name')}"
+    resort_coordinator_name = coordinator_key(entry.data[CONF_SKI_AREA])
     coordinator = hass.data[DOMAIN][COORDINATORS].get(resort_coordinator_name)
     if coordinator is None:
         _LOGGER.error("Coordinator not found for %s", resort_coordinator_name)
@@ -238,22 +240,26 @@ class BergfexSensor(SensorEntity):
         self.coordinator = coordinator
         self.entity_description = description
         self._resort_type = entry.data.get(CONF_TYPE, TYPE_ALPINE)
-        self._initial_area_name = entry.data["name"]  # Store initial name as fallback
+        # Store initial name as fallback
+        self._initial_area_name = entry_area_name(entry)
         self._area_name = self._initial_area_name  # Current name, can be updated
         self._area_path = entry.data[CONF_SKI_AREA]
         self._domain = entry.data.get(CONF_DOMAIN, BASE_URL)
         self._config_url = urljoin(self._domain, self._area_path)
 
-        # Use slugified name for a stable prefix that matches typical HA defaults
-        # This helps in "reusing" IDs that were automatically generated from the name
-        resort_prefix = slugify(self._initial_area_name)
+        # Keyed on the resort path, which is unique per entry. The display name
+        # is not: two resorts that slugify the same used to produce the same
+        # unique ids, and Home Assistant then dropped the second resort's
+        # entities. Existing installs are carried over by the registry
+        # migration in __init__.py.
+        self._attr_unique_id = build_unique_id(self._area_path, description.key)
 
-        # unique_id should be stable and English-keyed
-        # We use the resort_prefix to stay compatible with earlier registry entries if possible
-        self._attr_unique_id = f"bergfex_{resort_prefix}_{description.key}"
-
-        # Explicitly set entity_id to the desired English format
-        self.entity_id = f"sensor.{resort_prefix}_{description.key}"
+        # The entity_id stays keyed on the name on purpose. It is what users
+        # have in their automations and dashboards, and the registry hands a
+        # migrated entity its recorded entity_id back regardless of what is
+        # suggested here - so this only ever names entities on a fresh install,
+        # where changing the scheme would buy nothing and surprise everyone.
+        self.entity_id = f"sensor.{slugify(self._initial_area_name)}_{description.key}"
 
         # suggested_object_id provides a hint for new entity creation
         self._attr_suggested_object_id = description.key
@@ -337,10 +343,21 @@ class BergfexSensor(SensorEntity):
                 area_data = self.coordinator.data[self._area_path]
                 if "price" in area_data:
                     attrs["price"] = area_data["price"]
-                if "season_start" in area_data:
-                    attrs["season_start"] = area_data["season_start"]
-                if "season_end" in area_data:
-                    attrs["season_end"] = area_data["season_end"]
+                # Winter and summer are kept apart on purpose. A single "season"
+                # field followed whichever period bergfex was showing, so in
+                # August a ski resort looked like it was in season.
+                for key in (
+                    "winter_season_start",
+                    "winter_season_end",
+                    "winter_operating_hours_start",
+                    "winter_operating_hours_end",
+                    "summer_season_start",
+                    "summer_season_end",
+                    "summer_operating_hours_start",
+                    "summer_operating_hours_end",
+                ):
+                    if key in area_data:
+                        attrs[key] = area_data[key]
                 if "operation_status" in area_data:
                     attrs["operation_status"] = area_data["operation_status"]
                 if "operating_hours_start" in area_data:

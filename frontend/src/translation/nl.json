@@ -1,0 +1,88 @@
+{
+  "editor": {
+    "groups": {
+      "core": "Basisconfiguratie",
+      "display": "Weergave",
+      "ski_only": "Opties voor skigebieden",
+      "cross_country_only": "Opties voor langlaufen"
+    },
+    "title": "Titel (optioneel)",
+    "resorts": "Skigebieden",
+    "show_snow": "Sneeuwinformatie tonen",
+    "show_lifts_slopes": "Statistieken van liften en pistes tonen",
+    "show_conditions": "Sectie met omstandigheden tonen",
+    "conditions_default_open": "Sectie met omstandigheden standaard uitgeklapt",
+    "show_forecast": "Sneeuwverwachting tonen",
+    "forecast_default_open": "Sneeuwverwachting standaard uitgeklapt",
+    "show_trend": "Trendindicatoren tonen (24 uur)",
+    "show_last_updated": "Laatste update tonen",
+    "show_link": "Linkpictogram tonen",
+    "hide_closed_resorts": "Gesloten skigebieden verbergen",
+    "hide_closed_resorts_helper": "Verbergt alleen skigebieden tussen het winter- en het zomerseizoen. Skigebieden in zomerbedrijf blijven zichtbaar, ook al kun je er niet skiën.",
+    "sort_by": "Sorteren op",
+    "sort_by_options": {
+      "mountain": "Sneeuw (berg)",
+      "valley": "Sneeuw (dal)",
+      "new": "Verse sneeuw",
+      "lift": "Open liften",
+      "classical": "Klassieke loipes",
+      "skating": "Skatingloipes",
+      "update": "Laatste update"
+    },
+    "show_trails": "Loipestatistieken tonen"
+  },
+  "card": {
+    "resort_not_found": "Skigebied niet gevonden: {resort}",
+    "lifts_open": "Liften",
+    "header": {
+      "snow_mountain": "Berg",
+      "snow_valley": "Dal",
+      "new_snow": "Vers",
+      "snow_condition": "Sneeuwconditie",
+      "slope_condition": "Pisteconditie",
+      "avalanche_warning": "Lawinegevaar",
+      "last_snowfall": "Laatste sneeuwval",
+      "slopes_info": "Pistes",
+      "slopes_info_km": "Pistes (km)",
+      "slopes_open_km": "Open",
+      "slopes_total": "Totaal",
+      "classical_trails": "Klassieke loipes",
+      "skating_trails": "Skatingloipes",
+      "classical_condition": "Conditie klassiek",
+      "skating_condition": "Conditie skating",
+      "operation_status": "Bedrijfsstatus",
+      "link_title": "Open de pagina van {resortName} op bergfex"
+    },
+    "forecast": {
+      "daily": "Dagelijks",
+      "summary": "Samenvatting",
+      "hour": "{hours} uur",
+      "today": "Vandaag",
+      "tomorrow": "Morgen"
+    },
+    "accordion": {
+      "conditions": "Omstandigheden",
+      "forecast": "Sneeuwverwachting"
+    },
+    "status": {
+      "open": "Open",
+      "closed": "Gesloten",
+      "unknown": "Onbekend",
+      "winter_season": "Winterseizoen",
+      "summer_season": "Zomerseizoen",
+      "season_from": "vanaf {date}",
+      "season_last_year": "vorig jaar: {date}"
+    },
+    "warnings": {
+      "not_found": "Skigebied niet gevonden: {subject}",
+      "unavailable": "Er worden geen gegevens gemeld voor {subject}.",
+      "wrong_domain": "{subject} is een {actual}-entiteit, maar er is een {expected} nodig.",
+      "not_numeric": "{subject} meldt geen getal (de waarde is \"{state}\")."
+    }
+  },
+  "common": {
+    "errors": {
+      "no_resorts": "Je moet minstens één skigebied opgeven."
+    }
+  }
+}

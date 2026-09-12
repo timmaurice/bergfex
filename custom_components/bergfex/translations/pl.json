@@ -52,10 +52,24 @@
     "error": {
       "cannot_connect": "Nie można się połączyć ze stroną Bergfex. Sprawdź swoje połączenie internetowe.",
       "no_areas_found": "Nie można znaleźć żadnych ośrodków narciarskich dla wybranego kraju. Być może obecnie nie są dostępne żadne raporty śniegowe.",
-      "no_selection": "Wybierz ośrodek narciarski z listy lub podaj ręcznie ścieżkę URL."
+      "no_selection": "Wybierz ośrodek narciarski z listy lub podaj ręcznie ścieżkę URL.",
+      "invalid_path": "Ten adres nie wskazuje żadnego ośrodka narciarskiego. Podaj ścieżkę ośrodka, na przykład „/ischgl/schneebericht/”, albo wklej pełny adres URL strony ośrodka.",
+      "invalid_webhook": "To nie jest prawidłowy adres webhooka. Podaj pełny adres http:// lub https:// albo zostaw pole puste."
     },
     "abort": {
       "already_configured": "Ten ośrodek narciarski jest już skonfigurowany."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Ustawienia",
+        "description": "Interwał aktualizacji w minutach. Bergfex może blokować adresy IP odpytujące zbyt często. Język określa również używaną domenę Bergfex; zmiana przeładowuje integrację.",
+        "data": {
+          "update_interval": "Interwał aktualizacji (minuty)",
+          "language": "Język"
+        }
+      }
     }
   },
   "entity": {
@@ -113,17 +127,39 @@
       }
     },
     "image": {
-      "forecast_image_day_0": { "name": "Prognoza śniegu dzień 0" },
-      "forecast_image_day_1": { "name": "Prognoza śniegu dzień 1" },
-      "forecast_image_day_2": { "name": "Prognoza śniegu dzień 2" },
-      "forecast_image_day_3": { "name": "Prognoza śniegu dzień 3" },
-      "forecast_image_day_4": { "name": "Prognoza śniegu dzień 4" },
-      "forecast_image_day_5": { "name": "Prognoza śniegu dzień 5" },
-      "summary_image_48h": { "name": "Podsumowanie prognozy śniegu 48h" },
-      "summary_image_72h": { "name": "Podsumowanie prognozy śniegu 72h" },
-      "summary_image_96h": { "name": "Podsumowanie prognozy śniegu 96h" },
-      "summary_image_120h": { "name": "Podsumowanie prognozy śniegu 120h" },
-      "summary_image_144h": { "name": "Podsumowanie prognozy śniegu 144h" }
+      "forecast_image_day_0": {
+        "name": "Prognoza śniegu dzień 0"
+      },
+      "forecast_image_day_1": {
+        "name": "Prognoza śniegu dzień 1"
+      },
+      "forecast_image_day_2": {
+        "name": "Prognoza śniegu dzień 2"
+      },
+      "forecast_image_day_3": {
+        "name": "Prognoza śniegu dzień 3"
+      },
+      "forecast_image_day_4": {
+        "name": "Prognoza śniegu dzień 4"
+      },
+      "forecast_image_day_5": {
+        "name": "Prognoza śniegu dzień 5"
+      },
+      "summary_image_48h": {
+        "name": "Podsumowanie prognozy śniegu 48h"
+      },
+      "summary_image_72h": {
+        "name": "Podsumowanie prognozy śniegu 72h"
+      },
+      "summary_image_96h": {
+        "name": "Podsumowanie prognozy śniegu 96h"
+      },
+      "summary_image_120h": {
+        "name": "Podsumowanie prognozy śniegu 120h"
+      },
+      "summary_image_144h": {
+        "name": "Podsumowanie prognozy śniegu 144h"
+      }
     }
   },
   "selector": {
@@ -131,6 +167,23 @@
       "options": {
         "alpine": "Ośrodek narciarstwa alpejskiego",
         "cross_country": "Ośrodek narciarstwa biegowego"
+      }
+    }
+  },
+  "issues": {
+    "standalone_card_installed": {
+      "title": "Usuń samodzielną kartę Bergfex Card",
+      "description": "Karta Bergfex jest teraz częścią tej integracji. Osobna „Bergfex Card” jest nadal zainstalowana przez HACS i ładuje drugą, konfliktową kopię. Otwórz HACS, odinstaluj „Bergfex Card”, a następnie uruchom ponownie Home Assistant."
+    },
+    "duplicate_resort_entry": {
+      "title": "Ośrodek Bergfex „{resort}” skonfigurowany dwukrotnie",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Usuń zduplikowany wpis",
+            "description": "Ośrodek „{resort}” ({path}) jest skonfigurowany więcej niż raz. Oba wpisy tworzą te same encje, więc tylko jeden z nich może działać, a drugi pozostaje uszkodzony. Usunąć wpis o identyfikatorze {entry_id} - ten, który nie może działać? Usunięty zostanie tylko ten wpis. Drugi zachowa swoje urządzenia i encje i od razu przejmie ośrodek."
+          }
+        }
       }
     }
   }

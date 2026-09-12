@@ -52,10 +52,24 @@
     "error": {
       "cannot_connect": "Error al conectar con Bergfex. Por favor, compruebe su conexión a Internet.",
       "no_areas_found": "No se han encontrado estaciones de esquí para el país seleccionado. Es posible que no haya informes de nieve disponibles en este momento.",
-      "no_selection": "Por favor, seleccione una estación de esquí de la lista o proporcione una ruta manual."
+      "no_selection": "Por favor, seleccione una estación de esquí de la lista o proporcione una ruta manual.",
+      "invalid_path": "Esa dirección no indica ninguna estación de esquí. Introduce una ruta como \"/ischgl/schneebericht/\" o pega la URL completa de la página de la estación.",
+      "invalid_webhook": "Esa no es una dirección de webhook válida. Usa una URL http:// o https:// completa, o deja el campo vacío."
     },
     "abort": {
       "already_configured": "Esta estación de esquí ya está configurada."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Ajustes",
+        "description": "Intervalo de actualización en minutos. Bergfex puede bloquear direcciones IP que consultan con demasiada frecuencia. El idioma también determina el dominio de Bergfex utilizado; cambiarlo recarga la integración.",
+        "data": {
+          "update_interval": "Intervalo de actualización (minutos)",
+          "language": "Idioma"
+        }
+      }
     }
   },
   "entity": {
@@ -113,17 +127,39 @@
       }
     },
     "image": {
-      "forecast_image_day_0": { "name": "Pronóstico de nieve día 0" },
-      "forecast_image_day_1": { "name": "Pronóstico de nieve día 1" },
-      "forecast_image_day_2": { "name": "Pronóstico de nieve día 2" },
-      "forecast_image_day_3": { "name": "Pronóstico de nieve día 3" },
-      "forecast_image_day_4": { "name": "Pronóstico de nieve día 4" },
-      "forecast_image_day_5": { "name": "Pronóstico de nieve día 5" },
-      "summary_image_48h": { "name": "Resumen del pronóstico de nieve 48h" },
-      "summary_image_72h": { "name": "Resumen del pronóstico de nieve 72h" },
-      "summary_image_96h": { "name": "Resumen del pronóstico de nieve 96h" },
-      "summary_image_120h": { "name": "Resumen del pronóstico de nieve 120h" },
-      "summary_image_144h": { "name": "Resumen del pronóstico de nieve 144h" }
+      "forecast_image_day_0": {
+        "name": "Pronóstico de nieve día 0"
+      },
+      "forecast_image_day_1": {
+        "name": "Pronóstico de nieve día 1"
+      },
+      "forecast_image_day_2": {
+        "name": "Pronóstico de nieve día 2"
+      },
+      "forecast_image_day_3": {
+        "name": "Pronóstico de nieve día 3"
+      },
+      "forecast_image_day_4": {
+        "name": "Pronóstico de nieve día 4"
+      },
+      "forecast_image_day_5": {
+        "name": "Pronóstico de nieve día 5"
+      },
+      "summary_image_48h": {
+        "name": "Resumen del pronóstico de nieve 48h"
+      },
+      "summary_image_72h": {
+        "name": "Resumen del pronóstico de nieve 72h"
+      },
+      "summary_image_96h": {
+        "name": "Resumen del pronóstico de nieve 96h"
+      },
+      "summary_image_120h": {
+        "name": "Resumen del pronóstico de nieve 120h"
+      },
+      "summary_image_144h": {
+        "name": "Resumen del pronóstico de nieve 144h"
+      }
     }
   },
   "selector": {
@@ -131,6 +167,23 @@
       "options": {
         "alpine": "Estación de esquí alpino",
         "cross_country": "Esquí de fondo"
+      }
+    }
+  },
+  "issues": {
+    "standalone_card_installed": {
+      "title": "Eliminar la Bergfex Card independiente",
+      "description": "La tarjeta Bergfex ahora se incluye con esta integración. La \"Bergfex Card\" independiente sigue instalada mediante HACS y carga una segunda copia en conflicto. Abre HACS, desinstala \"Bergfex Card\" y reinicia Home Assistant."
+    },
+    "duplicate_resort_entry": {
+      "title": "Estación de Bergfex \"{resort}\" configurada dos veces",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Eliminar la entrada duplicada",
+            "description": "La estación \"{resort}\" ({path}) está configurada más de una vez. Ambas entradas generan las mismas entidades, por lo que solo una puede funcionar y la otra queda rota. ¿Eliminar la entrada con el ID {entry_id}, la que no puede funcionar? Solo se elimina esa entrada. La otra conserva sus dispositivos y entidades y asume la estación de inmediato."
+          }
+        }
       }
     }
   }
