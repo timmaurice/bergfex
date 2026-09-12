@@ -187,20 +187,43 @@ reports today. The Hintertux operator confirms it: 3 lifts, 0 km.
       is still open (see below). Exposed a second bug on the way: the summary sort
       read `/summary_(\d+)h/`, which never matches `summary_image_48h`, so every
       id scored 0 and the sort was a no-op.
-- [ ] **Decide what to do about orphaned registry rows.** Deleting registry
-      entries is destructive and the user may have renamed or referenced them, so
-      the card-side fix above is deliberately the non-destructive half. The options
-      are: leave them (Home Assistant already offers per-entity removal), raise a
-      repair issue listing them, or delete them on setup. Needs a decision, not a
-      default.
+- [x] **Orphaned registry rows: a repair issue, not a silent delete.** Deleting
+      registry entries is destructive - the rows carry the user's renames, their
+      area assignments and their recorder history - so setup raises a repair that
+      names them and counts them, and removes nothing until the user confirms the
+      fix flow. A row counts as a leftover when its unique id does not start with
+      the current path-based prefix, which is the one scheme the integration can
+      still produce; the check is per entry, so a neighbouring resort's rows are
+      never in scope. The issue clears itself once the rows are gone, however they
+      went, and is persistent so a restart cannot make it look resolved. The
+      card-side fix stays as it is: doing nothing remains a valid answer.
+
+- [x] **Devices stuck on their URL slug.** Five of the ten test devices headed
+      themselves `achensee`, `airolo`, `les-saisies`, `feldberg`,
+      `drei-zinnen-dolomiten`. Not the parser - it resolves every one of them
+      correctly today. `device_info` is read once, when the first entity
+      registers, and at that moment the only name available is the one the config
+      flow stored, which for an entry created while the Tailwind `tw-` breakage
+      was live is the slug. The entities fix themselves on every coordinator
+      update; the device never did. Setup now renames the device once the parser
+      has a `resort_name`. `entry.data["name"]` is deliberately left alone -
+      `legacy_unique_id_prefixes()` derives the migration prefixes from it, so
+      rewriting it would strand un-migrated entities. A device the user renamed
+      keeps their name, since `name_by_user` is what Home Assistant displays.
 - [ ] Fix whatever else the season's markup broke.
-- [ ] **Close the hole that hid both of the above.** `check_live_site.py` matches
+- [x] **Close the hole that hid both of the above.** `check_live_site.py` matched
       keywords as a substring anywhere in a list of elements, while the parser
-      matches a `<dt>` exactly or by prefix. The looser test passes on markup the
+      matches a `<dt>` exactly or by prefix. The looser test passed on markup the
       parser cannot read — which is exactly how `operation` stayed broken in
-      fourteen languages while the daily canary reported success. It also computes
-      "shifts" and then neither prints nor fails on them. Check with the parser's
-      own matcher, or better, assert on the fields `parse_resort_page` returns.
+      fourteen languages while the daily canary reported success. It now runs
+      `parse_resort_page` itself and asserts on the fields it returns, using the
+      German page of the same resort as the reference, so the check is
+      seasonality-proof by construction: a block bergfex drops in summer is
+      absent from the reference too and nothing is demanded of the other
+      languages. Two new finding kinds, `field_missing` and `unnormalised`, fail
+      the run outright. Proven both ways — exit 1 with "14 unparsed fields, 25
+      unnormalised phrases" against the pre-fix code, exit 0 clean against the
+      fixed one.
 - [ ] Verify what only real data can show: trend indicators against genuine 24 h
       history, and snow sorting against real values rather than injected ones.
 - [ ] Full end-to-end in the `ha-bergfex-test` docker instance with a resort that
