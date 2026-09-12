@@ -15,17 +15,19 @@ MIN_UPDATE_INTERVAL = 15
 MAX_UPDATE_INTERVAL = 1440
 
 
-# Dictionary of countries and their corresponding snow report URL paths
+# Dictionary of countries and their corresponding snow report URL paths.
+# /schneebericht/, not the older /schneewerte/: bergfex serves that one only as
+# a redirect, and 404s it for paths it no longer recognises.
 COUNTRIES = {
-    "Österreich": "/oesterreich/schneewerte/",
-    "Deutschland": "/deutschland/schneewerte/",
-    "Schweiz": "/schweiz/schneewerte/",
-    "Italien": "/italien/schneewerte/",
-    "Frankreich": "/frankreich/schneewerte/",
-    "Slowenien": "/slovenia/schneewerte/",
-    "Tschechien": "/czechia/schneewerte/",
-    "Polen": "/polska/schneewerte/",
-    "Slowakei": "/slovakia/schneewerte/",
+    "Österreich": "/oesterreich/schneebericht/",
+    "Deutschland": "/deutschland/schneebericht/",
+    "Schweiz": "/schweiz/schneebericht/",
+    "Italien": "/italien/schneebericht/",
+    "Frankreich": "/frankreich/schneebericht/",
+    "Slowenien": "/slovenia/schneebericht/",
+    "Tschechien": "/czechia/schneebericht/",
+    "Polen": "/polska/schneebericht/",
+    "Slowakei": "/slovakia/schneebericht/",
 }
 
 COUNTRIES_CROSS_COUNTRY = {

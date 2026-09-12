@@ -84,7 +84,7 @@ async def test_async_update_data_resort_fallback(
 
     class MockSession:
         def get(self, url, *args, **kwargs):
-            if "schneebericht" in url or "forecast" in url or "schneewerte" in url:
+            if "schneebericht" in url or "forecast" in url:
                 return MockResponse(subpage_html)
             return MockResponse(main_page_html)
 
@@ -186,7 +186,7 @@ async def test_async_update_data_resort_fallback_active_season(
 
     class MockSession:
         def get(self, url, *args, **kwargs):
-            if "schneebericht" in url or "forecast" in url or "schneewerte" in url:
+            if "schneebericht" in url or "forecast" in url:
                 return MockResponse(subpage_html)
             return MockResponse(main_page_html)
 

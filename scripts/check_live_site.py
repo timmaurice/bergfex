@@ -209,7 +209,7 @@ async def build_baseline(session):
             "overview",
             {
                 "name": "Overview AT",
-                "path": "/oesterreich/schneewerte/",
+                "path": "/oesterreich/schneebericht/",
             },
         )
     )
