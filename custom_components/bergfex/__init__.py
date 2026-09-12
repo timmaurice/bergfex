@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import time
+from pathlib import Path
 from typing import Any
 from datetime import timedelta, datetime
 from urllib.parse import urljoin, urlparse
@@ -157,6 +158,58 @@ async def _async_reconcile_card_resource(resources, new_url: str) -> list[str]:
     return [item.get("url", "") for item in stale_resources]
 
 
+def _standalone_card_files(config_dir: str) -> list[str]:
+    """Return the standalone card's HACS files that are still on disk.
+
+    HACS unpacks a frontend plugin into www/community/<repository>/, and those
+    files outlive the Lovelace resource that pointed at them - removing the
+    resource is not uninstalling the repository, which is the whole reason the
+    repair exists. Matched on the filename rather than the directory, because
+    the repository has been renamed once and both spellings are in the wild.
+    """
+    community = Path(config_dir) / "www" / "community"
+    try:
+        return sorted(str(path) for path in community.glob(f"*/{CARD_FILENAME}"))
+    except OSError:
+        # An unreadable or missing www/ is not evidence of an installation.
+        return []
+
+
+async def _async_report_standalone_card(hass: HomeAssistant) -> None:
+    """Raise the "uninstall the HACS card" repair for exactly as long as it is true.
+
+    This used to be raised on the single run that removed the stale Lovelace
+    resource, and never re-evaluated. Persistent, so it survived a restart - and
+    since no code path deleted it, a user who did precisely what it asked kept
+    the warning for good. Asking the filesystem on every start means the repair
+    tracks the thing it actually describes, and clears itself the moment HACS
+    stops shipping a second copy.
+    """
+    leftovers = await hass.async_add_executor_job(
+        _standalone_card_files, hass.config.config_dir
+    )
+
+    if not leftovers:
+        ir.async_delete_issue(hass, DOMAIN, LEGACY_CARD_ISSUE_ID)
+        return
+
+    _LOGGER.debug("Standalone card still installed by HACS: %s", ", ".join(leftovers))
+    ir.async_create_issue(
+        hass,
+        DOMAIN,
+        LEGACY_CARD_ISSUE_ID,
+        is_fixable=False,
+        # Re-raised every start for as long as the files are there, so it does
+        # not need to survive a restart on its own - but a non-persistent issue
+        # comes back inactive, and this one is raised during setup, before the
+        # user is looking. Persistent keeps it visible; the delete above is what
+        # now takes it away.
+        is_persistent=True,
+        severity=ir.IssueSeverity.WARNING,
+        translation_key=LEGACY_CARD_ISSUE_ID,
+    )
+
+
 async def _async_forecast_images(
     hass: HomeAssistant, session, forecast_url: str, page: int
 ) -> dict[str, str] | None:
@@ -210,6 +263,12 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     new_url = f"{CARD_URL_BASE}/{CARD_FILENAME}?v={version}"
 
     async def _async_register_lovelace_resource(event=None):
+        # First, and outside every early return below: whether HACS still ships
+        # a second copy has nothing to do with how Lovelace stores its
+        # resources, and the repair has to be able to clear itself even on an
+        # instance this function cannot reconcile.
+        await _async_report_standalone_card(hass)
+
         if "lovelace" not in hass.data:
             _LOGGER.warning("Lovelace not found in hass.data")
             return
@@ -229,26 +288,7 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
             )
             return
 
-        removed_urls = await _async_reconcile_card_resource(resources, new_url)
-
-        # Dropping the resource does not uninstall the HACS repository: its files
-        # stay in www/community and HACS keeps offering updates for them. Ask the
-        # user to remove it so the two copies cannot diverge.
-        if any("lovelace-bergfex-card" in url for url in removed_urls):
-            ir.async_create_issue(
-                hass,
-                DOMAIN,
-                LEGACY_CARD_ISSUE_ID,
-                is_fixable=False,
-                # Only raised on the run that actually removed the resource, so
-                # nothing re-raises it later. A non-persistent issue is reloaded
-                # inactive after a restart, which made this one vanish before
-                # anyone had acted on it - while the HACS copy it asks about was
-                # still installed.
-                is_persistent=True,
-                severity=ir.IssueSeverity.WARNING,
-                translation_key=LEGACY_CARD_ISSUE_ID,
-            )
+        await _async_reconcile_card_resource(resources, new_url)
 
     from homeassistant.core import CoreState
     from homeassistant.const import EVENT_HOMEASSISTANT_STARTED

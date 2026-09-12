@@ -38,12 +38,14 @@ async def _restart_issue_registry(hass: HomeAssistant) -> ir.IssueRegistry:
 
 @pytest.mark.asyncio
 async def test_legacy_card_issue_survives_a_restart(hass: HomeAssistant):
-    """Nothing re-raises this one, so losing it means losing it for good.
+    """Raised during setup, so a non-persistent one is inactive before it is seen.
 
-    It is raised on the single run that removes the stale HACS resource. On the
-    next start there is no resource left to remove, so the code path that
-    creates it never runs again - while the HACS repository it asks the user to
-    uninstall is still sitting in www/community.
+    It used to be raised only on the run that removed the stale HACS resource,
+    which is why it had to survive a restart on its own - and why it could then
+    never be cleared. It is re-evaluated against www/community on every start
+    now, so what keeps it visible and what takes it away are separate concerns;
+    this test covers the first. See tests/test_standalone_card_issue.py for the
+    second.
     """
     resources = FakeResources(
         [
