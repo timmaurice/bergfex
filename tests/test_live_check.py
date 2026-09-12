@@ -31,6 +31,23 @@ def absent(key):
     return {"kind": "absent", "key": key, "detail": "selector matched nothing"}
 
 
+def field_missing(key="operation_status"):
+    return {
+        "kind": "field_missing",
+        "key": key,
+        "detail": "German has it, this does not",
+    }
+
+
+def unnormalised(key="slope_condition", found="nincs üzenet"):
+    return {
+        "kind": "unnormalised",
+        "key": key,
+        "found": found,
+        "detail": "add to values",
+    }
+
+
 def run(results, gaps=frozenset(), *, winter):
     """Run report() and return its exit code, 0 meaning it did not call sys.exit."""
     os.environ["BERGFEX_FORCE_SEASON"] = "1" if winter else "0"
@@ -123,3 +140,45 @@ class TestOutput:
         out = capsys.readouterr().out
         assert "restructured" in out
         assert "'season'" in out or "season" in out
+
+
+class TestParserFindings:
+    """The checks added after the selector-based ones passed on broken markup.
+
+    `operation` resolved in four of eighteen languages for months while this
+    script reported success, because it matches a substring anywhere in a list
+    of elements where the parser wants a <dt> that matches exactly or by prefix.
+    """
+
+    def test_an_unparsed_field_fails(self):
+        assert run([("hu", [field_missing()], [])], winter=False) == 1
+
+    def test_an_unnormalised_phrase_fails(self):
+        assert run([("hu", [unnormalised()], [])], winter=False) == 1
+
+    def test_neither_is_excused_by_the_season(self):
+        """Both are raised against the German page, so summer cannot mask them.
+
+        A block bergfex drops in summer is absent from the reference too, and
+        nothing is demanded of the other languages - which is why these do not
+        need the seasonal escape hatch that 'absent' has.
+        """
+        for winter in (True, False):
+            assert run([("hu", [field_missing()], [])], winter=winter) == 1
+            assert run([("hu", [unnormalised()], [])], winter=winter) == 1
+
+    def test_the_report_names_the_field_and_the_wording(self, capsys):
+        run([("hu", [field_missing("operation_status")], [])], winter=False)
+        out = capsys.readouterr().out
+        assert "operation_status" in out
+        assert "const.py" in out
+
+    def test_the_report_quotes_the_phrase_that_leaked(self, capsys):
+        run([("hu", [unnormalised(found="nincs üzenet")], [])], winter=False)
+        out = capsys.readouterr().out
+        assert "nincs üzenet" in out
+        assert "values" in out
+
+    def test_a_clean_run_still_claims_success(self, capsys):
+        run([("hu", [], [])], winter=False)
+        assert "Validation successful" in capsys.readouterr().out

@@ -8,6 +8,7 @@ of keywords from large containers.
 import sys
 import os
 import asyncio
+import collections
 import datetime
 import random
 import re
@@ -26,6 +27,11 @@ from _integration import import_integration_module  # noqa: E402
 _const = import_integration_module("const")
 SUPPORTED_LANGUAGES = _const.SUPPORTED_LANGUAGES
 KEYWORDS = _const.KEYWORDS
+
+# The parser is imported the same way, so this check exercises the code the
+# integration actually runs rather than a copy of its rules.
+_parser = import_integration_module("parser")
+parse_resort_page = _parser.parse_resort_page
 
 # Configuration of structural groups
 GROUPS = {
@@ -349,16 +355,134 @@ async def validate_language(session, lang_code, lang_info, global_baseline, sema
                     }
                 )
 
-        if lang_errors:
-            mismatches = sum(1 for e in lang_errors if e["kind"] == "mismatch")
-            absent = len(lang_errors) - mismatches
-            print(
-                f"[{lang_code.upper()}] {mismatches} mismatches, {absent} absent structures."
-            )
-            return lang_code, lang_errors, lang_shifts
-        else:
-            print(f"[{lang_code.upper()}] OK.")
-            return lang_code, [], lang_shifts
+        # The verdict is printed by the caller, which also has the parser
+        # findings. Printing "OK." here made a language look clean while the
+        # parser check on the very same page was about to fail.
+        return lang_code, lang_errors, lang_shifts
+
+
+# --- Checking the parser rather than the selectors ---------------------------
+#
+# Everything above compares keyword text against page elements, and does it more
+# loosely than the parser does: a substring anywhere in a flat list of elements,
+# where get_text_from_dd wants a <dt> that matches exactly or by prefix. Markup
+# the parser cannot read therefore passed this check for months - "operation"
+# resolved in four of eighteen languages while the daily run reported success.
+#
+# So the parser is also run directly, and the German page is the reference: a
+# field is demanded of a language only where the German page yields it. That is
+# what makes this immune to the season. When bergfex drops the snow report in
+# summer the fields vanish from the reference too, and nothing is demanded -
+# which is the failure mode a canary must not have.
+PARSER_REFERENCE = {"name": "Hintertux", "path": "/hintertux/schneebericht/"}
+
+PARSER_FIELDS = (
+    "resort_name",
+    "snow_mountain",
+    "snow_valley",
+    "elevation_mountain",
+    "elevation_valley",
+    "snow_condition",
+    "slope_condition",
+    "avalanche_warning",
+    "operation_status",
+    "lifts_open_count",
+    "lifts_total_count",
+    "last_update",
+)
+
+# Free text bergfex writes into a reading's place. Where the German page carries
+# no report, every other language must normalise to `unknown` - that is what the
+# card greys out. Fourteen of the eighteen listed a phrase bergfex does not
+# serve, so the wording printed as if it were a snow condition.
+NO_REPORT_FIELDS = (
+    "snow_condition",
+    "slope_condition",
+    "avalanche_warning",
+    "operation_status",
+)
+
+GERMAN_NO_REPORT = "keine meldung"
+
+
+async def parse_reference(session):
+    """Parse the German page every language is compared against."""
+    url = SUPPORTED_LANGUAGES["at"]["domain"] + PARSER_REFERENCE["path"]
+    html = await fetch_html_async(session, url)
+    if not html:
+        return None
+    return parse_resort_page(html, PARSER_REFERENCE["path"], "at")
+
+
+async def validate_parser_output(session, lang_code, lang_info, reference, semaphore):
+    """Run the integration's own parser and compare it against the reference."""
+    if not reference:
+        return []
+
+    async with semaphore:
+        url = lang_info["domain"] + PARSER_REFERENCE["path"]
+        html = await fetch_html_async(session, url)
+
+    if not html:
+        return []
+
+    data = parse_resort_page(html, PARSER_REFERENCE["path"], lang_code)
+    errors = []
+
+    for field in PARSER_FIELDS:
+        if reference.get(field) is None or data.get(field) is not None:
+            continue
+        errors.append(
+            {
+                "kind": "field_missing",
+                "key": field,
+                "detail": (
+                    f"the German page of {PARSER_REFERENCE['name']} yields "
+                    f"{field}, this language does not"
+                ),
+            }
+        )
+
+    for field in NO_REPORT_FIELDS:
+        german = str(reference.get(field) or "").strip().lower()
+        if german != GERMAN_NO_REPORT:
+            continue
+        value = str(data.get(field) or "").strip()
+        if value.lower() in ("", "unknown"):
+            continue
+        errors.append(
+            {
+                "kind": "unnormalised",
+                "key": field,
+                "found": value,
+                "detail": (
+                    "the German page carries no report here, so this wording is "
+                    "what bergfex prints instead - add it to the language's "
+                    '"values" map in const.py'
+                ),
+            }
+        )
+
+    return errors
+
+
+async def validate(session, lang_code, lang_info, baseline, reference, semaphore):
+    """Both checks for one language, and the one verdict line they share."""
+    _, errors, shifts = await validate_language(
+        session, lang_code, lang_info, baseline, semaphore
+    )
+    errors = errors + await validate_parser_output(
+        session, lang_code, lang_info, reference, semaphore
+    )
+
+    if not errors:
+        print(f"[{lang_code.upper()}] OK.")
+    else:
+        counts = collections.Counter(e["kind"] for e in errors)
+        summary = ", ".join(f"{n} {kind}" for kind, n in sorted(counts.items()))
+        print(f"[{lang_code.upper()}] {summary}.")
+
+    return lang_code, errors, shifts
 
 
 async def main():
@@ -368,31 +492,47 @@ async def main():
             print("\nCRITICAL: No baseline could be built at all. Aborting.")
             sys.exit(1)
 
+        reference = await parse_reference(session)
+        if reference is None:
+            print(
+                f"\nWarning: {PARSER_REFERENCE['name']} could not be fetched in "
+                "German - the parser check is skipped this run."
+            )
+
         print("\nStarting Async Cross-Language Validation...")
         semaphore = asyncio.Semaphore(3)
-        tasks = []
-        for lang_code, lang_info in SUPPORTED_LANGUAGES.items():
-            if lang_code == "at":
-                continue
-            tasks.append(
-                validate_language(
-                    session, lang_code, lang_info, global_baseline, semaphore
-                )
+        tasks = [
+            validate(
+                session, lang_code, lang_info, global_baseline, reference, semaphore
             )
+            for lang_code, lang_info in SUPPORTED_LANGUAGES.items()
+            if lang_code != "at"
+        ]
 
         results = await asyncio.gather(*tasks)
         report(results, baseline_gaps)
 
 
 def report(results, baseline_gaps):
-    """Turn the three outcomes into a verdict.
+    """Turn the outcomes into a verdict.
 
     A mismatch always fails. An absent structure fails too, unless it is a
     snow-report key outside the winter season - bergfex removes that block every
     summer, which is the one case we must not cry wolf about.
+
+    The two parser findings always fail, and are not seasonal by construction:
+    both are raised only where the German page carries what the language is
+    missing, so a block bergfex has dropped is absent from the reference as well
+    and asks for nothing.
     """
-    mismatches = [e for _, errs, _ in results for e in errs if e["kind"] == "mismatch"]
-    absences = [e for _, errs, _ in results for e in errs if e["kind"] == "absent"]
+
+    def of_kind(*kinds):
+        return [e for _, errs, _ in results for e in errs if e["kind"] in kinds]
+
+    mismatches = of_kind("mismatch")
+    absences = of_kind("absent")
+    field_missing = of_kind("field_missing")
+    unnormalised = of_kind("unnormalised")
     clean = sum(1 for _, errs, _ in results if not errs)
 
     absent_keys = {e["key"] for e in absences} | set(baseline_gaps)
@@ -403,7 +543,8 @@ def report(results, baseline_gaps):
     print("\n" + "=" * 60)
     print(
         f"SUMMARY: {clean} languages clean, {len(mismatches)} mismatches, "
-        f"{len(absences)} absent structures"
+        f"{len(absences)} absent structures, {len(field_missing)} unparsed fields, "
+        f"{len(unnormalised)} unnormalised phrases"
     )
     print(f"Season: {'in season' if winter else 'off-season'}")
     print("=" * 60)
@@ -421,6 +562,27 @@ def report(results, baseline_gaps):
                         f"{lang.upper():<6} | {e['key']:<18} | {e['at']:<25} | "
                         f"{e['expected']:<25} | {e['found']}"
                     )
+
+    if field_missing:
+        print("\nThe parser found nothing where the German page has a value:")
+        print(f"{'LANG':<6} | {'FIELD':<20} | DETAIL")
+        print("-" * 100)
+        for lang, errs, _ in results:
+            for e in errs:
+                if e["kind"] == "field_missing":
+                    print(f"{lang.upper():<6} | {e['key']:<20} | {e['detail']}")
+        print("\nThe keyword for this field no longer matches what bergfex prints.")
+        print("Compare KEYWORDS in const.py against the live page for that language.")
+
+    if unnormalised:
+        print("\nA 'no report' wording is reaching the card as if it were a reading:")
+        print(f"{'LANG':<6} | {'FIELD':<20} | FOUND")
+        print("-" * 100)
+        for lang, errs, _ in results:
+            for e in errs:
+                if e["kind"] == "unnormalised":
+                    print(f"{lang.upper():<6} | {e['key']:<20} | {e['found']}")
+        print('\nAdd the wording to that language\'s "values" map in const.py.')
 
     if baseline_gaps:
         print(
@@ -442,7 +604,13 @@ def report(results, baseline_gaps):
             print("bergfex drops this block off-season. It cannot be verified until")
             print("the resorts reopen - re-run this check once they do.")
 
-    failed = bool(mismatches) or bool(year_round_absent) or (winter and seasonal_absent)
+    failed = (
+        bool(mismatches)
+        or bool(field_missing)
+        or bool(unnormalised)
+        or bool(year_round_absent)
+        or (winter and seasonal_absent)
+    )
 
     if failed:
         sys.exit(1)
