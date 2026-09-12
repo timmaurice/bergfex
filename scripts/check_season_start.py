@@ -64,7 +64,9 @@ USER_AGENT = "Mozilla/5.0 (compatible; bergfex-integration-season-watch/1.0)"
 
 
 def fetch(path: str) -> str | None:
-    request = urllib.request.Request(BASE_URL + path, headers={"User-Agent": USER_AGENT})
+    request = urllib.request.Request(
+        BASE_URL + path, headers={"User-Agent": USER_AGENT}
+    )
     try:
         with urllib.request.urlopen(request, timeout=30) as response:
             return response.read().decode("utf-8", "ignore")

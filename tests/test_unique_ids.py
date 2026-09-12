@@ -139,7 +139,9 @@ def test_legacy_prefixes_cover_both_old_schemes():
 
 
 @pytest.mark.asyncio
-async def test_fresh_install_gets_path_based_ids(hass: HomeAssistant, enable_custom_integrations):
+async def test_fresh_install_gets_path_based_ids(
+    hass: HomeAssistant, enable_custom_integrations
+):
     """A brand new resort registers its entities under the resort path."""
     entry = _entry(
         name="Achensee", path="/achensee/schneebericht/", entry_id="fresh_entry"
@@ -160,7 +162,9 @@ async def test_fresh_install_gets_path_based_ids(hass: HomeAssistant, enable_cus
 
 
 @pytest.mark.asyncio
-async def test_existing_install_keeps_its_entity_ids(hass: HomeAssistant, enable_custom_integrations):
+async def test_existing_install_keeps_its_entity_ids(
+    hass: HomeAssistant, enable_custom_integrations
+):
     """The migration rewrites the id in place and leaves the entity alone.
 
     Keeping the registry entry is the whole point: the recorder keys a state
@@ -202,7 +206,9 @@ async def test_existing_install_keeps_its_entity_ids(hass: HomeAssistant, enable
 
 
 @pytest.mark.asyncio
-async def test_migration_covers_the_image_scheme(hass: HomeAssistant, enable_custom_integrations):
+async def test_migration_covers_the_image_scheme(
+    hass: HomeAssistant, enable_custom_integrations
+):
     """Images were registered under a name variant of their own."""
     registry = er.async_get(hass)
     entry = _entry(
@@ -230,7 +236,9 @@ async def test_migration_covers_the_image_scheme(hass: HomeAssistant, enable_cus
 
 
 @pytest.mark.asyncio
-async def test_same_display_name_no_longer_collides(hass: HomeAssistant, enable_custom_integrations):
+async def test_same_display_name_no_longer_collides(
+    hass: HomeAssistant, enable_custom_integrations
+):
     """Two resorts sharing a name each keep their own entities.
 
     Under the name-based scheme both produced "bergfex_bergbahnen_status", and

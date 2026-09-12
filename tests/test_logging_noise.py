@@ -118,9 +118,7 @@ async def test_a_failed_poll_is_not_logged_twice(
 
 
 @pytest.mark.asyncio
-async def test_a_failed_setup_says_why(
-    hass: HomeAssistant, mock_config_entry, caplog
-):
+async def test_a_failed_setup_says_why(hass: HomeAssistant, mock_config_entry, caplog):
     """The only signal a user gets is ours, so it has to carry the reason."""
     caplog.set_level(logging.DEBUG)
 
@@ -179,8 +177,7 @@ async def test_a_retried_setup_repeats_the_warning_only_once(
     assert [
         r.getMessage()
         for r in caplog.records
-        if r.levelno >= logging.WARNING
-        and "custom_components/bergfex" in r.pathname
+        if r.levelno >= logging.WARNING and "custom_components/bergfex" in r.pathname
     ] == []
     assert any(
         "Still failing to refresh resort coordinator" in r.getMessage()

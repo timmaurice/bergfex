@@ -69,9 +69,7 @@ class RecordingSession:
         self.urls.append(url)
         if "schneevorhersage" in url:
             return MockResponse(FORECAST_HTML)
-        return MockResponse(
-            RESORT_HTML.format(slug=self._slug, region=self._region)
-        )
+        return MockResponse(RESORT_HTML.format(slug=self._slug, region=self._region))
 
     def post(self, url, *args, **kwargs):
         return MockResponse("ok")

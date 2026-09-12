@@ -394,9 +394,9 @@ class BergfexConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 self._abort_if_unique_id_configured()
 
                 # Keep ski_area_path as the unique ID
-                ski_area_name = ski_areas.get(
+                ski_area_name = ski_areas.get(ski_area_path) or ski_area_name_from_path(
                     ski_area_path
-                ) or ski_area_name_from_path(ski_area_path)
+                )
 
                 return self.async_create_entry(
                     title=ski_area_name,

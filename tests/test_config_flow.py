@@ -332,7 +332,10 @@ async def test_a_resort_without_a_subpage_still_gets_a_name(
         ("https://www.bergfex.at/ischgl/schneebericht", "/ischgl/schneebericht/"),
         ("HTTPS://WWW.BERGFEX.AT/Ischgl/Schneebericht/", "/ischgl/schneebericht/"),
         ("ischgl/schneebericht/?lang=de", "/ischgl/schneebericht/"),
-        ("https://www.bergfex.at/ischgl/schneebericht/#schnee", "/ischgl/schneebericht/"),
+        (
+            "https://www.bergfex.at/ischgl/schneebericht/#schnee",
+            "/ischgl/schneebericht/",
+        ),
         ("de.bergfex.at/ischgl/", "/ischgl/schneebericht/"),
     ],
 )
@@ -383,9 +386,7 @@ async def test_a_webhook_that_is_not_a_url_is_rejected_on_the_form(
     Unvalidated, a typo never surfaces in the flow where it could still be
     fixed - it surfaces as an error line in the log every few minutes, forever.
     """
-    result = await _run_flow(
-        hass, {CONF_SKI_AREA: SKI_AREA_PATH, "webhook_url": typed}
-    )
+    result = await _run_flow(hass, {CONF_SKI_AREA: SKI_AREA_PATH, "webhook_url": typed})
 
     assert result["type"] == FlowResultType.FORM
     assert result["errors"] == {"base": "invalid_webhook"}

@@ -114,7 +114,9 @@ async def test_async_update_data_resort_fallback(
         mock_config_entry.add_to_hass(hass)
         await async_setup_entry(hass, mock_config_entry)
 
-        coordinator = hass.data[DOMAIN][COORDINATORS][coordinator_key("/it/test/schneebericht/")]
+        coordinator = hass.data[DOMAIN][COORDINATORS][
+            coordinator_key("/it/test/schneebericht/")
+        ]
         # Manually trigger the update method since we mocked first_refresh
         await coordinator.async_refresh()
 
@@ -214,7 +216,9 @@ async def test_async_update_data_resort_fallback_active_season(
         mock_config_entry.add_to_hass(hass)
         await async_setup_entry(hass, mock_config_entry)
 
-        coordinator = hass.data[DOMAIN][COORDINATORS][coordinator_key("/it/test/schneebericht/")]
+        coordinator = hass.data[DOMAIN][COORDINATORS][
+            coordinator_key("/it/test/schneebericht/")
+        ]
         # Manually trigger the update method since we mocked first_refresh
         await coordinator.async_refresh()
 

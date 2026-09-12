@@ -377,7 +377,6 @@ def _async_backfill_unique_id(
     )
 
 
-
 async def _async_migrate_unique_ids(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Move this entry's entities onto path-based unique ids.
 
@@ -629,12 +628,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                                 if response.status == 200:
                                     overview_html = await response.text()
                                     # This will parse totals for all resorts on the page
-                                    overview_data = (
-                                        await hass.async_add_executor_job(
-                                            parse_cross_country_overview_data,
-                                            overview_html,
-                                            lang,
-                                        )
+                                    overview_data = await hass.async_add_executor_job(
+                                        parse_cross_country_overview_data,
+                                        overview_html,
+                                        lang,
                                     )
                                     # Find our specific resort in the overview data and update totals
                                     # Find our specific resort in the overview data and update totals
@@ -748,13 +745,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                                 ) as response:
                                     if response.status == 200:
                                         main_html = await response.text()
-                                        main_data = (
-                                            await hass.async_add_executor_job(
-                                                parse_resort_page,
-                                                main_html,
-                                                main_path,
-                                                lang,
-                                            )
+                                        main_data = await hass.async_add_executor_job(
+                                            parse_resort_page,
+                                            main_html,
+                                            main_path,
+                                            lang,
                                         )
                                         for key in [
                                             "price",
@@ -812,10 +807,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                         ) as response:
                             if response.status == 200:
                                 overview_html = await response.text()
-                                overview_data = (
-                                    await hass.async_add_executor_job(
-                                        parse_overview_data, overview_html, lang
-                                    )
+                                overview_data = await hass.async_add_executor_job(
+                                    parse_overview_data, overview_html, lang
                                 )
                                 # The keys in overview_data are full paths e.g. /skimountaineering/tirol/hintertux/
                                 # area_path is e.g. /hintertux/

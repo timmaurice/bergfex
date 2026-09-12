@@ -119,7 +119,7 @@ def test_a_padded_hour_still_reads():
 
 
 def test_pads_a_bare_hour_so_two_resorts_agree():
-    """"8:30" and "09:00" in one card looked like two different formats."""
+    """ "8:30" and "09:00" in one card looked like two different formats."""
     data = parse_resort_page(HOURS_DD.format(hours="8:30 - 9:05"), "/airolo/", "it")
 
     assert data["operating_hours_start"] == "08:30"
@@ -167,7 +167,7 @@ def test_a_status_word_without_times_is_unchanged():
 
 
 def test_a_preposition_left_over_is_not_a_status():
-    """"von 09:00 - 16:45 Uhr" left "von" behind as the operation status.
+    """ "von 09:00 - 16:45 Uhr" left "von" behind as the operation status.
 
     A dangling preposition is worse than no status: the card prints it as the
     answer to whether the resort is running.
@@ -203,7 +203,7 @@ def test_a_resort_that_closes_over_lunch_keeps_both_ranges():
 
 
 def test_a_malformed_time_does_not_become_the_status():
-    """"9:5 - 16:00" matches no range, so the whole string became the status."""
+    """ "9:5 - 16:00" matches no range, so the whole string became the status."""
     data = parse_resort_page(HOURS_DD.format(hours="9:5 - 16:00"), "/airolo/", "it")
 
     assert "operation_status" not in data
@@ -214,9 +214,9 @@ def test_a_malformed_time_does_not_become_the_status():
 
 
 def _fixture(name: str) -> str:
-    return (
-        Path(__file__).resolve().parent / "fixtures" / name
-    ).read_text(encoding="utf-8", errors="replace")
+    return (Path(__file__).resolve().parent / "fixtures" / name).read_text(
+        encoding="utf-8", errors="replace"
+    )
 
 
 def test_reads_the_times_past_a_colliding_status_label():

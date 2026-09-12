@@ -13,8 +13,15 @@ import check_season_start as watcher  # noqa: E402
 
 from custom_components.bergfex.parser import parse_resort_page  # noqa: E402
 
-
-GLACIER_WORDS = ("hintertux", "soelden", "sölden", "stubai", "pitztal", "kitzstein", "kaunertal")
+GLACIER_WORDS = (
+    "hintertux",
+    "soelden",
+    "sölden",
+    "stubai",
+    "pitztal",
+    "kitzstein",
+    "kaunertal",
+)
 
 
 def test_the_two_groups_are_kept_apart():

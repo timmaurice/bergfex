@@ -67,9 +67,9 @@ def test_a_repair_issue_carries_a_description_or_a_fix_flow(path: Path):
     for key, issue in issues.items():
         where = f"{path.name}:{key}"
         assert issue.get("title"), f"{where} has no title"
-        assert ("description" in issue) != ("fix_flow" in issue), (
-            f"{where} must carry exactly one of description/fix_flow"
-        )
+        assert ("description" in issue) != (
+            "fix_flow" in issue
+        ), f"{where} must carry exactly one of description/fix_flow"
 
 
 def test_every_language_declares_the_same_repair_issues():
@@ -122,7 +122,9 @@ async def test_a_stale_device_can_be_deleted(hass: HomeAssistant, mock_config_en
 
 
 @pytest.mark.asyncio
-async def test_the_live_device_cannot_be_deleted(hass: HomeAssistant, mock_config_entry):
+async def test_the_live_device_cannot_be_deleted(
+    hass: HomeAssistant, mock_config_entry
+):
     """Deleting it would only have it recreated, minus the user's settings."""
     mock_config_entry.add_to_hass(hass)
     live = _device(hass, mock_config_entry, AREA_PATH)
@@ -166,9 +168,7 @@ def test_the_manifest_pins_what_requirements_txt_pins():
     manifest = json.loads(
         (ROOT / "custom_components" / "bergfex" / "manifest.json").read_text()
     )
-    declared = dict(
-        requirement.split(">=") for requirement in manifest["requirements"]
-    )
+    declared = dict(requirement.split(">=") for requirement in manifest["requirements"])
 
     pinned = dict(
         line.split(">=")
