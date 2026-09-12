@@ -463,6 +463,41 @@ def _async_report_orphaned_entities(hass: HomeAssistant, entry: ConfigEntry) -> 
     )
 
 
+@callback
+def _async_refresh_device_name(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Give the device the resort name once the parser has resolved it.
+
+    `device_info` is read when an entity is first registered, and at that moment
+    the only name available is the one the config flow stored - which for an
+    entry created while name parsing was broken is the URL slug ("achensee").
+    The entities correct themselves on every coordinator update, the device does
+    not, so the card kept heading those resorts in lower case forever.
+
+    `name_by_user` is left alone by `async_update_device`, so a device the user
+    has renamed keeps their name.
+    """
+    coordinator = hass.data[DOMAIN][COORDINATORS].get(
+        coordinator_key(entry.data[CONF_SKI_AREA])
+    )
+    area_path = entry.data[CONF_SKI_AREA]
+    if not coordinator or not coordinator.data:
+        return
+
+    resort_name = (coordinator.data.get(area_path) or {}).get("resort_name")
+    if not resort_name:
+        return
+
+    device_registry = dr.async_get(hass)
+    device = device_registry.async_get_device(identifiers={(DOMAIN, area_path)})
+    if device is None or device.name == resort_name:
+        return
+
+    _LOGGER.debug(
+        "Renaming device %s to the parsed resort name %s", device.name, resort_name
+    )
+    device_registry.async_update_device(device.id, name=resort_name)
+
+
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Bergfex from a config entry."""
     # Entries created before the config flow set a unique id carry None, so the
@@ -875,8 +910,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
-    # Needs the platforms to have run: a row is only a leftover once the
-    # entities that could still claim it have been added.
+    # Both need the platforms to have run: the device does not exist until an
+    # entity registers it, and a row is only a leftover once the entities that
+    # could still claim it have been added.
+    _async_refresh_device_name(hass, entry)
     _async_report_orphaned_entities(hass, entry)
 
     entry.async_on_unload(entry.add_update_listener(async_reload_entry))
