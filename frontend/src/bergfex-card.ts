@@ -68,7 +68,35 @@ const NO_REPORT_STATES = [
   // const.py, which is what bergfex actually prints on each language's pages.
   // Seven languages were listed here and eleven were not, so a resort set up
   // in Hungarian showed "nincs jelentés" as if it were a snow condition.
+  //
+  // Those entries then turned out to be wrong for fourteen of the eighteen: the
+  // phrases below marked (live) were read off bergfex on 2026-09-12 by taking the
+  // German page of the same resort and field as the reference. The older
+  // spellings are kept - bergfex is not consistent between its own pages, and
+  // the integration normalises what it recognises to `unknown` anyway, so this
+  // list only has to catch what reaches the card unnormalised.
   'keine meldung', // at/de
+  'no information', // en (live)
+  'no info', // en (live)
+  'pas de nouvelle', // fr (live)
+  'nessuna comunicazione', // it (live)
+  'nessun messaggio', // it (live)
+  'senza info', // it (live)
+  'no hay información', // es (live)
+  'ningún mensaje', // es (live)
+  'inget meddelande', // se (live)
+  'ingen besked', // dk (live)
+  'ei ilmoitusta', // fi (live)
+  'nincs üzenet', // hu (live)
+  'žádné hlášení', // cz (live)
+  'žiadne hlásenie', // sk (live)
+  'nema poruke', // hr (live)
+  'brez sporočila', // si (live)
+  'ni obvestila', // si (live)
+  'нет сообщений', // ru (live)
+  'нет сообщения', // ru (live)
+  'fără comunicare', // ro (live)
+  'niciun anunţ', // ro (live)
   'no report', // en
   'geen melding', // nl
   'pas de signalement', // fr
@@ -302,12 +330,26 @@ export class BergfexCard extends LitElement implements LovelaceCard {
         }
       });
 
+      // `hass` rather than `this.hass`: shouldUpdate calls this with the
+      // previous state to compare against, and reading the current one there
+      // would judge the old entities by the new states.
+      resorts[deviceId].forecast_days = this._usableForecastImages(hass, resorts[deviceId].forecast_days, /day_(\d+)/);
+      resorts[deviceId].forecast_summaries = this._usableForecastImages(
+        hass,
+        resorts[deviceId].forecast_summaries,
+        /summary_image_(\d+)h/,
+      );
+
       // Sort forecast arrays
       resorts[deviceId].forecast_days?.sort();
       resorts[deviceId].forecast_summaries?.sort((a, b) => {
-        // Sort by hour number in the entity ID (e.g., ...summary_48h, ...summary_72h)
+        // Sort by hour number in the entity ID (e.g. ...summary_image_48h).
+        // This read `/summary_(\d+)h/`, which never matches: the digits follow
+        // "summary_image_", not "summary_". Every id scored 0, so the sort was
+        // a no-op that happened to look right while the entities arrived in
+        // creation order.
         const getHour = (id: string) => {
-          const match = id.match(/summary_(\d+)h/);
+          const match = id.match(/summary_image_(\d+)h/);
           return match ? parseInt(match[1], 10) : 0;
         };
         return getHour(a) - getHour(b);
@@ -489,6 +531,44 @@ export class BergfexCard extends LitElement implements LovelaceCard {
         [section]: !isOpen,
       },
     };
+  }
+
+  /**
+   * Drop forecast images that cannot render, and keep one per day or interval.
+   *
+   * The integration has changed its unique id scheme, and where an installation
+   * carries entities from more than one of them the registry holds both. The
+   * superseded rows have no entity behind them any more: Home Assistant keeps
+   * them in `states` as `unavailable` with `restored` set, and they sat on the
+   * same device as the live ones, so the carousel collected twice as many
+   * images and every second slot rendered "Image not available".
+   *
+   * Matching on `restored` rather than on `unavailable` is deliberate - a
+   * resort whose coordinator is failing is unavailable too, and that is worth
+   * showing rather than hiding.
+   *
+   * The states are read off the `hass` passed in, not off `this.hass`: the
+   * caller is also used to build the previous picture in shouldUpdate.
+   */
+  private _usableForecastImages(hass: HomeAssistant, entityIds: string[] | undefined, key: RegExp): string[] {
+    if (!entityIds) return [];
+
+    const live = entityIds.filter((id) => {
+      const state = hass.states[id];
+      return state !== undefined && !(state.state === 'unavailable' && state.attributes?.restored);
+    });
+
+    // Should two survive for the same day - neither of them restored - prefer
+    // the plain entity id over the "_2" Home Assistant appends on a collision,
+    // which is what sorting first settles.
+    const seen = new Set<string>();
+    return [...live].sort().filter((id) => {
+      const slot = id.match(key)?.[1];
+      if (slot === undefined) return true;
+      if (seen.has(slot)) return false;
+      seen.add(slot);
+      return true;
+    });
   }
 
   private _formatForecastDate(dayOffset: number): string {
