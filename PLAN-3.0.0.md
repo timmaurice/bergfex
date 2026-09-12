@@ -155,12 +155,52 @@ reports today. The Hintertux operator confirms it: 3 lifts, 0 km.
       prefix site-wide and it broke resort-name parsing for months while the suite
       stayed green, because the winter fixtures still carry the old markup. Others
       may be dead too and cannot be found until the fixtures are current.
-- [ ] **Teach `_isNA` the per-language "no report" strings.** It knows only the
-      German "keine Meldung", so a Hungarian resort shows `nincs üzenet` in normal
-      text where every other language greys out. The `values` map in `const.py`
-      has `nincs jelentés`, which is a different phrase from the one bergfex
-      actually serves — the whole map wants checking against live pages.
+- [x] **The `values` map, checked against live pages.** Worse than the note said:
+      the map is not a translation but a normaliser — each language's "no report"
+      wording onto Home Assistant's `unknown`, which is what the card greys out —
+      and **fourteen of the eighteen languages listed a phrase bergfex does not
+      serve** (`nincs jelentés` vs `nincs üzenet`, `žádná zpráva` vs
+      `žádné hlášení`, `нет данных` vs `нет сообщений`, …). Re-read off live pages
+      by taking the German page of the same resort and field as the reference, so
+      the phrases are evidence rather than guesses. `_translate_value` now applies
+      them longest first: bergfex serves both "no info" and "no information", and
+      the short one first left "unknownrmation" behind. The card's own
+      `NO_REPORT_STATES` was a copy of the same wrong list and is synced.
+- [x] **`operation_status` was missing in fourteen of eighteen languages.**
+      bergfex labels the field differently by page — the main page carries the long
+      "operating hours" label, the snow report the short one — and `const.py`
+      records whichever spelling each language happened to be captured from. Only
+      `at`, `it`, `se` and `pl` had recorded the short form, so everywhere else the
+      alpine parser looked for a label the snow report does not print and shipped
+      no status at all. Both keys are tried now. French recorded neither: its pages
+      say "Heures d'ouverture", not "Ouverture". 18/18 verified live.
+- [x] **Duplicate forecast images.** Sölden offered twelve daily images and ten
+      summaries instead of six and five, every second one rendering "Image not
+      available" and shifting the dates after it. The integration has keyed its
+      entities three ways over time; where an installation carries rows from more
+      than one scheme, the registry holds both and the superseded rows sit on the
+      same device with nothing behind them. The registry migration declines to
+      merge them on purpose — it cannot, two rows cannot share one unique id — so
+      the card now ignores rows Home Assistant marks `restored` and keeps one
+      image per day. This test instance has **88 orphaned image rows and 120
+      orphaned sensor rows**; whether the integration should offer to delete them
+      is still open (see below). Exposed a second bug on the way: the summary sort
+      read `/summary_(\d+)h/`, which never matches `summary_image_48h`, so every
+      id scored 0 and the sort was a no-op.
+- [ ] **Decide what to do about orphaned registry rows.** Deleting registry
+      entries is destructive and the user may have renamed or referenced them, so
+      the card-side fix above is deliberately the non-destructive half. The options
+      are: leave them (Home Assistant already offers per-entity removal), raise a
+      repair issue listing them, or delete them on setup. Needs a decision, not a
+      default.
 - [ ] Fix whatever else the season's markup broke.
+- [ ] **Close the hole that hid both of the above.** `check_live_site.py` matches
+      keywords as a substring anywhere in a list of elements, while the parser
+      matches a `<dt>` exactly or by prefix. The looser test passes on markup the
+      parser cannot read — which is exactly how `operation` stayed broken in
+      fourteen languages while the daily canary reported success. It also computes
+      "shifts" and then neither prints nor fails on them. Check with the parser's
+      own matcher, or better, assert on the fields `parse_resort_page` returns.
 - [ ] Verify what only real data can show: trend indicators against genuine 24 h
       history, and snow sorting against real values rather than injected ones.
 - [ ] Full end-to-end in the `ha-bergfex-test` docker instance with a resort that
