@@ -15,7 +15,13 @@ _LOGGER = logging.getLogger(__name__)
 
 
 def _translate_value(value: str, lang: str) -> str:
-    """Translate common Bergfex strings from German to the target language."""
+    """Normalise the phrases bergfex prints in place of a reading.
+
+    Despite the name this is not a translation: every non-German language maps
+    its own "no report" wording onto Home Assistant's ``unknown``, which is what
+    the card greys out. Left alone, the phrase would print as if it were a snow
+    condition.
+    """
     if not value or lang == "at":
         return value
 
@@ -23,9 +29,11 @@ def _translate_value(value: str, lang: str) -> str:
     translations = keywords.get("values", {})
 
     translated_value = value
-    for de_val, target_val in translations.items():
+    # Longest first: bergfex serves both "no info" and "no information", and
+    # replacing the shorter one first would leave "unknownrmation" behind.
+    for de_val in sorted(translations, key=len, reverse=True):
         if de_val in translated_value:
-            translated_value = translated_value.replace(de_val, target_val)
+            translated_value = translated_value.replace(de_val, translations[de_val])
 
     return translated_value
 
@@ -265,9 +273,7 @@ _TIME_RANGE_RE = re.compile(r"(\d{1,2}:\d{2})\s*[-–—]\s*(\d{1,2}:\d{2})")
 # at the status one. A value that consists of a time range and nothing else is
 # the opening times in every language, and across all 27 fixtures no other <dd>
 # looks like that.
-_TIME_RANGE_ONLY_RE = re.compile(
-    r"\s*\d{1,2}:\d{2}\s*[-–—]\s*\d{1,2}:\d{2}\s*\Z"
-)
+_TIME_RANGE_ONLY_RE = re.compile(r"\s*\d{1,2}:\d{2}\s*[-–—]\s*\d{1,2}:\d{2}\s*\Z")
 
 # Words for "o'clock" that sit after a time range and are not a status.
 _HOUR_WORD_RE = re.compile(r"(?i)\b(uhr|hrs?|hours|ore|horas|godz)\b\.?")
@@ -499,7 +505,9 @@ def evaluate_status(area_data: dict[str, Any]) -> str:
         terrain_open = True
 
     area_data["status"] = (
-        "Open" if lifts_open and has_snow and within_hours and terrain_open else "Closed"
+        "Open"
+        if lifts_open and has_snow and within_hours and terrain_open
+        else "Closed"
     )
     return area_data["status"]
 
@@ -695,8 +703,18 @@ def parse_resort_page(
     # "Godziny pracy w sezonie" next to "Godziny". The keyword in const.py
     # names whichever of the two that language happened to be recorded from, so
     # the times are read structurally instead - see _opening_times.
-    op_hours_kw = keywords.get("operating_hours", "Betrieb")
-    op_hours_text = get_text_from_dd(soup, op_hours_kw)
+    #
+    # Which of the two names the field also differs by page: the main page uses
+    # the long "operating hours" label, the snow report the short one. Only "at",
+    # "it", "se" and "pl" happen to have recorded the short form under
+    # "operating_hours", so the other fourteen languages found nothing here and
+    # shipped no operation_status at all. Both keys are tried, longest first, so
+    # whichever spelling a language recorded still resolves.
+    op_hours_text = None
+    for key in ("operating_hours", "operation"):
+        if keyword := keywords.get(key):
+            if op_hours_text := get_text_from_dd(soup, keyword):
+                break
 
     # Times written into the labelled field itself win: they are the value of
     # the field that was asked for.
