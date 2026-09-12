@@ -793,10 +793,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 # Fetch "New Snow" from region overview (more accurate than detail page)
                 region_path_from_data = parsed_data.get("region_path", "").strip("/")
                 if region_path_from_data:
+                    # /schneewerte/ is the old spelling. bergfex keeps it alive
+                    # as a redirect to /schneebericht/ for the regions it still
+                    # recognises and 404s for the rest, so following it costs a
+                    # round trip and fails where the destination would not. Both
+                    # return the identical page - 47 resorts for tirol, 63 for
+                    # bayern, parsed the same either way.
+                    #
                     # Built outside the try: the handlers below name it, and an
                     # unbound one would turn a fetch failure into a NameError.
                     snow_report_url = urljoin(
-                        domain, f"/{region_path_from_data}/schneewerte/"
+                        domain, f"/{region_path_from_data}/schneebericht/"
                     )
                     try:
                         _LOGGER.debug(

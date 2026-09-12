@@ -568,8 +568,23 @@ def parse_resort_page(
                         link_href,
                         area_path,
                     )
+                else:
+                    # The link is the resort and there is nothing behind it to
+                    # step back to. Keeping it produced a "region" path equal to
+                    # the resort, and every url built from it is one bergfex
+                    # answers with 404 - reported from a user's log as
+                    # "Could not fetch region snow report
+                    # https://www.bergfex.at/nebelhorn-oberstdorf/schneewerte/".
+                    # No region is better than a wrong one: the caller skips the
+                    # region fetch entirely when this is absent.
+                    region_link = None
+                    _LOGGER.debug(
+                        "No region in the breadcrumb of %s: %s is the resort",
+                        area_path,
+                        link_href,
+                    )
 
-        region_path = region_link.get("href")
+        region_path = region_link.get("href") if region_link is not None else None
         if region_path and region_path.startswith("/") and region_path != "/":
             # Get the part between the first and second slash if it exists, or just after first slash
             parts = region_path.strip("/").split("/")
