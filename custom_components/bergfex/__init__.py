@@ -528,7 +528,19 @@ def _async_refresh_device_name(hass: HomeAssistant, entry: ConfigEntry) -> None:
         return
 
     device_registry = dr.async_get(hass)
-    device = device_registry.async_get_device(identifiers={(DOMAIN, area_path)})
+    # Looked up within this entry rather than by identifier alone. Identifiers
+    # are not unique across config entries, which is why the registry-wide
+    # lookup is deprecated - and this resort's device is this entry's device.
+    device = next(
+        (
+            candidate
+            for candidate in dr.async_entries_for_config_entry(
+                device_registry, entry.entry_id
+            )
+            if (DOMAIN, area_path) in candidate.identifiers
+        ),
+        None,
+    )
     if device is None or device.name == resort_name:
         return
 
@@ -786,11 +798,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 # Fetch "New Snow" from region overview (more accurate than detail page)
                 region_path_from_data = parsed_data.get("region_path", "").strip("/")
                 if region_path_from_data:
+                    # Built outside the try: the handlers below name it, and an
+                    # unbound one would turn a fetch failure into a NameError.
+                    snow_report_url = urljoin(
+                        domain, f"/{region_path_from_data}/schneewerte/"
+                    )
                     try:
-                        # Construct URL for region snow report (e.g. /tirol/schneewerte/)
-                        snow_report_url = urljoin(
-                            domain, f"/{region_path_from_data}/schneewerte/"
-                        )
                         _LOGGER.debug(
                             "Fetching region snow report from: %s", snow_report_url
                         )
@@ -817,12 +830,20 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                                             )
                                         break
                             else:
+                                # Naming the url matters: this is a region page,
+                                # not the resort's, so the entry the warning is
+                                # logged against does not identify what failed.
                                 _LOGGER.warning(
-                                    "Could not fetch region snow report: %s",
+                                    "Could not fetch region snow report %s: %s",
+                                    snow_report_url,
                                     response.status,
                                 )
                     except Exception as err:
-                        _LOGGER.warning("Error fetching region snow report: %s", err)
+                        _LOGGER.warning(
+                            "Error fetching region snow report %s: %s",
+                            snow_report_url,
+                            err,
+                        )
 
                 # Send data to Webhook
                 if webhook_url:
@@ -856,11 +877,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                     )
                 else:
                     for i in range(6):
+                        forecast_url = urljoin(
+                            domain,
+                            f"/{region_path_from_data}/wetter/schneevorhersage/{i}/",
+                        )
                         try:
-                            forecast_url = urljoin(
-                                domain,
-                                f"/{region_path_from_data}/wetter/schneevorhersage/{i}/",
-                            )
                             image_data = await _async_forecast_images(
                                 hass, session, forecast_url, i
                             )
@@ -885,8 +906,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                                     image_data.get("summary_caption", "")
                                 )
                         except Exception as err:
+                            # Same reason as above, plus these six urls are
+                            # shared by every resort of a region - so the resort
+                            # in the log line is whichever one asked first.
                             _LOGGER.warning(
-                                "Error fetching forecast page %d: %s", i, err
+                                "Error fetching forecast page %d (%s): %s",
+                                i,
+                                forecast_url,
+                                err,
                             )
 
                 _LOGGER.debug("Parsed resort data for %s: %s", area_path, parsed_data)
