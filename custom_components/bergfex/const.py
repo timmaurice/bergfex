@@ -141,7 +141,9 @@ KEYWORDS = {
             "Slowakei": "Slovakia",
         },
         "values": {
-            "no report": "no report",
+            "no information": "unknown",
+            "no report": "unknown",
+            "no info": "unknown",
         },
         "operating_hours": "Operating hours",
         "season": "Season",
@@ -161,7 +163,10 @@ KEYWORDS = {
         "today": "aujourd'hui",
         "yesterday": "hier",
         "from": "de",
-        "operation": "Ouverture",
+        # bergfex labels this "Heures d'ouverture" on both the snow report
+        # and the trail report. "Ouverture" alone matched neither, so French
+        # was the one language left without an operation status.
+        "operation": "Heures d'ouverture",
         "classical": "classique",
         "skating": "Skating",
         "trail_report": "Rapport des pistes de ski de fond",
@@ -178,8 +183,9 @@ KEYWORDS = {
         },
         "values": {
             "pas de signalement": "unknown",
-            "pas d'info": "unknown",
             "aucune information": "unknown",
+            "pas de nouvelle": "unknown",
+            "pas d'info": "unknown",
         },
         "operating_hours": "Ouverture",
         "season": "Saison",
@@ -215,7 +221,10 @@ KEYWORDS = {
             "Slowakei": "Slovacchia",
         },
         "values": {
+            "nessuna comunicazione": "unknown",
             "nessuna segnalazione": "unknown",
+            "nessun messaggio": "unknown",
+            "senza info": "unknown",
         },
         "operating_hours": "Orario",
         "season": "Stagione",
@@ -251,7 +260,9 @@ KEYWORDS = {
             "Slowakei": "Eslovaquia",
         },
         "values": {
+            "no hay información": "unknown",
             "sin información": "unknown",
+            "ningún mensaje": "unknown",
         },
         "operating_hours": "Horas de funcionamiento",
         "season": "Temporada",
@@ -323,6 +334,8 @@ KEYWORDS = {
             "Slowakei": "Slovakien",
         },
         "values": {
+            "inget meddelande": "unknown",
+            "Inget meddelande": "unknown",
             "ingen rapport": "unknown",
         },
         "operating_hours": "Drift",
@@ -396,6 +409,7 @@ KEYWORDS = {
         },
         "values": {
             "ingen melding": "unknown",
+            "ingen besked": "unknown",
         },
         "operating_hours": "Driftstimer",
         "season": "Sæson",
@@ -431,6 +445,7 @@ KEYWORDS = {
             "Slowakei": "Slovakia",
         },
         "values": {
+            "ei ilmoitusta": "unknown",
             "ei raporttia": "unknown",
         },
         "operating_hours": "Toiminta-aika",
@@ -467,6 +482,7 @@ KEYWORDS = {
             "Slowakei": "Szlovákia",
         },
         "values": {
+            "žádné hlášení": "unknown",
             "žádná zpráva": "unknown",
         },
         "operating_hours": "Provozní doba",
@@ -503,6 +519,7 @@ KEYWORDS = {
             "Slowakei": "Slovensko",
         },
         "values": {
+            "žiadne hlásenie": "unknown",
             "žiadna správa": "unknown",
         },
         "operating_hours": "Prevádzkové hodiny",
@@ -576,6 +593,7 @@ KEYWORDS = {
         },
         "values": {
             "nema izvješća": "unknown",
+            "nema poruke": "unknown",
         },
         "operating_hours": "Betrieb",
         "season": "Saison",
@@ -611,6 +629,8 @@ KEYWORDS = {
             "Slowakei": "Slovaška",
         },
         "values": {
+            "brez sporočila": "unknown",
+            "ni obvestila": "unknown",
             "ni poročila": "unknown",
         },
         "operating_hours": "Delovne ure",
@@ -648,6 +668,7 @@ KEYWORDS = {
         },
         "values": {
             "nincs jelentés": "unknown",
+            "nincs üzenet": "unknown",
         },
         "operating_hours": "Működési idő",
         "season": "Szezon",
@@ -683,6 +704,8 @@ KEYWORDS = {
             "Slowakei": "Slovacia",
         },
         "values": {
+            "fără comunicare": "unknown",
+            "niciun anunţ": "unknown",
             "fără raport": "unknown",
         },
         "operating_hours": "Ore de funcționare",
@@ -719,6 +742,8 @@ KEYWORDS = {
             "Slowakei": "Словакия",
         },
         "values": {
+            "нет сообщений": "unknown",
+            "нет сообщения": "unknown",
             "нет данных": "unknown",
         },
         "operating_hours": "Время работы",

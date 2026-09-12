@@ -239,3 +239,74 @@ def test_reads_the_times_under_a_label_no_keyword_matches():
 
     assert data["operating_hours_start"] == "09:00"
     assert data["operating_hours_end"] == "16:30"
+
+
+# bergfex names this field differently depending on the page: the resort's main
+# page carries the long "operating hours" label, the snow report the short one.
+# const.py records whichever spelling each language happened to be captured
+# from, so both are tried - see the loop in parse_resort_page.
+SHORT_LABEL = """
+<html><body>
+  <dl>
+    <dt>{label}</dt>
+    <dd>naponta</dd>
+  </dl>
+</body></html>
+"""
+
+
+def test_reads_the_status_from_the_short_label():
+    """Hungarian records the long form under operating_hours ("Működési idő").
+
+    The snow report writes the short one, so looking only at operating_hours
+    found nothing and fourteen of the eighteen languages shipped no
+    operation_status at all.
+    """
+    data = parse_resort_page(SHORT_LABEL.format(label="Üzem"), "/serfaus/", "hu")
+
+    assert data["operation_status"] == "naponta"
+
+
+def test_the_long_label_still_wins_where_a_language_records_it():
+    data = parse_resort_page(
+        SHORT_LABEL.format(label="Működési idő"), "/serfaus/", "hu"
+    )
+
+    assert data["operation_status"] == "naponta"
+
+
+def test_french_reads_the_label_bergfex_actually_prints():
+    """The pages say "Heures d'ouverture"; "Ouverture" alone matched neither."""
+    data = parse_resort_page(
+        SHORT_LABEL.format(label="Heures d'ouverture").replace(
+            "naponta", "tous les jours"
+        ),
+        "/serfaus/",
+        "fr",
+    )
+
+    assert data["operation_status"] == "tous les jours"
+
+
+def test_every_language_fixture_carries_an_operation_status():
+    """The regression guard: this was absent in fourteen languages and untested.
+
+    Each fixture is the same resort captured in one language, so a keyword that
+    stops matching shows up here as a missing field rather than as a card that
+    quietly drops a row.
+    """
+    fixtures = sorted(Path(__file__).parent.glob("fixtures/serfaus-*.html"))
+    assert len(fixtures) == 18, "expected one fixture per supported language"
+
+    missing = []
+    for fixture in fixtures:
+        lang = fixture.stem.split("-")[1]
+        data = parse_resort_page(
+            fixture.read_text(encoding="utf-8"),
+            "/serfaus-fiss-ladis/schneebericht/",
+            lang,
+        )
+        if not data.get("operation_status"):
+            missing.append(lang)
+
+    assert not missing, f"no operation_status parsed for: {missing}"
