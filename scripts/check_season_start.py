@@ -16,6 +16,7 @@ Run directly to see where the glaciers and the valley resorts stand:
 
 import os
 import sys
+import time
 import urllib.error
 import urllib.request
 from pathlib import Path
@@ -61,18 +62,37 @@ RESORT_GROUPS = {"glacier": GLACIER_RESORTS, "valley": VALLEY_RESORTS}
 
 BASE_URL = "https://www.bergfex.at"
 USER_AGENT = "Mozilla/5.0 (compatible; bergfex-integration-season-watch/1.0)"
+# Seconds before retrying a 429, multiplied by the attempt number.
+RETRY_DELAY = 5
 
 
-def fetch(path: str) -> str | None:
+def fetch(path: str, *, attempts: int = 3) -> str | None:
+    """Fetch one page, retrying a rate limit before giving up.
+
+    This walks eleven resorts back to back, two pages each, and bergfex answers
+    some of that burst with 429. A miss is not harmless here: it decides whether
+    the season has started, and the caller cannot tell a genuine answer from an
+    absent one.
+    """
     request = urllib.request.Request(
         BASE_URL + path, headers={"User-Agent": USER_AGENT}
     )
-    try:
-        with urllib.request.urlopen(request, timeout=30) as response:
-            return response.read().decode("utf-8", "ignore")
-    except (urllib.error.URLError, TimeoutError) as err:
-        print(f"  ! {path}: {err}")
-        return None
+    for attempt in range(1, attempts + 1):
+        try:
+            with urllib.request.urlopen(request, timeout=30) as response:
+                return response.read().decode("utf-8", "ignore")
+        except urllib.error.HTTPError as err:
+            if err.code == 429 and attempt < attempts:
+                delay = RETRY_DELAY * attempt
+                print(f"  . {path}: rate limited, retrying in {delay}s")
+                time.sleep(delay)
+                continue
+            print(f"  ! {path}: {err}")
+            return None
+        except (urllib.error.URLError, TimeoutError) as err:
+            print(f"  ! {path}: {err}")
+            return None
+    return None
 
 
 def describe(name: str, data: dict) -> str:
@@ -109,12 +129,23 @@ def resort_status(path: str) -> dict | None:
     data = parse_resort_page(html, path, "at")
 
     main_path = "/" + "/".join(path.strip("/").split("/")[:-1]) + "/"
-    if main_path != path and (main_html := fetch(main_path)):
-        main_data = parse_resort_page(main_html, main_path, "at")
-        for key in PANEL_KEYS:
-            if key in main_data and key not in data:
-                data[key] = main_data[key]
-        evaluate_status(data)
+    if main_path == path:
+        return data
+
+    main_html = fetch(main_path)
+    if main_html is None:
+        # Without the operating panel the status falls back to lifts and snow
+        # alone, which reads a summer glacier as open - a 429 on this one page
+        # is what raised issue #37 against a Hintertux showing no piste at all.
+        # An unjudgeable resort is skipped; the watcher runs again tomorrow.
+        print(f"  ? {path}: main page unavailable, cannot judge the season")
+        return None
+
+    main_data = parse_resort_page(main_html, main_path, "at")
+    for key in PANEL_KEYS:
+        if key in main_data and key not in data:
+            data[key] = main_data[key]
+    evaluate_status(data)
 
     return data
 

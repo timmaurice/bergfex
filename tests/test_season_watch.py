@@ -74,3 +74,74 @@ def test_a_winter_page_counts_as_open():
 
 def test_describe_survives_a_page_with_nothing_on_it():
     assert "?" in watcher.describe("Nowhere", {})
+
+
+# --- A resort it cannot judge must not be called open -----------------------
+#
+# Issue #37: the scheduled run hit 429 on /hintertux/, so the operating panel
+# never merged and evaluate_status never re-ran. The verdict left standing came
+# from the snow report alone - three lifts turning and 305 cm of old snow - and
+# the watcher announced that glacier skiing had started while the same page
+# showed no prepared piste at all.
+
+SUBPAGE = """
+<html><body>
+  <h1 class="text-4xl"><span>Skigebiet</span><span>Hintertux</span></h1>
+  <dl>
+    <dt>Berg (Piste)</dt><dd>305 cm</dd>
+    <dt>Offene Lifte</dt><dd>3 von 20</dd>
+  </dl>
+</body></html>
+"""
+
+MAIN = """
+<html><body>
+  <h1 class="text-4xl"><span>Skigebiet</span><span>Hintertux</span></h1>
+  <div class="pt-6">
+    <div class="block" x-show="tab == 'winter'">
+      <h3>Saison</h3><div class="txt_markup"><p>19.09.2026 - 10.05.2027</p></div>
+      <h3>Betrieb</h3><div class="txt_markup"><p>08:15 - 16:00</p></div>
+    </div>
+  </div>
+</body></html>
+"""
+
+
+def _with_pages(monkeypatch, pages):
+    """Serve `pages` by path; anything absent fetches as a failure."""
+    monkeypatch.setattr(watcher, "fetch", lambda path, **kw: pages.get(path))
+
+
+def test_a_resort_whose_main_page_fails_is_not_judged(monkeypatch):
+    """The reported bug: a 429 on the main page produced a false Open."""
+    _with_pages(monkeypatch, {"/hintertux/schneebericht/": SUBPAGE})
+
+    assert watcher.resort_status("/hintertux/schneebericht/") is None
+
+
+def test_such_a_resort_is_left_out_of_the_started_list(monkeypatch):
+    """open_resorts is what the workflow turns into an issue."""
+    _with_pages(monkeypatch, {"/hintertux/schneebericht/": SUBPAGE})
+
+    started = watcher.open_resorts({"Hintertux": "/hintertux/schneebericht/"})
+
+    assert started == []
+
+
+def test_the_panel_is_still_used_when_both_pages_load(monkeypatch):
+    """The guard must not cost the normal path its season data."""
+    _with_pages(
+        monkeypatch,
+        {"/hintertux/schneebericht/": SUBPAGE, "/hintertux/": MAIN},
+    )
+
+    data = watcher.resort_status("/hintertux/schneebericht/")
+
+    assert data is not None
+    assert "winter_season_start" in data
+
+
+def test_a_missing_subpage_is_still_skipped(monkeypatch):
+    _with_pages(monkeypatch, {"/hintertux/": MAIN})
+
+    assert watcher.resort_status("/hintertux/schneebericht/") is None
