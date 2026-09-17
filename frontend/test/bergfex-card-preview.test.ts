@@ -150,13 +150,19 @@ describe('BergfexCard card picker preview', () => {
       expect(element.getCardSize()).toBeGreaterThan(bare);
     });
 
-    it('asks a sections dashboard for as many rows as it needs', () => {
+    it('lets a sections dashboard measure it', () => {
+      // The rows used to be `getCardSize()`, which counts the card's sections
+      // and multiplies by the resorts - a masonry number used as a grid one,
+      // and blind to whatever the card leaves out: a resort whose sensor is
+      // missing, an accordion the user has collapsed.
       element.setConfig({ type: 'custom:bergfex-card', resorts: ['a', 'b'] } as BergfexCardConfig);
-      const options = element.getGridOptions();
 
-      expect(options.rows).toBe(element.getCardSize());
-      expect(options.min_rows).toBeLessThanOrEqual(options.rows);
-      expect(options.columns).toBeGreaterThan(0);
+      expect(element.getGridOptions()).toEqual({
+        columns: 'full',
+        min_columns: 6,
+        rows: 'auto',
+        min_rows: 2,
+      });
     });
   });
 });

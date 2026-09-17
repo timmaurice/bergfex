@@ -7,6 +7,7 @@ import {
   ResortConfig,
   BergfexCardConfig,
   DEFAULT_CONFIG,
+  LovelaceGridOptions,
 } from './types.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { unsafeSVG } from 'lit/directives/unsafe-svg.js';
@@ -241,14 +242,18 @@ export class BergfexCard extends LitElement implements LovelaceCard {
    *
    * Without this a section gives every custom card the same default box, so a
    * six-resort card was cropped and a one-resort card floated in whitespace.
+   *
+   * `rows: 'auto'` rather than `getCardSize()`. That number counts the card's
+   * sections and multiplies by the resorts, which is a model of the card kept
+   * in step with the real one by hand - and a masonry row is not a grid row
+   * anyway, so the two units were being mixed. It also cannot know what the
+   * card leaves out: a resort whose sensor is missing, an accordion the user
+   * has since collapsed. Home Assistant measures the rendered card, which is
+   * always right and stays right. `getCardSize()` remains for masonry, which
+   * has no auto.
    */
-  public getGridOptions(): Record<string, number> {
-    return {
-      columns: 12,
-      min_columns: 6,
-      rows: this.getCardSize(),
-      min_rows: 2,
-    };
+  public getGridOptions(): LovelaceGridOptions {
+    return { columns: 'full', min_columns: 6, rows: 'auto', min_rows: 2 };
   }
 
   private _getResorts(hass: HomeAssistant, config: BergfexCardConfig): Record<string, Resort> {
