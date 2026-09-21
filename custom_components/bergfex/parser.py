@@ -471,7 +471,9 @@ def evaluate_status(area_data: dict[str, Any]) -> str:
 
     * where bergfex reports open pistes, those decide - that is prepared terrain;
     * where the piste row is absent entirely, the winter season decides;
-    * where neither is known, lifts and snow are all there is to go on.
+    * where there is no winter season either, a summer period covering today says
+      the resort is in summer operation, which is not skiing;
+    * where none of that is known, lifts and snow are all there is to go on.
 
     Note the difference between an absent piste row and a reported zero. Lelex-
     Crozet publishes no piste figures at all while running eight lifts on 15 cm;
@@ -494,14 +496,29 @@ def evaluate_status(area_data: dict[str, Any]) -> str:
 
     season_start = area_data.get("winter_season_start")
     season_end = area_data.get("winter_season_end")
+    summer_start = area_data.get("summer_season_start")
+    summer_end = area_data.get("summer_season_end")
 
     if slopes_open is not None:
         terrain_open = slopes_open > 0
     elif season_start and season_end:
         terrain_open = season_start <= now.date() <= season_end
+    elif summer_start and summer_end and summer_start <= now.date() <= summer_end:
+        # No winter period at all, and a summer one running today. That pairing
+        # is bergfex saying the resort is in summer operation and the winter
+        # season has no date yet - Hintertux publishes exactly this, alongside
+        # "Aktuell KEIN Skibetrieb! Start in die Wintersaison 2026/27: Sobald es
+        # die Schneelage zulaesst". Lifts turning and old glacier snow are not
+        # skiing, which is the whole reason this function exists.
+        #
+        # Ordering carries the weight: a glacier that skis through the summer
+        # publishes a winter period covering today, and the branch above answers
+        # first. The summer period is never the season - only the answer when
+        # there is no winter one to consult.
+        terrain_open = False
     else:
-        # Neither figure available: the resort page carries no piste row and no
-        # operating panel. Nothing further to test, so lifts and snow stand alone.
+        # Nothing to test against: no piste row, and no operating panel at all.
+        # Lifts and snow stand alone.
         terrain_open = True
 
     area_data["status"] = (

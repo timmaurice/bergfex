@@ -206,3 +206,119 @@ def test_valley_snow_alone_is_enough():
 
     data = parse_resort_page(html)
     assert data["status"] == "Open"
+
+
+# --- Summer operation, where the winter season has no date yet ---------------
+
+
+def _summer_only_glacier(offset_start: int, offset_end: int) -> str:
+    """A glacier running lifts on snow, with a summer period and no winter one.
+
+    What bergfex serves for Hintertux in September: the winter tab carries
+    operating hours and the words "Aktuell KEIN Skibetrieb! Start in die
+    Wintersaison 2026/27: Sobald es die Schneelage zulaesst" - a season with no
+    dates, because the opening depends on snowfall nobody can predict.
+    """
+    import datetime
+
+    today = datetime.datetime.now().date()
+    start = today + datetime.timedelta(days=offset_start)
+    end = today + datetime.timedelta(days=offset_end)
+    return f"""
+    <h1 class="text-4xl"><span>Skigebiet</span><span>Hintertuxer Gletscher</span></h1>
+    <dt class="big">Berg (Piste, 3.250m)</dt>
+    <dd class="big">25 cm</dd>
+    <div class="block" x-show="tab == 'summer'">
+      <h3>Saison</h3><p>{start.strftime('%d.%m.%Y')} - {end.strftime('%d.%m.%Y')}</p>
+    </div>
+    <dd>
+      <div class="status-lifte" title="open lift"></div>
+      4 von 21
+    </dd>
+    """
+
+
+def test_summer_operation_is_not_skiing():
+    """Four lifts turning on 25 cm of old glacier snow, inside the summer period.
+
+    bergfex says so itself on the same page - "Aktuell KEIN Skibetrieb" - and
+    the card should name the summer season rather than call the resort open.
+    """
+    data = parse_resort_page(_summer_only_glacier(-135, +12))
+
+    assert "winter_season_start" not in data
+    assert data["lifts_open_count"] == 4
+    assert data["snow_mountain"] == "25"
+    assert data["status"] == "Closed"
+
+
+def test_a_summer_period_that_has_ended_decides_nothing():
+    """Past the summer period with no winter one in sight, there is nothing left
+    to judge against, so lifts and snow stand alone - the long-standing fallback.
+    """
+    data = parse_resort_page(_summer_only_glacier(-200, -10))
+
+    assert data["status"] == "Open"
+
+
+def test_a_winter_season_still_outranks_the_summer_one():
+    """The ordering is the whole safeguard.
+
+    A glacier that skis through the summer publishes a winter period covering
+    today, and that has to keep deciding - otherwise this rule would close every
+    glacier for the months both periods overlap.
+    """
+    import datetime
+
+    today = datetime.datetime.now().date()
+    winter_start = today - datetime.timedelta(days=30)
+    winter_end = today + datetime.timedelta(days=200)
+    summer_start = today - datetime.timedelta(days=100)
+    summer_end = today + datetime.timedelta(days=12)
+
+    html = f"""
+    <h1 class="text-4xl"><span>Skigebiet</span><span>Schnalstal</span></h1>
+    <dt class="big">Berg (Piste, 3.200m)</dt>
+    <dd class="big">6 cm</dd>
+    <div class="block" x-show="tab == 'winter'">
+      <h3>Saison</h3><p>{winter_start.strftime('%d.%m.%Y')} - {winter_end.strftime('%d.%m.%Y')}</p>
+    </div>
+    <div class="block" x-show="tab == 'summer'">
+      <h3>Saison</h3><p>{summer_start.strftime('%d.%m.%Y')} - {summer_end.strftime('%d.%m.%Y')}</p>
+    </div>
+    <dd>
+      <div class="status-lifte" title="open lift"></div>
+      2 von 11
+    </dd>
+    """
+
+    data = parse_resort_page(html)
+
+    assert data["winter_season_start"] == winter_start
+    assert data["summer_season_end"] == summer_end
+    assert data["status"] == "Open"
+
+
+def test_reported_pistes_still_outrank_both_periods():
+    """Prepared terrain is the most specific signal there is and stays first."""
+    import datetime
+
+    today = datetime.datetime.now().date()
+    summer_start = today - datetime.timedelta(days=100)
+    summer_end = today + datetime.timedelta(days=12)
+
+    html = f"""
+    <h1 class="text-4xl"><span>Skigebiet</span><span>Hintertuxer Gletscher</span></h1>
+    <dt class="big">Berg (Piste, 3.250m)</dt>
+    <dd class="big">25 cm</dd>
+    <div class="block" x-show="tab == 'summer'">
+      <h3>Saison</h3><p>{summer_start.strftime('%d.%m.%Y')} - {summer_end.strftime('%d.%m.%Y')}</p>
+    </div>
+    <dd><div class="status-lifte" title="open lift"></div>4 von 21</dd>
+    <dd><div class="status-lifte" title="open piste"></div>3 von 60</dd>
+    """
+
+    data = parse_resort_page(html)
+
+    assert data["slopes_open_count"] == 3
+    assert data["status"] == "Open"

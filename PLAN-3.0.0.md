@@ -310,25 +310,36 @@ reports today. The Hintertux operator confirms it: 3 lifts, 0 km.
       reading. `hide_closed_resorts` hides only Airolo, Les Saisies and the
       cross-country entry, which are the genuinely between-seasons ones; the
       running glaciers stay on the card under a yellow "Summer season" badge.
-- [x] **A running glacier reports `Closed`, and that stands — decided, not
-      overlooked.** Hintertux on 21 September: 4 of 21 lifts, 25 cm, and two pistes
-      bergfex explicitly marks open, yet the status sensor says Closed. bergfex was
+- [x] **A running glacier: `Closed`, then `Open`, now summer operation — settled
+      by bergfex changing the page mid-afternoon.** Worth the whole story, because
+      the same rule gave three answers in one day without a line of code moving.
+      At 14:36 Hintertux read **Closed**: 4 of 21 lifts and 25 cm, and bergfex was
       still publishing the _finished_ 2025/26 winter period (27.09.2025 –
-      19.07.2026) because the new one is not announced, and `evaluate_status` reads
-      that window. A pre-season glacier is not in the winter season and bergfex's
-      own dates say so, so Closed is the honest answer until the published season
-      starts. Nothing is hidden by it: the card still shows the depth and the lift
-      counts, and the badge resolves to a yellow "Summer season" rather than a red
-      "Closed", so `hide_closed_resorts` leaves the resort on the card.
-      Recorded because the alternative is tempting and was weighed: `evaluate_status`
-      says in its docstring that open pistes decide, while the code reads only the
-      "x of y" summary row, which this page does not print. Letting `open_pistes`
-      stand in would flip exactly one of the eleven test resorts — Hintertux;
-      Sölden runs seven lifts on 23 cm with no piste marked open and would stay
-      Closed. Rejected: it would make the sensor disagree with the season bergfex
-      publishes. Pinned by
-      `test_a_running_glacier_reads_closed_once_the_stale_season_is_attached`, so
-      the behaviour cannot drift back without someone choosing it.
+      19.07.2026), so `evaluate_status` judged today to be outside the season. That
+      was accepted as correct — a pre-season glacier is not in the winter season
+      and bergfex's own dates said so.
+      By evening bergfex had **dropped that stale period**. With no winter dates
+      left, the rule fell through to its last branch, where lifts and snow stand
+      alone, and the same glacier read **Open** — the outcome that had just been
+      rejected, arrived at from the other direction.
+      Open was wrong, and the page says so in as many words. Hintertux's winter
+      tab carries operating hours, no dates, and the sentences "Aktuell KEIN
+      Skibetrieb!" and "Start in die Wintersaison 2026/27: Sobald es die
+      Schneelage zulässt!" — the season has no date because it depends on
+      snowfall. What it does publish is a summer period, 09.05. – 03.10.
+      So the rule gained a fourth step, between the winter season and the bare
+      fallback: **no winter period at all, and a summer one covering today, means
+      summer operation — which is not skiing.** Ordering carries the weight. A
+      glacier that skis through the summer publishes a winter period covering
+      today and is answered by the step above, so nothing closes a resort that is
+      genuinely running; the summer period is never the season, only the answer
+      when there is no winter one to consult. Checked against all eleven resorts
+      in the test instance: exactly one changes, Hintertux, and Schnalstal — a
+      glacier with a current winter season — stays Open.
+      The card now badges it yellow "Summer season" through 03.10. and red
+      "Closed" from the 4th, which is the honest reading of a resort between two
+      seasons. Four tests cover the new step, the ordering against it, and the
+      fallback it must not swallow.
 
 ---
 
