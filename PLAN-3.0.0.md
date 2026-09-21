@@ -186,10 +186,20 @@ reports today. The Hintertux operator confirms it: 3 lifts, 0 km.
       updated to the current spelling. Verified after removal: all 18 languages
       parse the resort name off freshly fetched pages, and price parsing is
       byte-identical across six locales.
-      Every other class the parser hooks was audited at the same time: all still
-      served. `icon-status2` no longer appears, but it is one half of an
+      Every other class the parser hooks was audited at the same time, and three
+      turned out to be dead: a table lookup whose two-class string could never
+      match anything, the `breadcrumb-wrapper` fallback for the older page design
+      (46 pages, all on `ul[aria-label="Breadcrumb"]`), and the
+      `report-label`/`report-info`/`report-value` branch that read cross-country
+      kilometres from a box layout. The last needed a witness rather than an
+      absence — a cross-country area that is not grooming renders no report at
+      all, so September silence proves nothing — and three areas are reporting
+      right now (Ramsau on two domains, Obertauern), all through the `<dl>` the
+      surviving branch reads. All three removed, verified behaviour-neutral over
+      105 pages × 4 parser entry points.
+      `icon-status2` no longer appears either, but it is one half of an
       alternation (`.icon-status1, .icon-status2`) and only ever appeared in one
-      fixture, so there is nothing to conclude from it.
+      fixture, so there is nothing to conclude from it; it stays.
 - [x] **The `values` map, checked against live pages.** Worse than the note said:
       the map is not a translation but a normaliser — each language's "no report"
       wording onto Home Assistant's `unknown`, which is what the card greys out —
