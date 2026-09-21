@@ -1155,9 +1155,7 @@ def parse_cross_country_overview_data(
     soup = BeautifulSoup(html, "lxml")
     results = {}
 
-    table = soup.find("table", class_="status-table touch-scroll-y")
-    if not table:
-        table = soup.find("table", class_="status-table")
+    table = soup.find("table", class_="status-table")
 
     # Fallback: if specific class not found, try to find any table that looks like an overview
     if not table:
