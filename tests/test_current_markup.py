@@ -1,28 +1,17 @@
 """Parse pages captured from the live site *after* bergfex restyled it.
 
-Every other fixture in ``tests/fixtures/`` was captured mid-winter, and that is
-what made the suite blind: bergfex dropped the Tailwind ``tw-`` class prefix
-site-wide, resort-name parsing broke for months, and all 300-odd tests stayed
-green because the saved markup still carried the old classes. A frozen fixture
-can only ever prove the parser reads the site as it *was*.
+Every other fixture was captured mid-winter, so it can only prove the parser
+reads the site as it *was* - which is how the dropped Tailwind ``tw-`` prefix
+broke resort-name parsing for months with the suite green throughout.
 
-These three were captured on 21 September 2026, once the glaciers had started
-running, and they carry no ``tw-`` class anywhere - the prefix is gone from
-every page bergfex serves. They cover the three shapes the integration meets,
-which the winter fixtures cannot show at once:
+These three were captured on 21 September 2026 and carry no ``tw-`` class. They
+cover the shapes the winter fixtures cannot show at once: a running resort
+(Hintertux on its glacier), one between its seasons (Serfaus, every lift turning
+for hikers), and a country overview, the page a country's sensors all share.
 
-* a **running resort** - Hintertux on its glacier, reporting snow, lifts and
-  open pistes outside the main season;
-* an **off-season resort** - Serfaus between its two seasons, running every lift
-  for hikers with no snow report behind them;
-* a **country overview** - the one page a country's sensors all share, and which
-  until now had no captured page at all, only a six-row table written by hand.
-
-They are deliberately *not* refreshed with the rest. Re-capturing the winter
-fixtures in September would replace a populated snow report with an empty one
-and silently delete the coverage that caught the eighteen-language keyword bugs.
-Refresh those when the valley resorts are running - ``scripts/refresh_fixtures.py``
-does it - and keep these as the record of what the restyled page looks like.
+Deliberately not refreshed with the rest: re-capturing the winter fixtures in
+September would replace a populated snow report with an empty one and delete the
+coverage that caught the eighteen-language keyword bugs.
 """
 
 from datetime import date, datetime
@@ -56,11 +45,9 @@ def _fixture(name: str) -> str:
 def test_the_tailwind_prefix_is_gone_from_the_live_pages(name):
     """Pins the finding these fixtures exist to record.
 
-    The parser no longer accepts the prefixed spelling at all, so this is now a
-    real alarm rather than a note: if bergfex brought `tw-` back, resort-name
-    parsing would break again and this is where it shows. It also stops anyone
-    "helpfully" re-capturing these three from an archive of the old markup,
-    which would quietly restore the blind spot.
+    The parser no longer accepts the prefixed spelling, so this is a real alarm:
+    if bergfex brought `tw-` back, resort-name parsing would break again. It also
+    stops anyone re-capturing these three from an archive of the old markup.
     """
     assert "tw-" not in _fixture(name)
 
@@ -231,26 +218,13 @@ def test_a_running_glacier_reads_closed_once_the_stale_season_is_attached():
     """Hintertux on 21 September 2026: 4 of 21 lifts, 25 cm, two pistes bergfex
     marks open - and the integration calls it Closed.
 
-    The fixture alone reads Open, because the season dates are not on the snow
-    report; the integration fetches them from the main page and caches them, and
-    only then does the rule see them. bergfex was still publishing the *finished*
-    2025/26 winter period, 27.09.2025 - 19.07.2026, because the new one is not
-    announced yet - so "today is outside the winter season" is drawn from last
-    season's dates.
-
-    ``evaluate_status`` says in its own docstring that "where bergfex reports
-    open pistes, those decide - that is prepared terrain", but it reads only the
-    "x of y" summary row, which this page does not print. The two open piste rows
-    it does print are ignored.
+    The fixture alone reads Open: the season dates live on the main page, and the
+    integration only merges them in afterwards.
 
     What this pins is that a *published* winter window decides, even one that has
-    already ended - the page is the authority on its own season, and a resort
-    outside it is not skiing. bergfex dropped this particular window hours after
-    the fixture was captured, and the same rule then read Open, which was wrong
-    for a different reason; that case is the summer-operation step, covered in
-    test_seasonal_status.py. The two tests are the two halves of the same rule:
-    here a season is published and decides, there none is and the summer period
-    answers instead.
+    already ended - the page is the authority on its own season. bergfex dropped
+    this window hours after the fixture was captured; what happens then is the
+    summer-operation step, covered in test_seasonal_status.py.
     """
     data = parse_resort_page(
         _fixture("hintertux-glacier-open.html"), "/hintertux/schneebericht/", "at"

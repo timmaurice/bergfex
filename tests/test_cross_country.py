@@ -13,15 +13,11 @@ import pytest
 def test_parse_cross_country_reads_the_heading_and_the_trail_figures():
     """The trail figures used to be read from a `report-info` box as well.
 
-    bergfex does not serve that box any more - twelve cross-country pages
-    checked, three of them actively reporting, and every one uses the `<dl>`
-    below - so the branch that read it was removed and this test rewritten onto
-    the markup that survives.
-
-    The heading is why the test survives at all rather than being deleted with
-    the layout it was written for: it is the only place that pins a
-    cross-country resort name, and that name still carries the page label
-    ("Langlaufen") where the alpine parser strips it.
+    bergfex does not serve that box any more, so the branch that read it was
+    removed and this test rewritten onto the `<dl>` that survives. It is kept
+    rather than deleted because it is the only place pinning a cross-country
+    resort name, which still carries the page label ("Langlaufen") where the
+    alpine parser strips it.
     """
     html = """
     <div class="tailwind">

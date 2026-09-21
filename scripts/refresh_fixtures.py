@@ -1,20 +1,11 @@
 #!/usr/bin/env python3
 """Re-capture the HTML fixtures in ``tests/fixtures/`` from the live pages.
 
-The fixtures are whole bergfex pages, saved once and then frozen. That is what
-makes the suite fast and offline, and also what makes it blind: bergfex dropped
-the Tailwind ``tw-`` class prefix site-wide and resort-name parsing was broken
-for months while every test stayed green, because the saved markup still carried
-the old classes. A fixture is only evidence for as long as it resembles what the
-site serves.
-
-Refreshing them by hand means finding the right url for each of 27 files. The
-url is already in the file - bergfex stamps every page with a canonical link -
-so this reads it back out rather than keeping a second list that could drift
-from the fixtures it describes. A fixture with no canonical link was written by
-hand rather than captured (``lelex-crozet.html`` is a minimal page covering a
-resort that publishes lift counts and no piste figures) and is left alone;
-refetching it would destroy the thing it tests.
+A frozen fixture is only evidence for as long as it resembles what the site
+serves. The url to re-fetch each one from is already in the file - bergfex stamps
+every page with a canonical link - so this reads it back out rather than keeping
+a second list that could drift. A fixture with no canonical link was written by
+hand rather than captured, and is left alone.
 
 Usage::
 

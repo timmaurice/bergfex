@@ -93,13 +93,10 @@ OPTIONAL_KEYS = ["today", "yesterday"]
 # vanish, the site was restructured and the parser is about to break.
 SEASONAL_PAGES = {"snow", "loipen"}
 
-# Deliberately narrow. The reference resorts are a mix of glaciers (Stubai,
-# Soelden, Hintertux) and ordinary areas (Ramsau, Axamer Lizum), and in October
-# and November only the glaciers report, so insisting on a snow report then would
-# produce false alarms - the one failure mode a canary must not have. December to
-# March every reference area is running, and that is also when a broken parser
-# actually hurts users. Restructures outside this window are still caught by the
-# year-round keys, which bergfex publishes all summer.
+# Deliberately narrow: in October and November only the glaciers among the
+# reference resorts report, so demanding a snow report then would raise false
+# alarms - the one failure mode a canary must not have. Restructures outside this
+# window are still caught by the year-round keys.
 IN_SEASON_MONTHS = {12, 1, 2, 3}
 
 
@@ -362,17 +359,11 @@ async def validate_language(session, lang_code, lang_info, global_baseline, sema
 
 # --- Checking the parser rather than the selectors ---------------------------
 #
-# Everything above compares keyword text against page elements, and does it more
-# loosely than the parser does: a substring anywhere in a flat list of elements,
-# where get_text_from_dd wants a <dt> that matches exactly or by prefix. Markup
-# the parser cannot read therefore passed this check for months - "operation"
-# resolved in four of eighteen languages while the daily run reported success.
-#
-# So the parser is also run directly, and the German page is the reference: a
-# field is demanded of a language only where the German page yields it. That is
-# what makes this immune to the season. When bergfex drops the snow report in
-# summer the fields vanish from the reference too, and nothing is demanded -
-# which is the failure mode a canary must not have.
+# Everything above matches keyword text more loosely than the parser does, so
+# markup the parser cannot read still passes it. The parser is therefore run
+# directly as well, with the German page as the reference: a field is demanded of
+# a language only where German yields it, which is what makes this immune to the
+# season.
 PARSER_REFERENCE = {"name": "Hintertux", "path": "/hintertux/schneebericht/"}
 
 PARSER_FIELDS = (
@@ -516,13 +507,10 @@ def report(results, baseline_gaps):
     """Turn the outcomes into a verdict.
 
     A mismatch always fails. An absent structure fails too, unless it is a
-    snow-report key outside the winter season - bergfex removes that block every
-    summer, which is the one case we must not cry wolf about.
+    snow-report key outside the winter season, which bergfex removes every summer.
 
-    The two parser findings always fail, and are not seasonal by construction:
-    both are raised only where the German page carries what the language is
-    missing, so a block bergfex has dropped is absent from the reference as well
-    and asks for nothing.
+    The parser findings always fail, and cannot be seasonal: both are raised only
+    where the German reference page carries what the language is missing.
     """
 
     def of_kind(*kinds):

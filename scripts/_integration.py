@@ -1,18 +1,10 @@
 """Reach the integration's pure-Python modules without its runtime.
 
-``scripts/check_live_site.py`` and ``scripts/check_season_start.py`` want two
-leaf modules - ``const`` and ``parser``. Neither imports Home Assistant; between
-them they need only BeautifulSoup, which is why those workflows install just
-``requirements.txt`` rather than pulling the whole core in to check a page shape.
-
-But the leaves sit inside the integration package, so importing one executes
-``custom_components/bergfex/__init__.py`` - the entire integration runtime, with
-Home Assistant and voluptuous behind it. The scripts used to paper over that by
-faking a hand-written list of ``homeassistant.*`` modules, which put the burden
-in the wrong place: every new import in ``__init__.py`` silently broke a
-scheduled job. Adding ``import homeassistant.helpers.config_validation as cv``
-and ``from .config_flow import entry_area_name`` did exactly that, and the daily
-live check runs unwatched at 02:00, so nobody would have seen it.
+The scripts want two leaf modules - ``const`` and ``parser`` - which need only
+BeautifulSoup, so their workflows install ``requirements.txt`` alone. But the
+leaves sit inside the package, and importing one executes
+``custom_components/bergfex/__init__.py`` with the whole Home Assistant runtime
+behind it.
 
 So take the leaves without the trunk: bind the package name to its directory and
 let the submodules load, leaving ``__init__.py`` unexecuted. Relative imports

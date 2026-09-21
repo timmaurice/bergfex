@@ -1,13 +1,10 @@
 #!/usr/bin/env python3
 """Watch for the point at which refreshing the HTML fixtures becomes worthwhile.
 
-The fixtures were captured mid-winter, so through the summer they describe a page
-shape the live site no longer serves. Refreshing them only pays off once resorts
-are running properly - not merely reporting, which glaciers do year round.
-
-The test for "running properly" is the integration's own ``evaluate_status``: open
-pistes where they are published, and lifts plus snow behind that. Reusing it means
-the watcher cannot drift away from what the integration considers open.
+Refreshing the fixtures only pays off once resorts are running properly - not
+merely reporting, which glaciers do year round. The test for that is the
+integration's own ``evaluate_status``, so the watcher cannot drift away from what
+the integration considers open.
 
 Run directly to see where the glaciers and the valley resorts stand:
 
@@ -32,14 +29,10 @@ _parser = import_integration_module("parser")
 evaluate_status = _parser.evaluate_status
 parse_resort_page = _parser.parse_resort_page
 
-# Two questions, two groups, because they are answered weeks apart.
-#
-# Glaciers start skiing on the first real snowfall, which no calendar predicts -
-# late September in a good year, well into October in a poor one. They report snow
-# all summer, so only prepared piste tells them apart from summer operation.
-#
-# Valley resorts follow in late November or December, and only then does a full
-# fixture refresh cover the page shape ordinary users see.
+# Two groups, because they are answered weeks apart. Glaciers start on the first
+# real snowfall, which no calendar predicts, and report snow all summer - only
+# prepared piste tells them apart from summer operation. Valley resorts follow in
+# late November or December, and only then is a full fixture refresh worthwhile.
 GLACIER_RESORTS = {
     "Hintertuxer Gletscher": "/hintertux/schneebericht/",
     "Sölden": "/soelden/schneebericht/",
