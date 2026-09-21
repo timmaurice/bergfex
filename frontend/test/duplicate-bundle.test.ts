@@ -1,6 +1,7 @@
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+// `?raw` rather than node:fs: these specs run in jsdom, which has no node
+// built-ins - the same reason the Playwright specs are excluded in vitest.config.
+import bundleSource from '../../custom_components/bergfex/bergfex-card.js?raw';
 
 /**
  * Migration blocker B2, exercised against the artefact that actually ships.
@@ -23,7 +24,6 @@ import { resolve } from 'node:path';
  * registration code changes.
  */
 
-const BUNDLE = resolve(__dirname, '../../custom_components/bergfex/bergfex-card.js');
 const ELEMENT = 'bergfex-card';
 
 /**
@@ -35,8 +35,7 @@ const ELEMENT = 'bergfex-card';
  * `window.customCards` push - runs at module scope and is left untouched.
  */
 const loadBundle = (): void => {
-  const code = readFileSync(BUNDLE, 'utf8').replace(/export\s*\{[^}]*\}\s*;?\s*$/, '');
-  new Function(code)();
+  new Function(bundleSource.replace(/export\s*\{[^}]*\}\s*;?\s*$/, ''))();
 };
 
 describe('a leftover copy of the standalone card', () => {
