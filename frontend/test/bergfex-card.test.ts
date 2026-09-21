@@ -668,6 +668,44 @@ describe('BergfexCard', () => {
       );
       expect(names).toEqual(['Many', 'Few']);
     });
+
+    // The snow sorts had only invented figures behind them - a tidy 150/100/50
+    // with every resort reporting. The numbers below are the ones bergfex served
+    // on 21 September 2026, off the same Austrian overview page that is now
+    // captured as tests/fixtures/overview-at-off-season.html. Real data differs
+    // from invented data in two ways that matter here: most resorts sit at a
+    // genuine 0 rather than spreading out, and a resort outside its season
+    // publishes no depth at all.
+    it('sorts by mountain snow, with the resorts reporting none of it last', async () => {
+      const hintertux = createMockResort('hintertux', 'Hintertux', { status: 'Open', snow_mountain: '25' });
+      const soelden = createMockResort('soelden', 'Sölden', { status: 'Open', snow_mountain: '22' });
+      const stubai = createMockResort('stubai', 'Stubaier Gletscher', { status: 'Open', snow_mountain: '0' });
+      // Serfaus is between its two seasons: the snow block is gone from the page
+      // entirely, so the sensor carries `unknown` rather than a number.
+      const serfaus = createMockResort('serfaus', 'Serfaus', { status: 'Closed', snow_mountain: 'unknown' });
+
+      await setupCard({ sort_by: 'mountain' }, stubai, serfaus, hintertux, soelden);
+
+      const names = Array.from(element.shadowRoot?.querySelectorAll('.resort-name') ?? []).map((e) =>
+        e.textContent?.trim(),
+      );
+      expect(names).toEqual(['Hintertux', 'Sölden', 'Stubaier Gletscher', 'Serfaus']);
+    });
+
+    it('keeps a resort that reports no valley depth out of the lead', async () => {
+      // A glacier reports a mountain depth and no valley one - Hintertux had 25 cm
+      // up top and no valley row at all. Sorting by valley must not float it above
+      // a resort that actually reported, however deep its mountain snow is.
+      const glacier = createMockResort('hintertux', 'Hintertux', { status: 'Open', snow_mountain: '25' });
+      const reporting = createMockResort('warth', 'Warth', { status: 'Closed', snow_valley: '0' });
+
+      await setupCard({ sort_by: 'valley' }, glacier, reporting);
+
+      const names = Array.from(element.shadowRoot?.querySelectorAll('.resort-name') ?? []).map((e) =>
+        e.textContent?.trim(),
+      );
+      expect(names).toEqual(['Warth', 'Hintertux']);
+    });
   });
 
   describe('Status badge', () => {
