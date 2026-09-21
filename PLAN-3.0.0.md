@@ -149,12 +149,35 @@ reports today. The Hintertux operator confirms it: 3 lifts, 0 km.
       Two groups, because they open weeks apart and mean different things: the
       glaciers first, on the first real snowfall, which no calendar predicts; the
       valley resorts in late November or December. Each carries its own checklist.
-- [ ] Refresh all 27 fixtures from live pages; commit the diff separately so parser
-      drift stays reviewable.
-- [ ] **Sweep for further dead `tw-` selectors.** bergfex dropped the Tailwind
-      prefix site-wide and it broke resort-name parsing for months while the suite
-      stayed green, because the winter fixtures still carry the old markup. Others
-      may be dead too and cannot be found until the fixtures are current.
+- [x] **Fixtures: captured, not refreshed — the blanket refresh was the wrong
+      move and the attempt proves it.** All 26 capturable fixtures were re-fetched
+      on 21 September and the suite went from 310 green to 26 red, every failure
+      for want of data rather than for drift: Serfaus in September publishes no
+      snow report at all, so the refresh replaced a populated report with an empty
+      one and deleted the coverage that caught the eighteen-language keyword bugs.
+      The losses were identical across all 18 languages and **nothing was gained
+      anywhere** — no new field, no changed shape. That uniformity is the finding:
+      there is no parser drift on the resort page.
+      So the winter corpus stays, and three September captures are added beside
+      it — `hintertux-glacier-open` (running: 25 cm, 4/21 lifts, two open pistes),
+      `serfaus-off-season` (11/11 lifts for hikers, no snow behind them) and
+      `overview-at-off-season` (the Austrian country page, 109 resorts, which had
+      never had a captured page at all — only a six-row table written by hand).
+      `cortina_loipen` was refreshed in place; it was already an empty summer page.
+      The blanket refresh belongs to the **valley** trigger in `season_watch.yml`,
+      in late November, when the live pages actually carry the winter shape. Today
+      only the glacier trigger has fired. `scripts/refresh_fixtures.py` does the
+      job when it is time — it reads each fixture's own canonical link rather than
+      keeping a second list of urls, and leaves hand-written fixtures alone.
+- [x] **`tw-` sweep: the prefix is gone from every page bergfex serves.** Zero
+      occurrences across all 26 re-fetched pages, against ~2,100 per page before.
+      The only two left in the repo are in `lelex-crozet.html`, the hand-written
+      stub that exists to pin the old spelling. Both parser sites already accept
+      either form, and the three new fixtures now guard it. Every other class the
+      parser hooks was audited against the live pages at the same time: all still
+      served. `icon-status2` no longer appears, but it is one half of an
+      alternation (`.icon-status1, .icon-status2`) and only ever appeared in one
+      fixture, so there is nothing to conclude from it.
 - [x] **The `values` map, checked against live pages.** Worse than the note said:
       the map is not a translation but a normaliser — each language's "no report"
       wording onto Home Assistant's `unknown`, which is what the card greys out —
@@ -210,7 +233,18 @@ reports today. The Hintertux operator confirms it: 3 lifts, 0 km.
       `legacy_unique_id_prefixes()` derives the migration prefixes from it, so
       rewriting it would strand un-migrated entities. A device the user renamed
       keeps their name, since `name_by_user` is what Home Assistant displays.
-- [ ] Fix whatever else the season's markup broke.
+- [x] **Nothing else the season's markup broke.** The full re-fetch is the
+      evidence: no field appeared that the parser does not read, and the region
+      snow-report urls the coordinator builds still serve on every domain
+      (`bergfex.at/tirol/`, `bergfex.fr/auvergne-rhone-alpes/`,
+      `ru.bergfex.com/tirol/`, `bergfex.ch/tessin/` — all 200). All eleven entries
+      in the test instance fetched successfully with no warning or error in the
+      log beyond Home Assistant's standard custom-integration notice.
+      One cosmetic inconsistency found and **left alone**: the cross-country
+      parser keeps the page label in the resort name ("Loipenbericht Sölden",
+      "Trail report 3 Zinnen Dolomites") where the alpine parser strips it. It
+      predates the restyle — the winter fixture does the same — so it is not
+      season drift, and changing it renames existing devices and entities.
 - [x] **Close the hole that hid both of the above.** `check_live_site.py` matched
       keywords as a substring anywhere in a list of elements, while the parser
       matches a `<dt>` exactly or by prefix. The looser test passed on markup the
@@ -224,10 +258,56 @@ reports today. The Hintertux operator confirms it: 3 lifts, 0 km.
       the run outright. Proven both ways — exit 1 with "14 unparsed fields, 25
       unnormalised phrases" against the pre-fix code, exit 0 clean against the
       fixed one.
-- [ ] Verify what only real data can show: trend indicators against genuine 24 h
-      history, and snow sorting against real values rather than injected ones.
-- [ ] Full end-to-end in the `ha-bergfex-test` docker instance with a resort that
-      is actually running.
+- [x] **Trend indicators: broken twice over, and the suite could not see it.**
+      The card's test harness assigned `hass` before calling `setConfig`, which is
+      the reverse of what Home Assistant does, so neither defect was reachable.
+      The baseline was **never fetched on load** — Home Assistant creates the
+      element, calls `setConfig`, and assigns `hass` afterwards, so the fetch in
+      `setConfig` always ran with no `hass`, and `shouldUpdate` then took its early
+      return because `_config` had just changed. A freshly loaded dashboard showed
+      no arrows at all. Then on every later update it fetched **again**: the guard
+      compared `changedProperties.get('_config')?.show_trend`, but `_config` had
+      not changed, so the left side was always `undefined` and the guard always
+      true — and Home Assistant hands every card a new `hass` whenever any entity
+      in the instance changes. Several recorder queries a second for a number that
+      moves a few times a day. Now keyed on what the answer depends on: the
+      entities compared, their current values, and the hour (the 24 h window slides
+      even when the page does not). Two tests drive the real order; the second
+      fails with 5 recorder calls against the old code where it now expects 0.
+- [x] **Snow sorting against real values: correct as it stands.** Re-tested with
+      the depths bergfex served on 21 September rather than a tidy 150/100/50 —
+      Hintertux 25, Sölden 22, Stubai 0, Serfaus unreported. The genuine zero sorts
+      as a zero and the unreported resort goes last; a glacier with no valley row
+      does not float above a resort that reported one. Recorded because nothing
+      proved it before.
+- [x] **Full end-to-end in `ha-bergfex-test`, with three glaciers running.**
+      All eleven entries fetched successfully. Schnalstal reads **Open** (6 cm,
+      2/11 lifts, season 19.09.2026 – 09.05.2027). Prices, winter and summer
+      periods, operating hours, forecast images and the per-language `unknown`
+      normalisation all parse — Serfaus on the Hungarian domain returns a complete
+      reading. `hide_closed_resorts` hides only Airolo, Les Saisies and the
+      cross-country entry, which are the genuinely between-seasons ones; the
+      running glaciers stay on the card under a yellow "Summer season" badge.
+- [ ] **Open question — a running glacier reports `Closed`.** Hintertux on
+      21 September: 4 of 21 lifts, 25 cm, and two pistes bergfex explicitly marks
+      open, yet the status sensor says Closed. bergfex was still publishing the
+      _finished_ 2025/26 winter period (27.09.2025 – 19.07.2026) because the new
+      one is not announced, and `evaluate_status` reads that stale window as if it
+      described today. Its own docstring says "where bergfex reports open pistes,
+      those decide — that is prepared terrain", but the code reads only the
+      "x of y" summary row, which this page does not print; the two open piste
+      rows it does print are ignored.
+      The narrow fix is to let `open_pistes` stand in when the summary row is
+      absent. It can only ever flip Closed → Open where bergfex has explicitly
+      flagged a piste open, so the August case the seasonal rule exists for
+      (305 cm, 3 lifts, 0 km prepared, no piste marked open) is unaffected. Of the
+      eleven resorts in the test instance exactly one would change: Hintertux.
+      Sölden runs seven lifts on 23 cm with no piste marked open and stays Closed.
+      Not done, because what "Open" should mean for a pre-season glacier is a
+      decision about the sensor rather than a parsing bug, and the seasonal rule
+      was chosen deliberately in Phase 0. Pinned meanwhile by
+      `test_a_running_glacier_reads_closed_once_the_stale_season_is_attached`, so
+      whichever way it goes the change is deliberate.
 
 ---
 

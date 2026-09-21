@@ -25,12 +25,16 @@ Refresh those when the valley resorts are running - ``scripts/refresh_fixtures.p
 does it - and keep these as the record of what the restyled page looks like.
 """
 
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
 
 import pytest
 
-from custom_components.bergfex.parser import parse_overview_data, parse_resort_page
+from custom_components.bergfex.parser import (
+    evaluate_status,
+    parse_overview_data,
+    parse_resort_page,
+)
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -218,3 +222,41 @@ def test_the_overview_status_is_coarser_and_never_reaches_the_sensor():
 
     assert overview["/serfaus-fiss-ladis/schneebericht/"]["status"] == "Open"
     assert resort["status"] == "Closed"
+
+
+# --- The gap the live instance exposed --------------------------------------
+
+
+def test_a_running_glacier_reads_closed_once_the_stale_season_is_attached():
+    """Hintertux on 21 September 2026: 4 of 21 lifts, 25 cm, two pistes bergfex
+    marks open - and the integration calls it Closed.
+
+    The fixture alone reads Open, because the season dates are not on the snow
+    report; the integration fetches them from the main page and caches them, and
+    only then does the rule see them. bergfex was still publishing the *finished*
+    2025/26 winter period, 27.09.2025 - 19.07.2026, because the new one is not
+    announced yet - so "today is outside the winter season" is drawn from last
+    season's dates.
+
+    ``evaluate_status`` says in its own docstring that "where bergfex reports
+    open pistes, those decide - that is prepared terrain", but it reads only the
+    "x of y" summary row, which this page does not print. The two open piste rows
+    it does print are ignored.
+
+    This pins what the integration does today rather than what it should do:
+    whether a pre-season glacier counts as Open is a decision about what the
+    status sensor means, not a parsing bug. Of the eleven resorts in the test
+    instance only this one is affected - Sölden is running seven lifts on 23 cm
+    and bergfex marks no piste open there at all.
+    """
+    data = parse_resort_page(
+        _fixture("hintertux-glacier-open.html"), "/hintertux/schneebericht/", "at"
+    )
+    assert len(data["open_pistes"]) == 2
+    assert evaluate_status(data) == "Open"
+
+    # What the coordinator actually hands the rule, season dates included.
+    data["winter_season_start"] = date(2025, 9, 27)
+    data["winter_season_end"] = date(2026, 7, 19)
+
+    assert evaluate_status(data) == "Closed"
