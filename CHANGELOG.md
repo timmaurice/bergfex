@@ -3,7 +3,7 @@
 All notable changes to this project are documented here.
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [3.0.0] — 2026-09-12
+## [3.0.0] — unreleased
 
 The `2.4.0` line was never released. Its three betas (`2.4.0b1`, `2.4.0b2`,
 `2.4.0b3`) shipped only as pre-releases; everything they contained is part of
@@ -129,6 +129,21 @@ The `2.4.0` line was never released. Its three betas (`2.4.0b1`, `2.4.0b2`,
   every poll - the snow report and all six forecast pages.
 - A deprecated `device_registry.async_get_device` call that Home Assistant drops
   in 2027.8.0.
+- **The card was sized wrongly in the sections grid.** It handed the grid its
+  masonry size - a hand-maintained model of its own layout, in the wrong unit -
+  which could not account for what the card actually renders: a resort whose
+  sensor is missing, or an accordion the user has collapsed. Home Assistant now
+  measures the rendered card itself.
+- **The 24-hour trend arrows never appeared on a freshly loaded dashboard**, and
+  then queried the recorder far too often. Home Assistant creates a card, calls
+  `setConfig`, and only afterwards hands it `hass` - so the history fetch, which
+  ran from `setConfig`, always ran with no connection to fetch over. On later
+  updates the opposite happened: the guard compared against a config that had not
+  changed, so it was always true, and since Home Assistant hands every card a new
+  `hass` whenever any entity in the instance changes, a busy instance produced
+  several history queries a second. The baseline is now read once per change that
+  could affect it, and re-read hourly because the 24-hour window slides even when
+  nothing on the page moves.
 
 ### Security
 
