@@ -54,7 +54,7 @@ def test_the_panel_keys_carry_the_season():
 def test_a_summer_page_does_not_count_as_open():
     """Serfaus in August: every lift running for hikers, one piste, no snow."""
     html = """
-    <h1 class="tw-text-4xl"><span>Schneebericht</span><span>Serfaus</span></h1>
+    <h1 class="text-4xl"><span>Schneebericht</span><span>Serfaus</span></h1>
     <dd><div class="status-lifte" title="open lift"></div>11 von 11</dd>
     <dd><div class="status-lifte" title="open piste"></div>1 von 110</dd>
     """
@@ -63,7 +63,7 @@ def test_a_summer_page_does_not_count_as_open():
 
 def test_a_winter_page_counts_as_open():
     html = """
-    <h1 class="tw-text-4xl"><span>Schneebericht</span><span>Serfaus</span></h1>
+    <h1 class="text-4xl"><span>Schneebericht</span><span>Serfaus</span></h1>
     <dt class="big">Berg (Piste, 2.700m)</dt>
     <dd class="big">75 cm</dd>
     <dd><div class="status-lifte" title="open lift"></div>37 von 38</dd>

@@ -12,9 +12,9 @@ Refreshing them by hand means finding the right url for each of 27 files. The
 url is already in the file - bergfex stamps every page with a canonical link -
 so this reads it back out rather than keeping a second list that could drift
 from the fixtures it describes. A fixture with no canonical link was written by
-hand rather than captured (``lelex-crozet.html`` is a minimal page pinning the
-old ``tw-`` spelling) and is left alone; refetching it would destroy the thing
-it tests.
+hand rather than captured (``lelex-crozet.html`` is a minimal page covering a
+resort that publishes lift counts and no piste figures) and is left alone;
+refetching it would destroy the thing it tests.
 
 Usage::
 

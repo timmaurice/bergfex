@@ -524,11 +524,12 @@ def parse_resort_page(
     # Resort Name
     h1_tag = soup.find("h1")
     if h1_tag:
-        # bergfex dropped the Tailwind "tw-" class prefix; accept both spellings so
-        # the split-span heading keeps parsing. Without the branch below the
-        # fallback glues the page label onto the name ("SchneeberichtSerfaus").
+        # The heading splits the page label and the resort name into two spans.
+        # Without this branch the fallback below glues them together
+        # ("SchneeberichtSerfaus"), which is what happened for months when
+        # bergfex dropped the Tailwind "tw-" prefix and the class stopped matching.
         h1_classes = h1_tag.get("class") or []
-        if any(c in h1_classes for c in ("tw-text-4xl", "text-4xl")):
+        if "text-4xl" in h1_classes:
             spans = h1_tag.find_all("span")
             if len(spans) > 1:
                 area_data["resort_name"] = spans[1].text.strip()
@@ -916,13 +917,13 @@ def parse_resort_page(
     if price_header:
         parent = price_header.find_parent("div")
         if parent:
-            # Check siblings and children for tw-text-2xl which usually contains the price
+            # Check siblings and children for text-2xl, which usually holds the price
             search_area = parent.find_next_sibling("div")
             if not search_area:
                 search_area = parent.parent
 
             if search_area:
-                price_val = search_area.select_one("div.tw-text-2xl, div.text-2xl")
+                price_val = search_area.select_one("div.text-2xl")
                 if price_val:
                     area_data["price"] = price_val.get_text().strip()
 

@@ -57,11 +57,10 @@ GROUPS = {
     },
     "main_labels": {
         "page": "main",
-        # bergfex dropped the Tailwind `tw-` class prefix at some point; both are
-        # matched so the check keeps working across the change.
+        # bergfex dropped the Tailwind `tw-` class prefix site-wide. Both spellings
+        # were matched here through the transition; the prefixed one is gone now.
         "selector": (
-            "span.tw-font-semibold, span.font-semibold, div.box-header, "
-            "dt, th, h2, h3, a.link-preise"
+            "span.font-semibold, div.box-header, dt, th, h2, h3, a.link-preise"
         ),
         "keys": ["operating_hours", "season", "prices"],
         "strict": False,  # because it often has trailing colons

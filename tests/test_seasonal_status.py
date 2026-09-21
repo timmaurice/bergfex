@@ -12,7 +12,7 @@ def test_parse_season_dates_open():
     end_year = today.year + 1
 
     html = f"""
-    <h1 class="tw-text-4xl"><span>Ski resort</span><span>Test Resort</span></h1>
+    <h1 class="text-4xl"><span>Ski resort</span><span>Test Resort</span></h1>
     <dt class="big">Berg (Piste, 3.250m)</dt>
     <dd class="big">80 cm</dd>
     <div class="block" x-show="tab == 'winter'">
@@ -41,7 +41,7 @@ def test_parse_season_dates_en_dash():
 
     # Using en-dash (–) instead of hyphen (-)
     html = f"""
-    <h1 class="tw-text-4xl"><span>Ski resort</span><span>Test Resort</span></h1>
+    <h1 class="text-4xl"><span>Ski resort</span><span>Test Resort</span></h1>
     <dt class="big">Berg (Piste, 3.250m)</dt>
     <dd class="big">80 cm</dd>
     <div class="block" x-show="tab == 'winter'">
@@ -68,7 +68,7 @@ def test_time_based_closure_before():
     mock_now = datetime.datetime(2026, 1, 1, 7, 0, 0)
 
     html = f"""
-    <h1 class="tw-text-4xl"><span>Ski resort</span><span>Test Resort</span></h1>
+    <h1 class="text-4xl"><span>Ski resort</span><span>Test Resort</span></h1>
     <dt>Betrieb:</dt>
     <dd>08:30 - 16:45</dd>
     <dd>
@@ -96,7 +96,7 @@ def test_time_based_closure_after():
     mock_now = datetime.datetime(2026, 1, 1, 18, 0, 0)
 
     html = f"""
-    <h1 class="tw-text-4xl"><span>Ski resort</span><span>Test Resort</span></h1>
+    <h1 class="text-4xl"><span>Ski resort</span><span>Test Resort</span></h1>
     <dt>Betrieb:</dt>
     <dd>08:30 - 16:45</dd>
     <dd>
@@ -122,7 +122,7 @@ def test_out_of_season_without_piste_figures_is_closed():
     end_year = today.year - 1
 
     html = f"""
-    <h1 class="tw-text-4xl"><span>Ski resort</span><span>Test Resort</span></h1>
+    <h1 class="text-4xl"><span>Ski resort</span><span>Test Resort</span></h1>
     <dt class="big">Berg (Piste, 3.250m)</dt>
     <dd class="big">80 cm</dd>
     <div class="block" x-show="tab == 'winter'">
@@ -145,7 +145,7 @@ def test_out_of_season_without_piste_figures_is_closed():
 def test_reported_pistes_decide_when_they_exist():
     """The most specific signal wins: prepared terrain beats lifts and snow."""
     html = """
-    <h1 class="tw-text-4xl"><span>Ski resort</span><span>Test Resort</span></h1>
+    <h1 class="text-4xl"><span>Ski resort</span><span>Test Resort</span></h1>
     <dt class="big">Berg (Piste, 3.250m)</dt>
     <dd class="big">180 cm</dd>
     <dd><div class="status-lifte" title="open lift"></div>8 von 10</dd>
@@ -156,7 +156,7 @@ def test_reported_pistes_decide_when_they_exist():
 
 def test_one_open_piste_is_enough():
     html = """
-    <h1 class="tw-text-4xl"><span>Ski resort</span><span>Test Resort</span></h1>
+    <h1 class="text-4xl"><span>Ski resort</span><span>Test Resort</span></h1>
     <dt class="big">Berg (Piste, 3.250m)</dt>
     <dd class="big">180 cm</dd>
     <dd><div class="status-lifte" title="open lift"></div>8 von 10</dd>
@@ -168,7 +168,7 @@ def test_one_open_piste_is_enough():
 def test_lifts_without_snow_are_not_open():
     """Summer operation: a lift runs for hikers and there is nothing to ski on."""
     html = """
-    <h1 class="tw-text-4xl"><span>Ski resort</span><span>Test Resort</span></h1>
+    <h1 class="text-4xl"><span>Ski resort</span><span>Test Resort</span></h1>
     <dt class="big">Tal (Piste, 1.495m)</dt>
     <dd class="big">0 cm</dd>
     <dd>
@@ -183,7 +183,7 @@ def test_lifts_without_snow_are_not_open():
 
 def test_snow_without_a_running_lift_is_not_open():
     html = """
-    <h1 class="tw-text-4xl"><span>Ski resort</span><span>Test Resort</span></h1>
+    <h1 class="text-4xl"><span>Ski resort</span><span>Test Resort</span></h1>
     <dt class="big">Berg (Piste, 3.250m)</dt>
     <dd class="big">180 cm</dd>
     """
@@ -195,7 +195,7 @@ def test_snow_without_a_running_lift_is_not_open():
 def test_valley_snow_alone_is_enough():
     """Some areas only report a valley depth."""
     html = """
-    <h1 class="tw-text-4xl"><span>Ski resort</span><span>Test Resort</span></h1>
+    <h1 class="text-4xl"><span>Ski resort</span><span>Test Resort</span></h1>
     <dt class="big">Tal (Piste, 1.400m)</dt>
     <dd class="big">40 cm</dd>
     <dd>

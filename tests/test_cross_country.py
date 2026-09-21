@@ -13,8 +13,8 @@ import pytest
 def test_parse_cross_country_achensee_overview():
     html = """
     <div class="tailwind">
-    <h1 class="tw-text-4xl">
-    <span class="tw-font-normal">Langlaufen</span>
+    <h1 class="text-4xl">
+    <span class="font-normal">Langlaufen</span>
     <span>Achensee - Tirols Sport & Vital Park</span>
     </h1>
     </div>

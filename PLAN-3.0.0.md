@@ -171,10 +171,22 @@ reports today. The Hintertux operator confirms it: 3 lifts, 0 km.
       keeping a second list of urls, and leaves hand-written fixtures alone.
 - [x] **`tw-` sweep: the prefix is gone from every page bergfex serves.** Zero
       occurrences across all 26 re-fetched pages, against ~2,100 per page before.
-      The only two left in the repo are in `lelex-crozet.html`, the hand-written
-      stub that exists to pin the old spelling. Both parser sites already accept
-      either form, and the three new fixtures now guard it. Every other class the
-      parser hooks was audited against the live pages at the same time: all still
+      Widened afterwards to six locales' main pages — the one page type the snow
+      reports do not cover, and where the price selector lives: `tw-` zero on all
+      six, `text-2xl` and `font-semibold` present on all six.
+      **The dual-spelling support is now removed**, in both parser sites and the
+      canary. What stood in the way was not the live site but the winter fixtures,
+      which are pre-restyle captures and still carry `tw-text-4xl`: dropping the
+      prefix turned 24 tests red, all of them on `resort_name` and nothing else.
+      Hand-editing the class inside 26 captured pages would have made them
+      something bergfex never served, so instead those tests now assert the name
+      with `endswith` and say why — they exist for the language keyword map, and
+      name parsing is covered against current markup in `test_current_markup.py`.
+      `lelex-crozet.html` was hand-written rather than captured, so it was simply
+      updated to the current spelling. Verified after removal: all 18 languages
+      parse the resort name off freshly fetched pages, and price parsing is
+      byte-identical across six locales.
+      Every other class the parser hooks was audited at the same time: all still
       served. `icon-status2` no longer appears, but it is one half of an
       alternation (`.icon-status1, .icon-status2`) and only ever appeared in one
       fixture, so there is nothing to conclude from it.

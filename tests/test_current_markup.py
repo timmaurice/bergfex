@@ -56,11 +56,11 @@ def _fixture(name: str) -> str:
 def test_the_tailwind_prefix_is_gone_from_the_live_pages(name):
     """Pins the finding these fixtures exist to record.
 
-    Not a rule bergfex has to keep - if the prefix comes back this fails, and
-    the answer is to note that it did, not to force it. What the assertion is
-    for is the opposite direction: it stops anyone "helpfully" re-capturing
-    these three from an archive of the old markup, which would quietly restore
-    the blind spot.
+    The parser no longer accepts the prefixed spelling at all, so this is now a
+    real alarm rather than a note: if bergfex brought `tw-` back, resort-name
+    parsing would break again and this is where it shows. It also stops anyone
+    "helpfully" re-capturing these three from an archive of the old markup,
+    which would quietly restore the blind spot.
     """
     assert "tw-" not in _fixture(name)
 
