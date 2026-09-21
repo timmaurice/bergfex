@@ -4,10 +4,8 @@ import { localize } from './localize';
 /**
  * Why something the config names could not be used.
  *
- * A reason rather than a bare `undefined`, because the card has to be able to
- * tell the user which of these it hit. A resort that was renamed away, one whose
- * integration failed to load, and one that is simply reporting nothing all used
- * to look identical from the outside: an empty card.
+ * A reason rather than a bare `undefined`: a resort renamed away, one whose
+ * integration failed to load and one reporting nothing look identical otherwise.
  */
 export type ResolutionProblem =
   | { reason: 'not_found'; subject: string }
@@ -72,12 +70,9 @@ export interface ResolvedResort {
 /**
  * Look up a resort device and the entities that belong to it.
  *
- * The card is configured with device ids, so this is the resolution that
- * actually decides whether a card row can be drawn. It used to be a silent
- * `return`: a device id that no longer exists - the integration removed, the
- * resort deleted, a config copied between instances - dropped the resort from
- * the list entirely and the user was left looking at an empty card with no
- * indication that anything was wrong.
+ * The card is configured with device ids, so this decides whether a row can be
+ * drawn at all. A device id that no longer exists returns a problem rather than
+ * nothing, so the row can say so instead of silently disappearing.
  */
 export function resolveResort(
   hass: HomeAssistant | undefined,

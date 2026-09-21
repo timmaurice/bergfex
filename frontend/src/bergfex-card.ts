@@ -65,17 +65,10 @@ const NO_REPORT_STATES = [
   'unknown',
   'unavailable',
   'none',
-  // The wording is taken from the integration's own KEYWORDS map in
-  // const.py, which is what bergfex actually prints on each language's pages.
-  // Seven languages were listed here and eleven were not, so a resort set up
-  // in Hungarian showed "nincs jelentés" as if it were a snow condition.
-  //
-  // Those entries then turned out to be wrong for fourteen of the eighteen: the
-  // phrases below marked (live) were read off bergfex on 2026-09-12 by taking the
-  // German page of the same resort and field as the reference. The older
-  // spellings are kept - bergfex is not consistent between its own pages, and
-  // the integration normalises what it recognises to `unknown` anyway, so this
-  // list only has to catch what reaches the card unnormalised.
+  // Taken from the integration's KEYWORDS map in const.py. Entries marked (live)
+  // were read off bergfex directly; the older spellings are kept because bergfex
+  // is not consistent between its own pages. The integration normalises what it
+  // recognises, so this only has to catch what arrives unnormalised.
   'keine meldung', // at/de
   'no information', // en (live)
   'no info', // en (live)
@@ -188,13 +181,10 @@ export class BergfexCard extends LitElement implements LovelaceCard {
   /**
    * The config the card picker previews, and the one "add card" starts from.
    *
-   * Home Assistant calls this before the element has a hass of its own, and on
-   * an instance that may have no bergfex resort at all, so nothing in here may
-   * throw - a stub that throws leaves the picker showing an error tile.
-   *
-   * It returns `resorts` and nothing else on purpose. Every other setting has a
-   * default in DEFAULT_CONFIG, and writing those into the saved config would
-   * freeze today's defaults into every card anyone ever adds.
+   * Called before the element has a hass, on an instance that may have no
+   * bergfex resort, so nothing here may throw. Returns `resorts` and nothing
+   * else on purpose: writing the other defaults into the saved config would
+   * freeze today's defaults into every card anyone adds.
    */
   public static getStubConfig(hass?: HomeAssistant, entities?: string[]): Record<string, unknown> {
     const firstResort = BergfexCard._firstResortDevice(hass, entities);
@@ -220,9 +210,8 @@ export class BergfexCard extends LitElement implements LovelaceCard {
   /**
    * How tall the card is in a masonry column, in rows of roughly 50px.
    *
-   * A fixed 3 made a card with six resorts claim the height of a card with one,
-   * so masonry packed the column wrongly and the layout jumped once the real
-   * card rendered.
+   * Derived from the resorts rather than fixed, or masonry packs the column
+   * against the height of a one-resort card.
    */
   public getCardSize(): number {
     const resorts = this._config?.resorts?.length ?? 0;
@@ -243,17 +232,12 @@ export class BergfexCard extends LitElement implements LovelaceCard {
   /**
    * How the card asks to be placed on a sections dashboard.
    *
-   * Without this a section gives every custom card the same default box, so a
-   * six-resort card was cropped and a one-resort card floated in whitespace.
+   * Without this a section gives every custom card the same default box.
    *
-   * `rows: 'auto'` rather than `getCardSize()`. That number counts the card's
-   * sections and multiplies by the resorts, which is a model of the card kept
-   * in step with the real one by hand - and a masonry row is not a grid row
-   * anyway, so the two units were being mixed. It also cannot know what the
-   * card leaves out: a resort whose sensor is missing, an accordion the user
-   * has since collapsed. Home Assistant measures the rendered card, which is
-   * always right and stays right. `getCardSize()` remains for masonry, which
-   * has no auto.
+   * `rows: 'auto'` rather than `getCardSize()`: that is a masonry number, and a
+   * hand-maintained model of the layout that cannot know what the card leaves
+   * out. Home Assistant measures the rendered card instead. `getCardSize()`
+   * remains for masonry, which has no auto.
    */
   public getGridOptions(): LovelaceGridOptions {
     return { columns: 'full', min_columns: 6, rows: 'auto', min_rows: 2 };
@@ -429,12 +413,9 @@ export class BergfexCard extends LitElement implements LovelaceCard {
 
       const hasChanged = [...watched].some((entity) => oldHass.states[entity] !== this.hass.states[entity]);
 
-      // The language is not the only thing the card reads off `hass`: the
-      // forecast date and the season teaser format against `locale.language`,
-      // and every number goes through `locale.number_format`. Watching only
-      // `language` meant a profile change that touched just the locale left the
-      // card showing the previous format until something else happened to
-      // re-render it.
+      // Not just `language`: dates format against `locale.language` and numbers
+      // against `locale.number_format`, so a locale-only profile change has to
+      // re-render too.
       const localeChanged =
         oldHass.language !== this.hass.language ||
         oldHass.locale?.language !== this.hass.locale?.language ||
@@ -471,17 +452,11 @@ export class BergfexCard extends LitElement implements LovelaceCard {
   /**
    * Fetch the 24-hour-old baseline, but only when it would answer differently.
    *
-   * Home Assistant hands every card a new `hass` object whenever any entity in
-   * the instance changes - a light, a doorbell, anything - and this used to
-   * re-ask the recorder each time, because the guard compared against a config
-   * that had not changed and so was always `undefined`. On a busy instance that
-   * is several websocket history queries a second for a number that moves a few
-   * times a day.
-   *
-   * So key the fetch on what the answer actually depends on: which entities are
-   * being compared, what they read now, and which hour it is - the window slides
-   * even when nothing on the page moves, so an unchanged card still re-reads its
-   * baseline once an hour rather than never.
+   * Home Assistant hands every card a new `hass` whenever any entity in the
+   * instance changes, so keying off that alone asked the recorder several times
+   * a second. Key it on what the answer depends on instead: the entities
+   * compared, their current values, and the hour - the 24-hour window slides
+   * even when nothing on the page moves.
    */
   private _refreshTrendBaseline(): void {
     if (!this.hass || !this._config?.show_trend) {
@@ -572,19 +547,13 @@ export class BergfexCard extends LitElement implements LovelaceCard {
   /**
    * Drop forecast images that cannot render, and keep one per day or interval.
    *
-   * The integration has changed its unique id scheme, and where an installation
-   * carries entities from more than one of them the registry holds both. The
-   * superseded rows have no entity behind them any more: Home Assistant keeps
-   * them in `states` as `unavailable` with `restored` set, and they sat on the
-   * same device as the live ones, so the carousel collected twice as many
-   * images and every second slot rendered "Image not available".
+   * Where an install carries rows from more than one unique id scheme, the
+   * superseded ones sit on the same device with nothing behind them, and the
+   * carousel collected twice as many images.
    *
-   * Matching on `restored` rather than on `unavailable` is deliberate - a
-   * resort whose coordinator is failing is unavailable too, and that is worth
-   * showing rather than hiding.
-   *
-   * The states are read off the `hass` passed in, not off `this.hass`: the
-   * caller is also used to build the previous picture in shouldUpdate.
+   * Matched on `restored`, not `unavailable`: a resort whose coordinator is
+   * failing is unavailable too, and that is worth showing. The states come off
+   * the `hass` passed in, because shouldUpdate also calls this with the old one.
    */
   private _usableForecastImages(hass: HomeAssistant, entityIds: string[] | undefined, key: RegExp): string[] {
     if (!entityIds) return [];
@@ -616,15 +585,9 @@ export class BergfexCard extends LitElement implements LovelaceCard {
     } else if (dayOffset === 1) {
       return localize(this.hass, 'component.bergfex-card.card.forecast.tomorrow');
     } else {
-      // The day and month were assembled by hand as "02.12.", which is the
-      // German order printed at every user regardless of their locale. Intl
-      // knows the right order and separator for each one.
-      //
-      // The month is named for the same reason the season teaser names it: an
-      // all-numeric "12/04" is the 12th of April or the 4th of December
-      // depending on who reads it. A forecast date is only five days out, so
-      // context narrows it - but there is no reason for the two dates in one
-      // card to disagree on the format.
+      // Intl knows each locale's order and separator; hand-assembling "02.12."
+      // printed the German order at everyone. The month is named because an
+      // all-numeric "12/04" reads both ways, matching the season teaser.
       const locale = this.hass.locale?.language || this.hass.language || 'en';
       return date.toLocaleDateString(locale, { weekday: 'short', day: 'numeric', month: 'short' });
     }
@@ -642,29 +605,19 @@ export class BergfexCard extends LitElement implements LovelaceCard {
   /**
    * Whether a state carries no report at all.
    *
-   * bergfex writes "no report" in the language of the page the resort was set
-   * up in, and Home Assistant has its own two words for it. Only the German one
-   * was listed, so a resort configured in English, French or Italian printed
-   * bergfex's own phrase - or "unavailable" - into the card as if it were a
-   * snow condition.
+   * bergfex writes it in the language the resort was set up in, and Home
+   * Assistant has its own two words for it.
    */
   private _isNA(state: string): boolean {
     return NO_REPORT_STATES.includes(state?.trim().toLowerCase());
   }
 
   /**
-   * Condition sensors carry free text from bergfex, but fall back to Home
-   * Assistant's own `unknown` when there is no report. That constant is not
-   * translatable, so printing the state verbatim showed English inside an
-   * otherwise localized card.
-   */
-  /**
    * Resolve the badge shown next to a resort name.
    *
-   * "Open" stays the operational state - lifts running, within opening hours.
-   * The remaining cases used to collapse into a single red "Closed", which in
-   * summer sat above a column of N/A and explained nothing. Naming the running
-   * period instead tells the user why there is no snow report.
+   * "Open" stays the operational state. Naming the running period instead of
+   * collapsing everything else into a red "Closed" tells the user why there is
+   * no snow report.
    */
   private _statusBadge(state: string, attrs: Record<string, unknown>): { key: string; variant: string } {
     if ((state || '').toLowerCase() === 'open') return { key: 'open', variant: 'open' };
@@ -702,15 +655,8 @@ export class BergfexCard extends LitElement implements LovelaceCard {
     const date = new Date(`${start}T00:00:00`);
     if (Number.isNaN(date.getTime())) return undefined;
 
-    // "ab 12/04" is either the 12th of April or the 4th of December depending
-    // on who is reading it, and a season start is exactly the value nobody can
-    // guess from context. Naming the month is the fix; it cannot be read the
-    // wrong way round.
-    //
-    // `hass.locale.language` is preferred over `hass.language` only for form's
-    // sake - both are the same profile language, so it changes nothing today.
-    // The setting that actually decides date format is `locale.date_format`,
-    // which this card does not read at all.
+    // "ab 12/04" reads as April or December depending on the reader, and a season
+    // start is not guessable from context, so the month is named.
     const locale = this.hass.locale?.language || this.hass.language || 'en';
     const formatted = new Intl.DateTimeFormat(locale, {
       day: 'numeric',
@@ -735,8 +681,7 @@ export class BergfexCard extends LitElement implements LovelaceCard {
    * Whether a resort is genuinely shut, as opposed to merely not skiable today.
    *
    * A resort in summer operation is not closed - bergfex reports it as
-   * "Sommerbetrieb" and it may well be running lifts. Filtering on the status
-   * sensor alone hid every resort from April to November and left an empty card.
+   * "Sommerbetrieb" and it may well be running lifts.
    */
   private _isOutOfSeason(resort: Resort): boolean {
     const state = resort.status ? this.hass.states[resort.status] : undefined;

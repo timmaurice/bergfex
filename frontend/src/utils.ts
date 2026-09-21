@@ -22,10 +22,8 @@ export const fireEvent = <T>(
 /**
  * Parses a value into a Date, returning null when it is not a usable timestamp.
  *
- * Sensor states arrive as strings and are routinely `unknown`, `unavailable` or
- * absent entirely - bergfex does not publish a timestamp for every resort. Feeding
- * those to `new Date()` yields an Invalid Date that formats as the literal string
- * "Invalid Date", so callers need a way to tell the difference.
+ * Sensor states arrive as strings and are routinely `unknown` or absent. Feeding
+ * those to `new Date()` yields an Invalid Date that formats as "Invalid Date".
  */
 export function parseDate(date: string | Date | null | undefined): Date | null {
   if (date === null || date === undefined || date === '') return null;
@@ -36,9 +34,8 @@ export function parseDate(date: string | Date | null | undefined): Date | null {
 /**
  * The BCP 47 tag that matches the user's chosen number format.
  *
- * Home Assistant lets the number format be picked independently of the
- * interface language, so the language alone is the wrong thing to format with:
- * a German user reading an English interface still wants "12,5".
+ * Home Assistant lets the number format be picked independently of the interface
+ * language: a German user reading an English interface still wants "12,5".
  */
 function numberLocale(hass: HomeAssistant | undefined): string | undefined {
   switch (hass?.locale?.number_format) {
@@ -61,10 +58,6 @@ function numberLocale(hass: HomeAssistant | undefined): string | undefined {
 
 /**
  * Renders a sensor value the way the rest of Home Assistant renders it.
- *
- * Snow depths and trail lengths were interpolated straight into the template,
- * so every user saw the JavaScript spelling - "12.5" - next to a Home Assistant
- * interface that had been showing them "12,5" everywhere else.
  *
  * Returns the input unchanged when it is not a number, so `unknown` and
  * bergfex's own free text pass through rather than becoming "NaN".
