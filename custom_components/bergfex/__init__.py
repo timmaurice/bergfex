@@ -78,15 +78,9 @@ _SEASON_PANEL_KEYS = (
     "summer_operating_hours_end",
 )
 
-# A region's snow-forecast pages are the same pages for every resort in it, so
-# with several resorts from one region installed the integration was fetching
-# and re-parsing the identical six pages once per resort per poll. They are keyed
-# on the url and shared across coordinators.
-#
-# The TTL is generous on purpose: these are bergfex's own forecast graphics,
-# republished a few times a day, so a resort that joins the cycle a few minutes
-# late loses nothing by reading the parse the previous one just did. It is well
-# under MIN_UPDATE_INTERVAL's own reach, so a region is still refetched regularly.
+# A region's forecast pages are the same for every resort in it, so they are
+# keyed on the url and shared across coordinators. The TTL is generous: bergfex
+# republishes these graphics a few times a day.
 _FORECAST_CACHE: dict[str, tuple[float, dict[str, str]]] = {}
 _FORECAST_CACHE_TTL = 10 * 60
 
@@ -114,14 +108,10 @@ async def _async_reconcile_card_resource(resources, new_url: str) -> list[str]:
 
     Returns the URLs of the resources that were removed.
     """
-    # The resource store is loaded lazily: until something awaits it,
-    # async_items() returns an empty list. Reconciling off that empty list
-    # appended another copy of our resource on every restart.
-    #
-    # Default to False, not True: assuming a collection we cannot recognise is
-    # already loaded would let us reconcile against an empty item list and save
-    # a store that has lost every other card's resource. Missing async_load
-    # raises instead, and the caller skips registration.
+    # The store loads lazily: until awaited, async_items() is empty, and
+    # reconciling off that appends another copy of our resource every restart.
+    # Default to False - assuming an unrecognised collection is loaded would
+    # save a store that has lost every other card's resource.
     if not getattr(resources, "loaded", False):
         await resources.async_load()
         resources.loaded = True
@@ -137,10 +127,9 @@ async def _async_reconcile_card_resource(resources, new_url: str) -> list[str]:
         if url.startswith(f"{CARD_URL_BASE}/") and own_resource is None:
             own_resource = item
         else:
-            # Anything else pointing at a bergfex-card.js is a leftover: the
-            # HACS copy, a hand-added /local/ entry, or a duplicate of ours.
-            # Leaving it in place loads a second bundle that fights ours over
-            # the bergfex-card element name.
+            # Any other bergfex-card.js is a leftover - the HACS copy, a hand-added
+            # /local/ entry - and loads a second bundle that fights ours over the
+            # element name.
             stale_resources.append(item)
 
     for item in stale_resources:
@@ -161,11 +150,9 @@ async def _async_reconcile_card_resource(resources, new_url: str) -> list[str]:
 def _standalone_card_files(config_dir: str) -> list[str]:
     """Return the standalone card's HACS files that are still on disk.
 
-    HACS unpacks a frontend plugin into www/community/<repository>/, and those
-    files outlive the Lovelace resource that pointed at them - removing the
-    resource is not uninstalling the repository, which is the whole reason the
-    repair exists. Matched on the filename rather than the directory, because
-    the repository has been renamed once and both spellings are in the wild.
+    HACS unpacks a plugin into www/community/<repository>/, and those files
+    outlive the Lovelace resource pointing at them. Matched on the filename, not
+    the directory: the repository was renamed once and both spellings exist.
     """
     community = Path(config_dir) / "www" / "community"
     try:
@@ -178,12 +165,8 @@ def _standalone_card_files(config_dir: str) -> list[str]:
 async def _async_report_standalone_card(hass: HomeAssistant) -> None:
     """Raise the "uninstall the HACS card" repair for exactly as long as it is true.
 
-    This used to be raised on the single run that removed the stale Lovelace
-    resource, and never re-evaluated. Persistent, so it survived a restart - and
-    since no code path deleted it, a user who did precisely what it asked kept
-    the warning for good. Asking the filesystem on every start means the repair
-    tracks the thing it actually describes, and clears itself the moment HACS
-    stops shipping a second copy.
+    Asked of the filesystem on every start, so it tracks what it describes and
+    clears itself once HACS stops shipping a second copy.
     """
     leftovers = await hass.async_add_executor_job(
         _standalone_card_files, hass.config.config_dir
@@ -199,11 +182,9 @@ async def _async_report_standalone_card(hass: HomeAssistant) -> None:
         DOMAIN,
         LEGACY_CARD_ISSUE_ID,
         is_fixable=False,
-        # Re-raised every start for as long as the files are there, so it does
-        # not need to survive a restart on its own - but a non-persistent issue
-        # comes back inactive, and this one is raised during setup, before the
-        # user is looking. Persistent keeps it visible; the delete above is what
-        # now takes it away.
+        # Persistent because a non-persistent issue comes back inactive, and this
+        # is raised during setup before the user is looking. The delete above is
+        # what takes it away.
         is_persistent=True,
         severity=ir.IssueSeverity.WARNING,
         translation_key=LEGACY_CARD_ISSUE_ID,
@@ -215,12 +196,8 @@ async def _async_forecast_images(
 ) -> dict[str, str] | None:
     """Return one region forecast page's images, fetching it at most once per TTL.
 
-    Snow forecast pages are per region. With several resorts of one region
-    installed, every poll used to fetch and re-parse the identical six pages once
-    per resort, so the work grew with the number of resorts rather than with the
-    number of regions.
-
-    Returns None when the page could not be read, which the caller skips.
+    Forecast pages are per region, so the work grows with the number of regions
+    rather than of resorts. Returns None when the page could not be read.
     """
     cached = _FORECAST_CACHE.get(forecast_url)
     if cached is not None and (time.monotonic() - cached[0]) < _FORECAST_CACHE_TTL:
@@ -263,10 +240,8 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     new_url = f"{CARD_URL_BASE}/{CARD_FILENAME}?v={version}"
 
     async def _async_register_lovelace_resource(event=None):
-        # First, and outside every early return below: whether HACS still ships
-        # a second copy has nothing to do with how Lovelace stores its
-        # resources, and the repair has to be able to clear itself even on an
-        # instance this function cannot reconcile.
+        # Before every early return below: the repair has to be able to clear
+        # itself even on an instance whose resources cannot be reconciled.
         await _async_report_standalone_card(hass)
 
         if "lovelace" not in hass.data:
@@ -309,24 +284,16 @@ def _async_backfill_unique_id(
 ) -> None:
     """Give a pre-unique-id entry the resort path as its id, if it is still free.
 
-    A user who hit the duplicate bug has two entries for one resort. Backfilling
-    both would hand Home Assistant two entries with the same unique id: it
-    refuses the second, logs an error asking the user to file a bug against this
-    integration, and raises its own collision repair - on every restart, forever.
-
-    So only the first entry gets the id. The leftover keeps unique_id None (it
-    still works, it just cannot be recognized as a duplicate) and the user gets a
-    repair that names that exact entry and, when they confirm it, deletes it -
-    which is the only thing that actually resolves the situation.
+    Two entries for one resort would get the same unique id, which Home Assistant
+    refuses with a collision repair of its own on every restart. So only the first
+    gets the id; the leftover keeps unique_id None and is offered as a repair.
     """
     unique_id = entry.data[CONF_SKI_AREA]
     issue_id = f"{DUPLICATE_ENTRY_ISSUE_ID}_{entry.entry_id}"
 
-    # `ignore_entry_id` is the entry that is being removed right now. Older Home
-    # Assistant versions drop it from the registry only after async_remove_entry
-    # has returned, so without this it is still listed, still holding the id it
-    # is about to give up - and the lookup below would see a collision that no
-    # longer exists.
+    # The entry being removed right now. Older Home Assistant versions drop it
+    # only after async_remove_entry returns, so the lookup below would see a
+    # collision that no longer exists.
     ignored = {entry.entry_id, ignore_entry_id}
 
     # No await between the lookup and the update, so no second entry can claim
@@ -352,20 +319,16 @@ def _async_backfill_unique_id(
         taken_by.entry_id,
         unique_id,
     )
-    # Both entries carry the same title, so naming the resort does not tell the
-    # user which of the two rows to delete. The issue is raised per entry and
-    # carries that entry's id, and the repair flow deletes exactly that entry -
-    # so the user never has to tell them apart by hand.
+    # Both entries carry the same title, so naming the resort would not tell
+    # the user which row to delete. Raised per entry, carrying that entry's id.
     ir.async_create_issue(
         hass,
         DOMAIN,
         issue_id,
         is_fixable=True,
         data={"entry_id": entry.entry_id},
-        # Setup re-raises this one, so it does come back - but only once the
-        # entry has been set up, and `data` is dropped entirely for a
-        # non-persistent issue. The fix flow needs that entry id to know which
-        # row to delete.
+        # Persistent because `data` is dropped for a non-persistent issue, and the
+        # fix flow needs the entry id to know which row to delete.
         is_persistent=True,
         severity=ir.IssueSeverity.WARNING,
         translation_key=DUPLICATE_ENTRY_ISSUE_ID,
@@ -380,15 +343,10 @@ def _async_backfill_unique_id(
 async def _async_migrate_unique_ids(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Move this entry's entities onto path-based unique ids.
 
-    The entities were keyed on the display name, which is not unique, so two
-    resorts whose names slugify alike collided and Home Assistant kept only the
-    first resort's entities. Re-keying them onto the resort path fixes that, but
-    only a migration makes it safe: registering the new ids bare would leave
-    every existing entity behind as an orphan, and with it the user's history,
-    their customisations and every dashboard that names them.
-
-    Rewriting the id in place keeps the registry entry - so the entity_id, the
-    name, the area and the recorder statistics all stay attached to it.
+    Entities were keyed on the display name, which is not unique, so resorts that
+    slugify alike collided. Rewriting the id in place rather than registering the
+    new one keeps the registry row, and with it the entity_id, name, area and
+    recorder history.
     """
     new_prefix = unique_id_prefix(entry.data[CONF_SKI_AREA])
     legacy_prefixes = legacy_unique_id_prefixes(entry_area_name(entry))
@@ -411,10 +369,9 @@ async def _async_migrate_unique_ids(hass: HomeAssistant, entry: ConfigEntry) -> 
             # A resort whose name and path happen to agree is already correct.
             return None
 
-        # Two entries for the same resort - the duplicate bug the repair issue
-        # is about - would both migrate onto the same ids, and the registry
-        # rejects the second with a ValueError that would abort setup. The
-        # leftover entry keeps its old ids until the repair removes it.
+        # Two entries for the same resort would migrate onto the same ids and the
+        # registry rejects the second, aborting setup. The leftover keeps its old
+        # ids until the repair removes it.
         if registry.async_get_entity_id(
             registry_entry.domain, registry_entry.platform, new_id
         ):
@@ -442,16 +399,10 @@ def _async_orphaned_registry_entries(
 ) -> list[er.RegistryEntry]:
     """Registry rows for this entry that no entity can claim any more.
 
-    The integration has keyed its entities three ways over its life, and
-    `_async_migrate_unique_ids` deliberately declines to re-key a row whose new
-    id is already taken - two rows cannot share one unique id. Where an install
-    carries rows from more than one scheme the superseded ones stay on the
-    device with nothing behind them: Home Assistant restores them as
-    `unavailable` forever, and the card used to render them as duplicate,
-    never-loading forecast images.
-
-    Everything the integration registers today starts with the path-based
-    prefix, so a row that does not is a leftover no code path can revive.
+    Entities have been keyed three ways, and the migration declines to re-key a
+    row whose new id is taken, so superseded rows stay on the device restored as
+    `unavailable`. Everything registered today carries the path-based prefix, so
+    a row that does not is a leftover no code path can revive.
     """
     prefix = unique_id_prefix(entry.data[CONF_SKI_AREA])
     registry = er.async_get(hass)
@@ -506,14 +457,11 @@ def _async_report_orphaned_entities(hass: HomeAssistant, entry: ConfigEntry) -> 
 def _async_refresh_device_name(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Give the device the resort name once the parser has resolved it.
 
-    `device_info` is read when an entity is first registered, and at that moment
-    the only name available is the one the config flow stored - which for an
-    entry created while name parsing was broken is the URL slug ("achensee").
-    The entities correct themselves on every coordinator update, the device does
-    not, so the card kept heading those resorts in lower case forever.
-
-    `name_by_user` is left alone by `async_update_device`, so a device the user
-    has renamed keeps their name.
+    `device_info` is read once, when the first entity registers, and the only name
+    available then is the one the config flow stored - a URL slug for entries
+    created while name parsing was broken. Entities correct themselves on every
+    update; the device does not. `name_by_user` is left alone, so a device the
+    user renamed keeps their name.
     """
     coordinator = hass.data[DOMAIN][COORDINATORS].get(
         coordinator_key(entry.data[CONF_SKI_AREA])
@@ -784,10 +732,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                                     "Could not fetch main page for price: %s", err
                                 )
 
-                # The season and opening hours only arrive here, and they can flip
-                # the verdict. Judge it again on the merged data - outside the
-                # fallback branch, because a cache hit skips that branch entirely
-                # and used to leave the subpage's season-less verdict standing.
+                # Season and opening hours only arrive here and can flip the verdict, so
+                # judge again on the merged data - outside the fallback branch, which a
+                # cache hit skips entirely.
                 evaluate_status(parsed_data)
 
                 # Fetch "New Snow" from region overview (more accurate than detail page)
@@ -937,16 +884,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         try:
             await coordinator.async_config_entry_first_refresh()
         except Exception as err:
-            # Nothing else says why this failed. Home Assistant's own
-            # "not ready yet" line is INFO, which the default WARNING level
-            # hides, and `async_config_entry_first_refresh` asks the
-            # coordinator not to log the failure at all. So the reason has to
-            # travel in the exception - that is what the entry page shows the
-            # user - and one line has to reach the log.
-            #
-            # Only the first attempt is worth a warning: setup is retried on a
-            # backoff for as long as the outage lasts, and a warning per retry
-            # is the noise this whole path was cleaned up to remove.
+            # Nothing else says why this failed: Home Assistant's own line is INFO,
+            # which the default level hides, and the coordinator is asked not to log
+            # it at all. Only the first attempt warns - setup retries on a backoff for
+            # as long as the outage lasts.
             if entry.entry_id in _SETUP_FAILURE_LOGGED:
                 _LOGGER.debug(
                     "Still failing to refresh resort coordinator for %s: %s",
@@ -999,18 +940,12 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 async def async_remove_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Clean up after a removed entry.
 
-    Deleting the leftover duplicate is exactly what the repair issue asks for, so
-    the issue has to go with it - nothing else would ever clear it, since it is
-    keyed on an entry that no longer exists.
+    The repair issue is keyed on the removed entry, so nothing else would clear
+    it. If the entry that won the resort's unique id is the one removed, hand the
+    id to the leftover here rather than leaving it unidentifiable until restart.
 
-    The user may just as well delete the other one, the entry that won the
-    resort's unique id. Hand it to the leftover here rather than leaving it
-    unidentifiable, and its repair issue raised, until the next restart.
-
-    Whether the removed entry is still listed at this point depends on the Home
-    Assistant version: 2025.1 drops it from the registry only after this callback
-    returns, later versions before. So the handover names it explicitly rather
-    than trusting it to be gone.
+    Whether the removed entry is still listed depends on the Home Assistant
+    version, so the handover names it explicitly.
     """
     ir.async_delete_issue(hass, DOMAIN, f"{DUPLICATE_ENTRY_ISSUE_ID}_{entry.entry_id}")
     # Removing the entry takes its registry rows with it, leftovers included, so
@@ -1037,21 +972,15 @@ async def async_remove_config_entry_device(
 ) -> bool:
     """Allow deleting a device the entry no longer provides.
 
-    Without this hook Home Assistant hides the delete button altogether, so a
-    device left behind by an earlier version - or by a resort whose bergfex path
-    changed - sits greyed out with its entities forever and the only way out is
-    removing the whole entry.
-
-    An entry serves exactly one resort, so the device that matches the entry's
-    current ski area is still live and must stay: deleting it would only have
-    Home Assistant recreate it on the next poll, minus the user's area, name and
-    dashboard references. Everything else under this entry is stale.
+    Without this hook the delete button is hidden, so a device left behind by an
+    earlier version sits greyed out forever. An entry serves one resort, so the
+    device matching its current ski area is live and must stay - deleting it would
+    only have it recreated minus the user's area, name and dashboard references.
     """
     area_path = entry.data.get(CONF_SKI_AREA)
     if area_path is None:
-        # With nothing to compare against, every identifier - the live device's
-        # included - would come out unequal and the whole entry would go
-        # deletable. Refusing is the safe answer: the user can still remove the
+        # With nothing to compare against, every identifier would come out unequal
+        # and the whole entry would go deletable. The user can still remove the
         # entry itself.
         _LOGGER.debug(
             "Entry %s carries no ski area; refusing device deletion", entry.entry_id

@@ -129,9 +129,8 @@ def parse_overview_data(html: str, lang: str = "at") -> dict[str, dict[str, Any]
 
     table = soup.find("table", class_="snow")
     if not table:
-        # Regions and cross-country areas simply have no snow table out of
-        # season, so this is the normal summer-long state rather than a fault.
-        # Warning about it once per poll fills the log from spring to winter.
+        # No snow table out of season is the normal state, not a fault - warning
+        # here filled the log from spring to winter.
         _LOGGER.debug("Could not find overview data table with class 'snow'")
         return {}
 
@@ -259,28 +258,20 @@ _SEASON_RANGE_RE = re.compile(
     r"(\d{1,2}[./]\d{1,2}[./]\d{4})\s*[-–—]\s*(\d{1,2}[./]\d{1,2}[./]\d{4})"
 )
 
-# "09:00 - 16:45", "8:30 – 16:00". The hour may or may not be padded and the
-# two are separated by a hyphen or an en/em dash depending on the page. Every
-# fixture in tests/fixtures pads the hour; the one-digit form is accepted
-# because the pattern costs nothing, not because a page is known to use it.
+# "09:00 - 16:45", "8:30 – 16:00": the hour may be unpadded and the separator
+# is a hyphen or an en/em dash depending on the page.
 _TIME_RANGE_RE = re.compile(r"(\d{1,2}:\d{2})\s*[-–—]\s*(\d{1,2}:\d{2})")
 
-# A <dd> that is nothing but a time range. bergfex labels the opening times
-# differently on almost every page - "Betriebszeiten", "Opening times",
-# "Ouverture", "Godziny" - and on the German and Italian pages the keyword in
-# const.py names the *status* field instead ("Betrieb", "Orario"), so a keyword
-# lookup misses the times entirely or, where a page carries both fields, stops
-# at the status one. A value that consists of a time range and nothing else is
-# the opening times in every language, and across all 27 fixtures no other <dd>
-# looks like that.
+# A <dd> that is nothing but a time range. bergfex labels opening times
+# differently in every language, and on some pages the const.py keyword names
+# the *status* field instead - so match on shape rather than on the label.
 _TIME_RANGE_ONLY_RE = re.compile(r"\s*\d{1,2}:\d{2}\s*[-–—]\s*\d{1,2}:\d{2}\s*\Z")
 
 # Words for "o'clock" that sit after a time range and are not a status.
 _HOUR_WORD_RE = re.compile(r"(?i)\b(uhr|hrs?|hours|ore|horas|godz)\b\.?")
 
-# Prepositions and connectors that introduce a time range. On their own they are
-# not a status: "von 09:00 - 16:45 Uhr" must not leave "von" behind as the value
-# of a field that is supposed to say whether the resort is running.
+# Prepositions that introduce a time range. Alone they are not a status:
+# "von 09:00 - 16:45 Uhr" must not leave "von" behind as the value.
 _STATUS_FILLER = frozenset(
     {
         "ab",
@@ -356,23 +347,15 @@ def _opening_times(soup: BeautifulSoup) -> tuple[str, str] | None:
 def _residual_status(text: str) -> str | None:
     """What is left of an operating-hours field once the times are removed.
 
-    Usually a status word - "täglich", "Geschlossen", "ogni giorno". Sometimes
-    nothing: the two les-saisies fixtures carry the times alone, and
-    "09:00 - 16:30" is not an answer to whether the resort is running.
-
-    And sometimes a fragment, which is worse than nothing. "von 09:00 - 16:45
-    Uhr" leaves "von"; a malformed "9:5 - 16:00" matches no range at all and
-    left the whole broken string as the status. A dangling preposition or a
-    stray digit in a status field is a bug the user can see, so the field stays
-    unset instead.
+    Usually a status word - "täglich", "Geschlossen". Sometimes nothing, and
+    sometimes a fragment ("von", or a malformed "9:5 - 16:00"), which would show
+    as the status, so anything implausible leaves the field unset.
     """
     residue = _TIME_RANGE_RE.sub(" ", text)
     residue = _HOUR_WORD_RE.sub(" ", residue)
     if any(ch.isdigit() for ch in residue):
-        # The field was not "status + times": either a time survived the
-        # removal because it is malformed, or there is a number here that no
-        # status word explains. Publishing it would print an opening time in
-        # the status field.
+        # Either a malformed time survived the removal, or there is a number no
+        # status word explains. Publishing it would print a time as the status.
         return None
 
     parts = []
@@ -391,12 +374,9 @@ def _residual_status(text: str) -> str | None:
 def _parse_operating_period(soup: BeautifulSoup, tab: str) -> dict[str, Any]:
     """Read one tab of the "Betriebszeiten" panel.
 
-    bergfex publishes the winter and summer operating periods side by side, each in
-    a block toggled by an Alpine.js expression. The expression is identical in every
-    language, unlike the visible labels ("Saison" / "Season" / "Saison"), so it is
-    the reliable way in.
-
-    Only the main resort page carries this panel; subpages return an empty dict.
+    Winter and summer sit side by side in blocks toggled by an Alpine.js
+    expression, which is identical in every language unlike the visible labels.
+    Only the main resort page carries the panel; subpages return an empty dict.
     """
     block = soup.find("div", attrs={"x-show": f"tab == '{tab}'"})
     if not block:
@@ -464,20 +444,17 @@ def _operating_hours(area_data: dict[str, Any], today) -> tuple[str | None, str 
 def evaluate_status(area_data: dict[str, Any]) -> str:
     """Decide whether a resort is skiable right now, and record it on ``area_data``.
 
-    No single bergfex field answers this. Open lifts do not mean skiing - Serfaus
-    runs all eleven in August for hikers. Snow depth does not either - Hintertux
-    reports 3 m of old glacier snow while its operator shows 0 km of prepared
-    piste. So the check takes the most specific signal each resort offers:
+    No single field answers this - lifts run for hikers, and glaciers hold old
+    snow - so take the most specific signal available, in order:
 
-    * where bergfex reports open pistes, those decide - that is prepared terrain;
-    * where the piste row is absent entirely, the winter season decides;
-    * where there is no winter season either, a summer period covering today says
-      the resort is in summer operation, which is not skiing;
-    * where none of that is known, lifts and snow are all there is to go on.
+    * reported open pistes decide, being prepared terrain;
+    * with no piste row, the winter season decides;
+    * with no winter season, a summer period covering today means summer
+      operation, which is not skiing;
+    * with none of that, lifts and snow stand alone.
 
-    Note the difference between an absent piste row and a reported zero. Lelex-
-    Crozet publishes no piste figures at all while running eight lifts on 15 cm;
-    a resort reporting 0 of 60 open really has nothing groomed.
+    An absent piste row is not a reported zero: the first says nothing, the
+    second says nothing is groomed.
     """
     lifts_open = area_data.get("lifts_open_count", 0) > 0
 
@@ -504,17 +481,10 @@ def evaluate_status(area_data: dict[str, Any]) -> str:
     elif season_start and season_end:
         terrain_open = season_start <= now.date() <= season_end
     elif summer_start and summer_end and summer_start <= now.date() <= summer_end:
-        # No winter period at all, and a summer one running today. That pairing
-        # is bergfex saying the resort is in summer operation and the winter
-        # season has no date yet - Hintertux publishes exactly this, alongside
-        # "Aktuell KEIN Skibetrieb! Start in die Wintersaison 2026/27: Sobald es
-        # die Schneelage zulaesst". Lifts turning and old glacier snow are not
-        # skiing, which is the whole reason this function exists.
-        #
-        # Ordering carries the weight: a glacier that skis through the summer
-        # publishes a winter period covering today, and the branch above answers
-        # first. The summer period is never the season - only the answer when
-        # there is no winter one to consult.
+        # No winter period and a summer one running today: bergfex is saying the
+        # resort is in summer operation with no winter date yet. Ordering carries
+        # the weight - a glacier that skis through the summer publishes a winter
+        # period covering today and is answered by the branch above.
         terrain_open = False
     else:
         # Nothing to test against: no piste row, and no operating panel at all.
@@ -541,10 +511,8 @@ def parse_resort_page(
     # Resort Name
     h1_tag = soup.find("h1")
     if h1_tag:
-        # The heading splits the page label and the resort name into two spans.
-        # Without this branch the fallback below glues them together
-        # ("SchneeberichtSerfaus"), which is what happened for months when
-        # bergfex dropped the Tailwind "tw-" prefix and the class stopped matching.
+        # The heading splits the page label and the resort name into two spans;
+        # without this the fallback below glues them together ("SchneeberichtSerfaus").
         h1_classes = h1_tag.get("class") or []
         if "text-4xl" in h1_classes:
             spans = h1_tag.find_all("span")
@@ -579,10 +547,9 @@ def parse_resort_page(
                         area_path,
                     )
                 else:
-                    # The link is the resort and there is nothing behind it to
-                    # step back to. A region path equal to the resort builds
-                    # urls bergfex answers with 404, so leave it unset: the
-                    # caller skips the region fetch when it is absent.
+                    # The link is the resort itself. A region path equal to the
+                    # resort builds urls that 404, so leave it unset - the caller
+                    # skips the region fetch when it is absent.
                     region_link = None
                     _LOGGER.debug(
                         "No region in the breadcrumb of %s: %s is the resort",
@@ -704,9 +671,8 @@ def parse_resort_page(
         if last_update_dt:
             area_data["last_update"] = last_update_dt
 
-    # Winter season, read from the operating-hours panel rather than the headline
-    # "Saison" field. In summer that headline carries the *summer* period, so a ski
-    # resort reads as in-season in August.
+    # From the operating-hours panel, not the headline "Saison" field: in summer
+    # that headline carries the summer period, so a ski resort reads in-season in August.
     for tab in ("winter", "summer"):
         period = _parse_operating_period(soup, tab)
         if not period:
@@ -717,20 +683,10 @@ def parse_resort_page(
             area_data[f"{tab}_operating_hours_start"] = period["hours_start"]
             area_data[f"{tab}_operating_hours_end"] = period["hours_end"]
 
-    # Operating hours and operation status. These are two fields on the page,
-    # not one, and bergfex does not label them consistently: the German pages
-    # carry "Betrieb" (täglich) next to "Betriebszeiten" (08:30 - 16:00), the
-    # English ones "Operation" next to "Opening times", the Polish ones
-    # "Godziny pracy w sezonie" next to "Godziny". The keyword in const.py
-    # names whichever of the two that language happened to be recorded from, so
-    # the times are read structurally instead - see _opening_times.
-    #
-    # Which of the two names the field also differs by page: the main page uses
-    # the long "operating hours" label, the snow report the short one. Only "at",
-    # "it", "se" and "pl" happen to have recorded the short form under
-    # "operating_hours", so the other fourteen languages found nothing here and
-    # shipped no operation_status at all. Both keys are tried, longest first, so
-    # whichever spelling a language recorded still resolves.
+    # Two fields, not one, and bergfex labels them inconsistently by language and
+    # by page ("Betrieb" next to "Betriebszeiten", "Operation" next to "Opening
+    # times"). So the times are read structurally - see _opening_times - and both
+    # keyword spellings are tried for the status, longest first.
     op_hours_text = None
     for key in ("operating_hours", "operation"):
         if keyword := keywords.get(key):
@@ -746,10 +702,8 @@ def parse_resort_page(
         area_data["operating_hours_start"], area_data["operating_hours_end"] = span
 
     if op_hours_text:
-        # Whatever is left once the times are taken out is the status word
-        # ("täglich", "ogni giorno", "Geschlossen"). The two les-saisies
-        # fixtures carry the times alone, and "09:00 - 16:30" is not a status,
-        # so the field stays unset there rather than reading as an opening time.
+        # What is left once the times are removed is the status word ("täglich",
+        # "Geschlossen"). A bare time range is not a status, so the field stays unset.
         status = _residual_status(op_hours_text)
         if status:
             area_data["operation_status"] = _translate_value(status, lang)
@@ -1101,10 +1055,9 @@ def parse_cross_country_resort_page(html: str, lang: str = "at") -> dict[str, An
             s_keywords = ["skating", "skate", "scivolare"]
 
             for row in table.find_all("tr"):
-                # Trail state is carried by a numeric class suffix: 1 and 2 are
-                # open, 0 is closed, and a bare "icon-status" means bergfex has no
-                # report at all (the "?" marker). Only an explicit open counts -
-                # treating "no report" as open reported a summer trail network as
+                # Numeric class suffix carries the trail state: 1 and 2 open, 0
+                # closed, a bare "icon-status" means no report. Only an explicit
+                # open counts - "no report" as open reported summer networks as
                 # fully groomed.
                 if not row.select_one(".icon-status1, .icon-status2"):
                     continue
@@ -1242,15 +1195,10 @@ def parse_cross_country_overview_data(
 
 
 def parse_snow_forecast_images(html: str, page_num: int) -> dict[str, str]:
-    """
-    Parse snow forecast page to extract image URLs.
+    """Extract the forecast image urls from one snow-forecast page (0-5).
 
-    Args:
-        html: HTML content of the page
-        page_num: Page number (0-5)
-
-    Returns:
-        dict with 'daily_forecast_url', 'daily_caption' and optionally 'summary_url', 'summary_caption'
+    Returns 'daily_forecast_url' and 'daily_caption', plus 'summary_url' and
+    'summary_caption' on pages after the first.
     """
     soup = BeautifulSoup(html, "lxml")
     forecast_imgs = soup.find_all(class_="snowforecast-img")

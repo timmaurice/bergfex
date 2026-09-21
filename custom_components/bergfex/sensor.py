@@ -247,18 +247,13 @@ class BergfexSensor(SensorEntity):
         self._domain = entry.data.get(CONF_DOMAIN, BASE_URL)
         self._config_url = urljoin(self._domain, self._area_path)
 
-        # Keyed on the resort path, which is unique per entry. The display name
-        # is not: two resorts that slugify the same used to produce the same
-        # unique ids, and Home Assistant then dropped the second resort's
-        # entities. Existing installs are carried over by the registry
-        # migration in __init__.py.
+        # Keyed on the resort path, which is unique per entry; the display name is
+        # not. Existing installs are carried over by the migration in __init__.py.
         self._attr_unique_id = build_unique_id(self._area_path, description.key)
 
-        # The entity_id stays keyed on the name on purpose. It is what users
-        # have in their automations and dashboards, and the registry hands a
-        # migrated entity its recorded entity_id back regardless of what is
-        # suggested here - so this only ever names entities on a fresh install,
-        # where changing the scheme would buy nothing and surprise everyone.
+        # The entity_id stays keyed on the name on purpose: it is what users have in
+        # automations, and the registry hands a migrated entity its recorded
+        # entity_id back anyway, so this only names entities on a fresh install.
         self.entity_id = f"sensor.{slugify(self._initial_area_name)}_{description.key}"
 
         # suggested_object_id provides a hint for new entity creation

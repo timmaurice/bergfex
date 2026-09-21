@@ -85,18 +85,12 @@ class InvalidSkiAreaPath(ValueError):
 def normalize_ski_area_path(manual_path: str, is_cross_country: bool = False) -> str:
     """Turn hand-entered input into the path the ski area list would have produced.
 
-    Users type what they have in front of them, which is usually the address bar:
-    a full bergfex URL. Only the path is portable - it is identical on every
-    bergfex domain - so it is what the entry stores and what identifies the
-    resort. Keeping the host would build a path like
-    "/https://www.bergfex.at/serfaus-fiss-ladis/schneebericht/", which is a
-    different unique id than the same resort picked from the list (so the
-    duplicate check misses it) and points at a url that does not exist.
-
-    The same reasoning drives the rest of the normalization: everything that can
-    differ between two ways of naming one resort has to be folded away here, or
-    the duplicate check the unique id exists for is defeated. That means the
-    query string and fragment the address bar carries, the trailing slash a
+    Users usually paste a full bergfex URL. Only the path is portable - it is
+    identical on every domain - so it is what the entry stores and what
+    identifies the resort. Everything that can differ between two ways of naming
+    one resort has to be folded away here, or the duplicate check the unique id
+    exists for is defeated: the host, the query string and fragment, the trailing
+    slash a
     copied url routinely lacks, and case - bergfex serves every resort path in
     lower case (see the hrefs in tests/fixtures), so folding it is safe.
 
@@ -135,9 +129,7 @@ def ski_area_name_from_path(ski_area_path: str) -> str:
     """Fall back to the resort slug when the list has no name for a path.
 
     A hand-entered resort is not in the fetched list, so this is the only name
-    the entry gets. Indexing blindly into the segments is what made a short path
-    raise IndexError in the middle of the flow, which the user saw as "Unknown
-    error occurred".
+    the entry gets. Guarded because a short path used to raise IndexError mid-flow.
     """
     segments = [segment for segment in ski_area_path.split("/") if segment]
     while len(segments) > 1 and segments[-1] in _SUBPAGE_SEGMENTS:
@@ -148,17 +140,14 @@ def ski_area_name_from_path(ski_area_path: str) -> str:
 def entry_area_name(entry: config_entries.ConfigEntry) -> str:
     """Return the resort name an entry was created with.
 
-    Every entry the flow writes carries "name", so this only falls back for an
-    entry that was hand-edited or restored from a backup predating the key.
-    Reading it unguarded turned such an entry into a bare KeyError during setup,
-    which the user sees as an unexplained "Error setting up entry".
+    Every entry the flow writes carries "name", so this only falls back for one
+    hand-edited or restored from a backup predating the key.
 
-    The fallback is the slug from the resort path, because that is the very
-    string the flow itself writes when the fetched list has no name for a path -
-    so for a hand-entered resort it reproduces the original name exactly. It
-    cannot promise that for a resort taken from the list, whose display name may
-    differ from its path ("Solden" vs "soelden"), and legacy_unique_id_prefixes
-    derives the migration prefixes from this name. A prefix that misses simply
+    The fallback is the slug from the resort path, which is what the flow itself
+    writes when the list has no name - exact for a hand-entered resort, not
+    necessarily for one taken from the list ("Solden" vs "soelden"). Since
+    legacy_unique_id_prefixes derives migration prefixes from this name, a
+    prefix that misses simply
     matches no entity and leaves it under its old id, untouched - the same place
     an un-migrated entity sits today. Guessing wrong therefore costs nothing,
     while the alternative, the raw path, would match no legacy prefix at all and
@@ -353,10 +342,8 @@ class BergfexConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             webhook_url = user_input.get("webhook_url")
 
             if not ski_area_path and not manual_path:
-                # Plain key: Home Assistant looks the message up under
-                # config.error.<key> itself, so prefixing it here asked for
-                # config.error.config.error.no_selection and the user got the
-                # raw key printed on the form.
+                # Plain key: Home Assistant prefixes config.error.<key> itself, so prefixing
+                # here printed the raw key on the form.
                 errors["base"] = "no_selection"
             else:
                 if manual_path:
@@ -380,16 +367,10 @@ class BergfexConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     webhook_url = None
 
             if not errors:
-                # A resort's path is the same on every bergfex domain and in
-                # every language, so it is the one stable id an entry has.
-                # Setting it is what lets Home Assistant recognize a resort that
-                # is already installed and refuse a second entry for it.
-                #
-                # That is all it guarantees. It does not deduplicate the sensor
-                # unique ids: those are built from slugify(entry.data["name"])
-                # (see sensor.py), a separate namespace, so two entries whose
-                # display names slugify the same still collide there. Re-keying
-                # them onto the path needs an entity registry migration.
+                # A resort's path is identical on every bergfex domain, so it is the one
+                # stable id an entry has, and what lets Home Assistant refuse a second entry
+                # for the same resort. It does not deduplicate the sensor unique ids, which
+                # live in a separate namespace - see unique_id.py.
                 await self.async_set_unique_id(ski_area_path)
                 self._abort_if_unique_id_configured()
 
@@ -488,13 +469,10 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
     def _async_apply_language(self, language: str) -> None:
         """Switch the entry to another bergfex language.
 
-        The language also selects the domain, and the entry caches a full url built
-        from it, so all three move together. Resort and country paths are the same
-        on every bergfex domain, so they are left alone.
-
-        Updating the entry fires the update listener, which reloads it - the
-        coordinators then refetch against the new domain and the sensors pick up
-        the localized values.
+        The language selects the domain and the entry caches a url built from it,
+        so all three move together; resort and country paths are identical on
+        every domain and are left alone. Updating the entry fires the reload
+        listener, and the coordinators refetch against the new domain.
         """
         data = dict(self.config_entry.data)
         data[CONF_LANGUAGE] = language

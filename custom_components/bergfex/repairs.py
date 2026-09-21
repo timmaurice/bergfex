@@ -65,11 +65,9 @@ class DuplicateEntryRepairFlow(RepairsFlow):
 class OrphanedEntitiesRepairFlow(RepairsFlow):
     """Delete the registry rows a superseded unique id scheme left behind.
 
-    Deliberately a repair rather than something setup does on its own. The rows
-    carry the user's renames, their area assignments and their recorder history,
-    and an integration that quietly deletes registry entries on start has no way
-    to give any of that back. So the destructive half is opt-in, and the card
-    ignores the rows in the meantime.
+    A repair rather than something setup does on its own: the rows carry the
+    user's renames, areas and recorder history, so the destructive half is opt-in.
+    The card ignores the rows in the meantime.
     """
 
     def __init__(self, entry_id: str) -> None:

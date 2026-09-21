@@ -202,7 +202,5 @@ class BergfexImage(ImageEntity):
         else:
             self._area_name = self._initial_area_name
 
-        # This used to reassign _attr_unique_id here, to a third scheme again.
-        # A unique id is what the registry looks an entity up by; rewriting it
-        # after registration cannot move the registry entry, it only makes the
-        # entity disagree with its own record. The id is set once, in __init__.
+        # The id is set once, in __init__. Rewriting it after registration cannot
+        # move the registry entry, it only makes the entity disagree with its record.
