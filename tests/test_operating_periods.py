@@ -8,6 +8,7 @@ which is why these are read structurally instead.
 from datetime import date
 from pathlib import Path
 
+from custom_components.bergfex.const import SUPPORTED_LANGUAGES
 from custom_components.bergfex.parser import parse_resort_page
 
 PANEL = """
@@ -295,12 +296,19 @@ def test_every_language_fixture_carries_an_operation_status():
     stops matching shows up here as a missing field rather than as a card that
     quietly drops a row.
     """
-    fixtures = sorted(Path(__file__).parent.glob("fixtures/serfaus-*.html"))
-    assert len(fixtures) == 18, "expected one fixture per supported language"
+    # Named rather than globbed: "serfaus-*.html" also catches a fixture like
+    # serfaus-off-season.html, which is the same resort but not a language
+    # capture, and the count assertion then fails for a reason that has nothing
+    # to do with the languages this test is about.
+    directory = Path(__file__).parent / "fixtures"
+    fixtures = {
+        lang: directory / f"serfaus-{lang}.html" for lang in SUPPORTED_LANGUAGES
+    }
+    absent = sorted(lang for lang, path in fixtures.items() if not path.exists())
+    assert not absent, f"no language fixture captured for: {absent}"
 
     missing = []
-    for fixture in fixtures:
-        lang = fixture.stem.split("-")[1]
+    for lang, fixture in sorted(fixtures.items()):
         data = parse_resort_page(
             fixture.read_text(encoding="utf-8"),
             "/serfaus-fiss-ladis/schneebericht/",
