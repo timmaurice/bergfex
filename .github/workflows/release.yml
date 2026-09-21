@@ -47,5 +47,10 @@ jobs:
           tag_name: ${{ github.ref }}
           name: "Version ${{ env.VERSION }}"
           draft: true
-          generate_release_notes: true
+          # The release notes are written by hand. `generate_release_notes: true`
+          # appended GitHub's own PR list on top of them, and appended it again on
+          # every re-pushed tag - so a release that had been tidied up grew a
+          # second copy the next time the tag moved. Set it back to true if you
+          # would rather have the generated list than a hand-written body.
+          generate_release_notes: false
           files: bergfex.zip
