@@ -288,26 +288,25 @@ reports today. The Hintertux operator confirms it: 3 lifts, 0 km.
       reading. `hide_closed_resorts` hides only Airolo, Les Saisies and the
       cross-country entry, which are the genuinely between-seasons ones; the
       running glaciers stay on the card under a yellow "Summer season" badge.
-- [ ] **Open question — a running glacier reports `Closed`.** Hintertux on
-      21 September: 4 of 21 lifts, 25 cm, and two pistes bergfex explicitly marks
-      open, yet the status sensor says Closed. bergfex was still publishing the
-      _finished_ 2025/26 winter period (27.09.2025 – 19.07.2026) because the new
-      one is not announced, and `evaluate_status` reads that stale window as if it
-      described today. Its own docstring says "where bergfex reports open pistes,
-      those decide — that is prepared terrain", but the code reads only the
-      "x of y" summary row, which this page does not print; the two open piste
-      rows it does print are ignored.
-      The narrow fix is to let `open_pistes` stand in when the summary row is
-      absent. It can only ever flip Closed → Open where bergfex has explicitly
-      flagged a piste open, so the August case the seasonal rule exists for
-      (305 cm, 3 lifts, 0 km prepared, no piste marked open) is unaffected. Of the
-      eleven resorts in the test instance exactly one would change: Hintertux.
-      Sölden runs seven lifts on 23 cm with no piste marked open and stays Closed.
-      Not done, because what "Open" should mean for a pre-season glacier is a
-      decision about the sensor rather than a parsing bug, and the seasonal rule
-      was chosen deliberately in Phase 0. Pinned meanwhile by
+- [x] **A running glacier reports `Closed`, and that stands — decided, not
+      overlooked.** Hintertux on 21 September: 4 of 21 lifts, 25 cm, and two pistes
+      bergfex explicitly marks open, yet the status sensor says Closed. bergfex was
+      still publishing the _finished_ 2025/26 winter period (27.09.2025 –
+      19.07.2026) because the new one is not announced, and `evaluate_status` reads
+      that window. A pre-season glacier is not in the winter season and bergfex's
+      own dates say so, so Closed is the honest answer until the published season
+      starts. Nothing is hidden by it: the card still shows the depth and the lift
+      counts, and the badge resolves to a yellow "Summer season" rather than a red
+      "Closed", so `hide_closed_resorts` leaves the resort on the card.
+      Recorded because the alternative is tempting and was weighed: `evaluate_status`
+      says in its docstring that open pistes decide, while the code reads only the
+      "x of y" summary row, which this page does not print. Letting `open_pistes`
+      stand in would flip exactly one of the eleven test resorts — Hintertux;
+      Sölden runs seven lifts on 23 cm with no piste marked open and would stay
+      Closed. Rejected: it would make the sensor disagree with the season bergfex
+      publishes. Pinned by
       `test_a_running_glacier_reads_closed_once_the_stale_season_is_attached`, so
-      whichever way it goes the change is deliberate.
+      the behaviour cannot drift back without someone choosing it.
 
 ---
 

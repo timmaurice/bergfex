@@ -243,11 +243,14 @@ def test_a_running_glacier_reads_closed_once_the_stale_season_is_attached():
     "x of y" summary row, which this page does not print. The two open piste rows
     it does print are ignored.
 
-    This pins what the integration does today rather than what it should do:
-    whether a pre-season glacier counts as Open is a decision about what the
-    status sensor means, not a parsing bug. Of the eleven resorts in the test
-    instance only this one is affected - Sölden is running seven lifts on 23 cm
-    and bergfex marks no piste open there at all.
+    This is the decided behaviour, not an oversight. A pre-season glacier is not
+    in the winter season and bergfex's own dates say so, so Closed stands until
+    the published season starts; the card still shows the depth and the lift
+    counts under a "Summer season" badge rather than a red "Closed", so
+    hide_closed_resorts leaves the resort on the card. Letting ``open_pistes``
+    stand in was weighed and rejected - it would make the sensor disagree with
+    the season bergfex publishes. The assertion is here so that cannot change by
+    accident.
     """
     data = parse_resort_page(
         _fixture("hintertux-glacier-open.html"), "/hintertux/schneebericht/", "at"
