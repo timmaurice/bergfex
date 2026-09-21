@@ -1070,6 +1070,61 @@ describe('BergfexCard', () => {
       const trendIcon = element.shadowRoot?.querySelector('.trend-icon');
       expect(trendIcon).toBeNull();
     });
+
+    // The two tests above set `hass` before `setConfig`. Home Assistant does the
+    // opposite - it creates the element, calls `setConfig`, and only then assigns
+    // `hass` - and the trend history is fetched from `setConfig`, so the order is
+    // the whole behaviour. Both tests below drive the real order.
+
+    it('fetches the history once hass arrives, though setConfig ran without it', async () => {
+      const resort = createMockResort('ischgl', 'Ischgl', {
+        status: 'Open',
+        snow_mountain: '150',
+      });
+      hass.entities = resort.entities;
+      hass.states = resort.states;
+      hass.devices = resort.devices;
+      hass.callWS = vi.fn().mockResolvedValue({ 'sensor.ischgl_snow_mountain': [{ s: '140' }] });
+
+      // Home Assistant's order: configure first, hand over hass second.
+      element.setConfig({ ...config, resorts: [resort.device_id], show_trend: true });
+      element.hass = hass;
+      await element.updateComplete;
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      await element.updateComplete;
+
+      expect(hass.callWS).toHaveBeenCalled();
+      expect(element.shadowRoot?.querySelector('.trend-icon.up')).not.toBeNull();
+    });
+
+    it('does not re-fetch the history on every unrelated hass update', async () => {
+      const resort = createMockResort('ischgl', 'Ischgl', {
+        status: 'Open',
+        snow_mountain: '150',
+      });
+      hass.entities = resort.entities;
+      hass.states = resort.states;
+      hass.devices = resort.devices;
+      hass.callWS = vi.fn().mockResolvedValue({ 'sensor.ischgl_snow_mountain': [{ s: '140' }] });
+
+      element.setConfig({ ...config, resorts: [resort.device_id], show_trend: true });
+      element.hass = hass;
+      await element.updateComplete;
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      await element.updateComplete;
+
+      const afterFirstLoad = (hass.callWS as ReturnType<typeof vi.fn>).mock.calls.length;
+
+      // Home Assistant hands every card a new hass object whenever any entity in
+      // the instance changes - a light, a sensor, anything. None of that is a
+      // reason to ask the recorder for this resort's snow depth 24 hours ago.
+      for (let i = 0; i < 5; i++) {
+        element.hass = { ...hass, states: { ...hass.states } } as HomeAssistant;
+        await element.updateComplete;
+      }
+
+      expect((hass.callWS as ReturnType<typeof vi.fn>).mock.calls.length).toBe(afterFirstLoad);
+    });
   });
 
   describe('Cross-Country Resorts', () => {

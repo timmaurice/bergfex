@@ -148,6 +148,8 @@ export class BergfexCard extends LitElement implements LovelaceCard {
   @state() private _forecastState: Record<string, { tab: 'daily' | 'summary'; index: number }> = {};
   @state() private _accordionState: Record<string, Record<string, boolean>> = {};
   @state() private _historyState: Record<string, string> = {}; // entity_id -> state 24h ago
+  // What the baseline in _historyState was fetched for. See _refreshTrendBaseline.
+  private _trendBaselineKey?: string;
 
   public setConfig(config: BergfexCardConfig): void {
     // An empty list is allowed: the card picker configures the card from
@@ -161,9 +163,10 @@ export class BergfexCard extends LitElement implements LovelaceCard {
       ...config,
     };
 
-    if (this._config.show_trend) {
-      this._fetchHistory();
-    }
+    // No history fetch here. Home Assistant creates the element, calls this,
+    // and assigns `hass` afterwards, so at this point there is nothing to fetch
+    // with - which is why the trend arrows never appeared on a freshly loaded
+    // dashboard. shouldUpdate owns the fetch now, and sees every hass there is.
   }
 
   public static async getConfigElement(): Promise<LovelaceCardEditor> {
@@ -403,6 +406,10 @@ export class BergfexCard extends LitElement implements LovelaceCard {
   }
 
   protected shouldUpdate(changedProperties: Map<string | number | symbol, unknown>): boolean {
+    // Before any early return: this method sees every update, and the ones it
+    // declines to render are exactly the ones `updated` would never hear about.
+    this._refreshTrendBaseline();
+
     if (changedProperties.has('_config')) {
       return true;
     }
@@ -421,11 +428,6 @@ export class BergfexCard extends LitElement implements LovelaceCard {
       }
 
       const hasChanged = [...watched].some((entity) => oldHass.states[entity] !== this.hass.states[entity]);
-      const showTrendChanged = this.getOldConfig(changedProperties)?.show_trend !== this._config.show_trend;
-
-      if (showTrendChanged && this._config.show_trend) {
-        this._fetchHistory();
-      }
 
       // The language is not the only thing the card reads off `hass`: the
       // forecast date and the season teaser format against `locale.language`,
@@ -445,15 +447,12 @@ export class BergfexCard extends LitElement implements LovelaceCard {
     return true; // First render
   }
 
-  private getOldConfig(changedProperties: Map<string | number | symbol, unknown>): BergfexCardConfig | undefined {
-    return changedProperties.get('_config') as BergfexCardConfig | undefined;
-  }
-
-  private async _fetchHistory(): Promise<void> {
-    if (!this.hass || !this._config.resorts) return;
+  /** The entities whose value 24 hours ago the trend arrows are drawn from. */
+  private _trendEntities(): string[] {
+    if (!this.hass || !this._config?.resorts) return [];
 
     const resorts = this._getResorts(this.hass, this._config);
-    const snowEntities = Object.values(resorts)
+    return Object.values(resorts)
       .flatMap((r) => [
         r.snow_mountain,
         r.snow_valley,
@@ -467,10 +466,42 @@ export class BergfexCard extends LitElement implements LovelaceCard {
         r.skating_trails_open,
       ])
       .filter(Boolean) as string[];
+  }
 
-    if (snowEntities.length === 0) return;
+  /**
+   * Fetch the 24-hour-old baseline, but only when it would answer differently.
+   *
+   * Home Assistant hands every card a new `hass` object whenever any entity in
+   * the instance changes - a light, a doorbell, anything - and this used to
+   * re-ask the recorder each time, because the guard compared against a config
+   * that had not changed and so was always `undefined`. On a busy instance that
+   * is several websocket history queries a second for a number that moves a few
+   * times a day.
+   *
+   * So key the fetch on what the answer actually depends on: which entities are
+   * being compared, what they read now, and which hour it is - the window slides
+   * even when nothing on the page moves, so an unchanged card still re-reads its
+   * baseline once an hour rather than never.
+   */
+  private _refreshTrendBaseline(): void {
+    if (!this.hass || !this._config?.show_trend) {
+      this._trendBaselineKey = undefined;
+      return;
+    }
 
-    this._historyState = await fetchHistory(this.hass, snowEntities, 24);
+    const entities = this._trendEntities();
+    if (entities.length === 0) return;
+
+    const hour = Math.floor(Date.now() / 3_600_000);
+    const key = `${hour}|${entities.map((id) => `${id}=${this.hass.states[id]?.state}`).join('|')}`;
+    if (key === this._trendBaselineKey) return;
+
+    this._trendBaselineKey = key;
+    this._fetchHistory(entities);
+  }
+
+  private async _fetchHistory(entities: string[]): Promise<void> {
+    this._historyState = await fetchHistory(this.hass, entities, 24);
   }
 
   private _renderTrend(entityId: string, currentState: string): TemplateResult {
