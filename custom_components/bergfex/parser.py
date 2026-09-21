@@ -539,16 +539,8 @@ def parse_resort_page(
             area_data["resort_name"] = h1_tag.get_text(strip=True)
 
     # Region path from breadcrumbs
-    # Try finding by aria-label "Breadcrumb" (newer design)
     breadcrumb_ul = soup.find("ul", attrs={"aria-label": "Breadcrumb"})
-    links = []
-    if breadcrumb_ul:
-        links = breadcrumb_ul.find_all("a")
-    else:
-        # Fallback to old class if aria-label not found
-        breadcrumb_wrapper = soup.find("div", class_="breadcrumb-wrapper")
-        if breadcrumb_wrapper:
-            links = breadcrumb_wrapper.find_all("a")
+    links = breadcrumb_ul.find_all("a") if breadcrumb_ul else []
 
     if len(links) >= 3:  # Home, Country, Region, (Resort)
         # Default: Region is second to last link
@@ -1026,79 +1018,59 @@ def parse_cross_country_resort_page(html: str, lang: str = "at") -> dict[str, An
 
     # Classical Trails
     classical_kw = keywords.get("classical", "klassisch")
-    for dt in soup.find_all(["dt", "div"], class_=["big", "report-label"]):
+    for dt in soup.find_all("dt", class_="big"):
         if classical_kw.lower() in dt.get_text().lower():
-            if dt.name == "dt":
-                if dd := dt.find_next_sibling("dd", class_="big"):
-                    text = dd.text.strip()
-                    if "km" in text:
-                        match = re.search(r"(\d+(?:[\.,]\d+)?)", text)
-                        if match:
-                            area_data["classical_open_km"] = float(
-                                match.group(1).replace(",", ".")
-                            )
-
-                    # Get condition from spans or next dd
-                    condition_parts = []
-                    for span in dd.find_all("span", class_="default-size"):
-                        condition_parts.append(span.text.strip())
-
-                    if condition_parts:
-                        area_data["classical_condition"] = _translate_value(
-                            " ".join(condition_parts), lang
+            if dd := dt.find_next_sibling("dd", class_="big"):
+                text = dd.text.strip()
+                if "km" in text:
+                    match = re.search(r"(\d+(?:[\.,]\d+)?)", text)
+                    if match:
+                        area_data["classical_open_km"] = float(
+                            match.group(1).replace(",", ".")
                         )
-                    else:
-                        if next_dd := dd.find_next_sibling("dd"):
-                            area_data["classical_condition"] = _translate_value(
-                                next_dd.text.strip(), lang
-                            )
-            else:  # div.report-label
-                if report_info := dt.find_parent("div", class_="report-info"):
-                    if val_div := report_info.find("div", class_="report-value"):
-                        text = val_div.text.strip()
-                        match = re.search(r"(\d+(?:[\.,]\d+)?)", text)
-                        if match:
-                            area_data["classical_open_km"] = float(
-                                match.group(1).replace(",", ".")
-                            )
+
+                # Get condition from spans or next dd
+                condition_parts = []
+                for span in dd.find_all("span", class_="default-size"):
+                    condition_parts.append(span.text.strip())
+
+                if condition_parts:
+                    area_data["classical_condition"] = _translate_value(
+                        " ".join(condition_parts), lang
+                    )
+                else:
+                    if next_dd := dd.find_next_sibling("dd"):
+                        area_data["classical_condition"] = _translate_value(
+                            next_dd.text.strip(), lang
+                        )
 
     # Skating Trails
     skating_kw = keywords.get("skating", "Skating")
-    for dt in soup.find_all(["dt", "div"], class_=["big", "report-label"]):
+    for dt in soup.find_all("dt", class_="big"):
         if skating_kw.lower() in dt.get_text().lower():
-            if dt.name == "dt":
-                if dd := dt.find_next_sibling("dd", class_="big"):
-                    text = dd.text.strip()
-                    if "km" in text:
-                        match = re.search(r"(\d+(?:[\.,]\d+)?)", text)
-                        if match:
-                            area_data["skating_open_km"] = float(
-                                match.group(1).replace(",", ".")
-                            )
-
-                    # Get condition from spans or next dd
-                    condition_parts = []
-                    for span in dd.find_all("span", class_="default-size"):
-                        condition_parts.append(span.text.strip())
-
-                    if condition_parts:
-                        area_data["skating_condition"] = _translate_value(
-                            " ".join(condition_parts), lang
+            if dd := dt.find_next_sibling("dd", class_="big"):
+                text = dd.text.strip()
+                if "km" in text:
+                    match = re.search(r"(\d+(?:[\.,]\d+)?)", text)
+                    if match:
+                        area_data["skating_open_km"] = float(
+                            match.group(1).replace(",", ".")
                         )
-                    else:
-                        if next_dd := dd.find_next_sibling("dd"):
-                            area_data["skating_condition"] = _translate_value(
-                                next_dd.text.strip(), lang
-                            )
-            else:  # div.report-label
-                if report_info := dt.find_parent("div", class_="report-info"):
-                    if val_div := report_info.find("div", class_="report-value"):
-                        text = val_div.text.strip()
-                        match = re.search(r"(\d+(?:[\.,]\d+)?)", text)
-                        if match:
-                            area_data["skating_open_km"] = float(
-                                match.group(1).replace(",", ".")
-                            )
+
+                # Get condition from spans or next dd
+                condition_parts = []
+                for span in dd.find_all("span", class_="default-size"):
+                    condition_parts.append(span.text.strip())
+
+                if condition_parts:
+                    area_data["skating_condition"] = _translate_value(
+                        " ".join(condition_parts), lang
+                    )
+                else:
+                    if next_dd := dd.find_next_sibling("dd"):
+                        area_data["skating_condition"] = _translate_value(
+                            next_dd.text.strip(), lang
+                        )
 
     # Fallback to new table-based layout if no km found (e.g. Cortina d'Ampezzo)
     if "classical_open_km" not in area_data and "skating_open_km" not in area_data:

@@ -10,7 +10,19 @@ import aiohttp
 import pytest
 
 
-def test_parse_cross_country_achensee_overview():
+def test_parse_cross_country_reads_the_heading_and_the_trail_figures():
+    """The trail figures used to be read from a `report-info` box as well.
+
+    bergfex does not serve that box any more - twelve cross-country pages
+    checked, three of them actively reporting, and every one uses the `<dl>`
+    below - so the branch that read it was removed and this test rewritten onto
+    the markup that survives.
+
+    The heading is why the test survives at all rather than being deleted with
+    the layout it was written for: it is the only place that pins a
+    cross-country resort name, and that name still carries the page label
+    ("Langlaufen") where the alpine parser strips it.
+    """
     html = """
     <div class="tailwind">
     <h1 class="text-4xl">
@@ -18,18 +30,12 @@ def test_parse_cross_country_achensee_overview():
     <span>Achensee - Tirols Sport & Vital Park</span>
     </h1>
     </div>
-    <div class="contentbox box-container">
-    <div class="box-header">Loipen Bericht</div>
-    <div class="box-content">
-    <div class="report-info">
-    <div class="report-value"><span class="big">58,5</span> km</div>
-    <div class="report-label">Klassisch</div>
-    </div>
-    <div class="report-info">
-    <div class="report-value"><span class="big">82,5</span> km</div>
-    <div class="report-label">Skating</div>
-    </div>
-    </div>
+    <dl class="dl-horizontal dt-large loipen-bericht">
+        <dt class="big">Loipen klassisch</dt>
+        <dd class="big">58,5 km</dd>
+        <dt class="big">Loipen Skating</dt>
+        <dd class="big">82,5 km</dd>
+    </dl>
     """
     data = parse_cross_country_resort_page(html, lang="at")
     assert data["resort_name"] == "Langlaufen Achensee - Tirols Sport & Vital Park"
