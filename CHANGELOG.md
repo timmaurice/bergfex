@@ -3,7 +3,19 @@
 All notable changes to this project are documented here.
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [3.0.0] — unreleased
+## [3.0.1] — 2026-09-24
+
+### Added
+
+- **Danish translation of the integration.** The setup flow, the options, every
+  entity name and the repair messages are now translated into Danish. The card
+  already had a Danish translation; the integration around it spoke English.
+
+### Changed
+
+- Dependencies updated to their latest minor versions.
+
+## [3.0.0] — 2026-09-12
 
 The `2.4.0` line was never released. Its three betas (`2.4.0b1`, `2.4.0b2`,
 `2.4.0b3`) shipped only as pre-releases; everything they contained is part of
