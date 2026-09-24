@@ -14,6 +14,12 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   cross-country trails, sneudsigt for the snow forecast, entiteter for entities —
   and fixes a few split compounds.
 
+### Fixed
+
+- **The editor's resort field is called Resorts in English.** It read "Resort
+  Entities" although it picks devices, not entities, and the error for an empty
+  list asked for a resort entity.
+
 ### Changed
 
 - Dependencies updated to their latest minor versions.
