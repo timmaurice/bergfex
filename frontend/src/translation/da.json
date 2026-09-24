@@ -1,68 +1,68 @@
 {
   "editor": {
     "groups": {
-      "core": "Kerne Konfiguration",
+      "core": "Grundlæggende konfiguration",
       "display": "Visning",
-      "ski_only": "Skiområde muligheder",
+      "ski_only": "Indstillinger for skisportssteder",
       "cross_country_only": "Indstillinger for langrend"
     },
-    "title": "Title (Valgfri)",
-    "resorts": "Område enheder",
-    "show_snow": "Vis sne information",
-    "show_lifts_slopes": "Vis lift & piste statistik",
-    "show_conditions": "Vis forholds sektion",
-    "conditions_default_open": "Forholds sektion udvidet som standard",
-    "show_forecast": "Vis sne udsigt",
-    "forecast_default_open": "Sne udsigt udvidet som standard",
-    "show_trend": "Vis trend indikatorer (24h)",
-    "show_last_updated": "Vis sidst opdateret",
-    "show_link": "Vis link ikon",
-    "hide_closed_resorts": "Skjul lukkede områder",
+    "title": "Titel (valgfri)",
+    "resorts": "Skiområdeenheder",
+    "show_snow": "Vis sneoplysninger",
+    "show_lifts_slopes": "Vis lift- og pistestatistik",
+    "show_conditions": "Vis afsnittet med forhold",
+    "conditions_default_open": "Afsnittet med forhold udvidet som standard",
+    "show_forecast": "Vis sneudsigt",
+    "forecast_default_open": "Sneudsigt udvidet som standard",
+    "show_trend": "Vis tendensindikatorer (24 t)",
+    "show_last_updated": "Vis senest opdateret",
+    "show_link": "Vis linkikon",
+    "hide_closed_resorts": "Skjul lukkede skisportssteder",
     "hide_closed_resorts_helper": "Skjuler kun skisportssteder mellem vinter- og sommersæsonen. Steder i sommerdrift forbliver synlige, selv om man ikke kan stå på ski.",
     "sort_by": "Sorter efter",
     "sort_by_options": {
-      "mountain": "Sne (Bjerg)",
-      "valley": "Sne (Dal)",
-      "new": "Ny sne",
-      "lift": "Lifter åbne",
-      "classical": "Klassiske stier",
-      "skating": "Skate stier",
-      "update": "Sidste opdatering"
+      "mountain": "Sne (bjerg)",
+      "valley": "Sne (dal)",
+      "new": "Nysne",
+      "lift": "Åbne lifte",
+      "classical": "Klassiske løjper",
+      "skating": "Skøjteløjper",
+      "update": "Senest opdateret"
     },
     "show_trails": "Vis løjpestatistik"
   },
   "card": {
-    "resort_not_found": "Områder ikke fundet: {resort}",
-    "lifts_open": "Lifter",
+    "resort_not_found": "Skisportsstedet blev ikke fundet: {resort}",
+    "lifts_open": "Lifte",
     "header": {
       "snow_mountain": "Bjerg",
       "snow_valley": "Dal",
-      "new_snow": "Ny",
-      "snow_condition": "Sne forhold",
-      "slope_condition": "Piste forhold",
-      "avalanche_warning": "Lavine advarsel",
-      "last_snowfall": "Sidste snefald",
+      "new_snow": "Nysne",
+      "snow_condition": "Sneforhold",
+      "slope_condition": "Pisteforhold",
+      "avalanche_warning": "Lavinevarsel",
+      "last_snowfall": "Seneste snefald",
       "slopes_info": "Pister",
       "slopes_info_km": "Pister (km)",
-      "slopes_open_km": "Åben",
-      "slopes_total": "Total",
-      "classical_trails": "Klassiske stier",
-      "skating_trails": "Skate stier",
-      "classical_condition": "Klassisk forhold",
-      "skating_condition": "Skate forhold",
+      "slopes_open_km": "Åbne",
+      "slopes_total": "I alt",
+      "classical_trails": "Klassiske løjper",
+      "skating_trails": "Skøjteløjper",
+      "classical_condition": "Forhold, klassisk",
+      "skating_condition": "Forhold, skøjteløb",
       "operation_status": "Driftsstatus",
-      "link_title": "Åben {resortName} detaljeret side på bergfex"
+      "link_title": "Åbn detaljesiden for {resortName} på bergfex"
     },
     "forecast": {
       "daily": "Daglig",
-      "summary": "Opsummeret",
-      "hour": "{hours} Timer",
+      "summary": "Samlet",
+      "hour": "{hours} timer",
       "today": "I dag",
       "tomorrow": "I morgen"
     },
     "accordion": {
       "conditions": "Forhold",
-      "forecast": "Sne udsigt"
+      "forecast": "Sneudsigt"
     },
     "status": {
       "open": "Åben",
@@ -76,13 +76,13 @@
     "warnings": {
       "not_found": "Skisportsstedet blev ikke fundet: {subject}",
       "unavailable": "Der rapporteres ingen data for {subject}.",
-      "wrong_domain": "{subject} er en {actual}-enhed, men der kræves en {expected}.",
+      "wrong_domain": "{subject} er en {actual}-entitet, men der kræves en {expected}-entitet.",
       "not_numeric": "{subject} rapporterer ikke et tal (værdien er \"{state}\")."
     }
   },
   "common": {
     "errors": {
-      "no_resorts": "Du skal definere mindst én feriestedsenhed."
+      "no_resorts": "Du skal angive mindst én skiområdeenhed."
     }
   }
 }
