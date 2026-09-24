@@ -1,0 +1,201 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Vælg sprog",
+        "description": "Vælg dit foretrukne sprog. Det bestemmer, hvilket Bergfex-domæne der bruges.",
+        "data": {
+          "language": "Sprog"
+        }
+      },
+      "type": {
+        "title": "Vælg rapporttype",
+        "description": "Vælg den type rapport, du vil overvåge.",
+        "data": {
+          "type": "Rapporttype"
+        }
+      },
+      "country": {
+        "title": "Vælg land",
+        "description": "Vælg det land, området ligger i.",
+        "data": {
+          "country": "Land"
+        }
+      },
+      "ski_area_list": {
+        "title": "Vælg Bergfex-område",
+        "description": "Vælg det område ({report_type}), du vil overvåge i {country}. Du kan også indtaste URL-stien til et område, der ikke findes på listen.",
+        "data": {
+          "ski_area": "Område",
+          "manual_path": "Manuel URL-sti (f.eks. serfaus-fiss-ladis)"
+        }
+      },
+      "ski_area_list_alpine": {
+        "title": "Vælg Bergfex-skisportssted",
+        "description": "Vælg det skisportssted i {country}, du vil overvåge ([Link til oversigten]({url})). Du kan også indtaste URL-stien til et skisportssted, der ikke findes på listen.",
+        "data": {
+          "ski_area": "Skisportssted",
+          "manual_path": "Manuel URL-sti (f.eks. serfaus-fiss-ladis)",
+          "webhook_url": "Webhook-URL (f.eks. TRMNL-integration)"
+        }
+      },
+      "ski_area_list_cross_country": {
+        "title": "Vælg Bergfex-langrendsområde",
+        "description": "Vælg det langrendsområde i {country}, du vil overvåge ([Link til oversigten]({url})). Du kan også indtaste URL-stien til et område, der ikke findes på listen.",
+        "data": {
+          "ski_area": "Område",
+          "manual_path": "Manuel URL-sti (f.eks. serfaus-fiss-ladis)",
+          "webhook_url": "Webhook-URL (f.eks. TRMNL-integration)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Kunne ikke oprette forbindelse til Bergfex. Kontrollér din internetforbindelse.",
+      "no_areas_found": "Der blev ikke fundet nogen skiområder for det valgte land. Der er muligvis ingen aktuelle snerapporter.",
+      "no_selection": "Vælg et skiområde på listen, eller angiv en manuel sti.",
+      "invalid_path": "Den adresse angiver ikke et skiområde. Indtast en sti til et skisportssted som \"/ischgl/schneebericht/\", eller indsæt den fulde URL til skisportsstedets side.",
+      "invalid_webhook": "Det er ikke en gyldig webhook-adresse. Brug en fuld http://- eller https://-URL, eller lad feltet være tomt."
+    },
+    "abort": {
+      "already_configured": "Dette skiområde er allerede konfigureret."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Indstillinger",
+        "description": "Opdateringsinterval i minutter. Bergfex kan blokere IP-adresser, der spørger for ofte. Sproget bestemmer også, hvilket Bergfex-domæne der bruges; hvis du ændrer det, genindlæses integrationen.",
+        "data": {
+          "update_interval": "Opdateringsinterval (minutter)",
+          "language": "Sprog"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "status": {
+        "name": "Status"
+      },
+      "operation_status": {
+        "name": "Driftsstatus"
+      },
+      "classical_open_km": {
+        "name": "Åbne klassiske løjper"
+      },
+      "classical_condition": {
+        "name": "Forhold, klassisk"
+      },
+      "skating_open_km": {
+        "name": "Åbne skøjteløjper"
+      },
+      "skating_condition": {
+        "name": "Forhold, skøjteløb"
+      },
+      "last_update": {
+        "name": "Senest opdateret"
+      },
+      "snow_valley": {
+        "name": "Sne i dalen"
+      },
+      "snow_mountain": {
+        "name": "Sne på bjerget"
+      },
+      "new_snow": {
+        "name": "Nysne"
+      },
+      "snow_condition": {
+        "name": "Sneforhold"
+      },
+      "last_snowfall": {
+        "name": "Seneste snefald"
+      },
+      "avalanche_warning": {
+        "name": "Lavinevarsel"
+      },
+      "lifts_open_count": {
+        "name": "Åbne lifte"
+      },
+      "slopes_open_km": {
+        "name": "Åbne pister (km)"
+      },
+      "slopes_open_count": {
+        "name": "Åbne pister"
+      },
+      "slope_condition": {
+        "name": "Pisteforhold"
+      }
+    },
+    "image": {
+      "forecast_image_day_0": {
+        "name": "Sneudsigt dag 0"
+      },
+      "forecast_image_day_1": {
+        "name": "Sneudsigt dag 1"
+      },
+      "forecast_image_day_2": {
+        "name": "Sneudsigt dag 2"
+      },
+      "forecast_image_day_3": {
+        "name": "Sneudsigt dag 3"
+      },
+      "forecast_image_day_4": {
+        "name": "Sneudsigt dag 4"
+      },
+      "forecast_image_day_5": {
+        "name": "Sneudsigt dag 5"
+      },
+      "summary_image_48h": {
+        "name": "Sneudsigt samlet 48 t"
+      },
+      "summary_image_72h": {
+        "name": "Sneudsigt samlet 72 t"
+      },
+      "summary_image_96h": {
+        "name": "Sneudsigt samlet 96 t"
+      },
+      "summary_image_120h": {
+        "name": "Sneudsigt samlet 120 t"
+      },
+      "summary_image_144h": {
+        "name": "Sneudsigt samlet 144 t"
+      }
+    }
+  },
+  "selector": {
+    "report_type": {
+      "options": {
+        "alpine": "Alpint skisportssted",
+        "cross_country": "Langrend"
+      }
+    }
+  },
+  "issues": {
+    "standalone_card_installed": {
+      "title": "Fjern det separate Bergfex-kort",
+      "description": "Bergfex-kortet følger nu med denne integration. Det separate \"Bergfex Card\" er stadig installeret via HACS og indlæser en anden kopi, der er i konflikt med den. Åbn HACS, afinstaller \"Bergfex Card\", og genstart derefter Home Assistant."
+    },
+    "duplicate_resort_entry": {
+      "title": "Bergfex-skisportsstedet \"{resort}\" er konfigureret to gange",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Slet den dobbelte post",
+            "description": "Skisportsstedet \"{resort}\" ({path}) er sat op mere end én gang. Begge poster giver de samme entiteter, så kun én af dem kan fungere, og den anden forbliver defekt. Vil du slette posten med ID'et {entry_id} - den, der ikke kan fungere? Kun den post fjernes. Den anden post beholder sine enheder og entiteter og overtager skisportsstedet med det samme."
+          }
+        }
+      }
+    },
+    "orphaned_registry_entries": {
+      "title": "Bergfex \"{resort}\": {count} tilbageværende entiteter",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Slet de tilbageværende entiteter",
+            "description": "Tidligere versioner af denne integration gav sine entiteter nøgler efter et andet skema. {count} poster i registret for \"{resort}\" bruger stadig det gamle skema, så intet leverer data til dem: Home Assistant gendanner dem som utilgængelige, og de kan dukke op i kortet som dobbelte sneudsigtsbilleder, der aldrig indlæses.\n\n{entities}\n\nVil du slette dem? Deres navne, områdetildelinger og registrerede historik forsvinder med dem, og det kan ikke fortrydes. Det er ufarligt at beholde dem - kortet ignorerer dem allerede."
+          }
+        }
+      }
+    }
+  }
+}
