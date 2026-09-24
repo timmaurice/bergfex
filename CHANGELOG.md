@@ -10,6 +10,9 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - **Danish translation of the integration.** The setup flow, the options, every
   entity name and the repair messages are now translated into Danish. The card
   already had a Danish translation; the integration around it spoke English.
+- **The card's Danish now uses the same words as the integration** — løjper for
+  cross-country trails, sneudsigt for the snow forecast, entiteter for entities —
+  and fixes a few split compounds.
 
 ### Changed
 
