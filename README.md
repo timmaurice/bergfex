@@ -161,7 +161,7 @@ The card recognises cross-country trail sensors and reads totals from the sensor
 
 ### Card Localization
 
-The visual editor is available in the following languages: Danish, English, French, German, Polish.
+The visual editor is available in the following languages: Danish, Dutch, English, French, German, Italian, Polish, Spanish.
 
 <details>
 <summary>Contributing Translations</summary>
