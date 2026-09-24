@@ -10,7 +10,7 @@ describe('localize', () => {
 
   it('falls back to English when hass is not there yet', () => {
     // The card picker renders the preview before it sets hass.
-    expect(localize(undefined, 'common.errors.no_resorts')).toBe('You need to define at least one resort entity.');
+    expect(localize(undefined, 'common.errors.no_resorts')).toBe('You need to define at least one resort.');
   });
 
   it('translates into a language the integration offers', () => {

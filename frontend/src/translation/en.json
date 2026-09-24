@@ -7,7 +7,7 @@
       "cross_country_only": "Cross-country options"
     },
     "title": "Title (Optional)",
-    "resorts": "Resort Entities",
+    "resorts": "Resorts",
     "show_snow": "Show snow information",
     "show_lifts_slopes": "Show lift & slope statistics",
     "show_conditions": "Show conditions section",
@@ -82,7 +82,7 @@
   },
   "common": {
     "errors": {
-      "no_resorts": "You need to define at least one resort entity."
+      "no_resorts": "You need to define at least one resort."
     }
   }
 }

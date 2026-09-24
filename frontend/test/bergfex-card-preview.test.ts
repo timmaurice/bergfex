@@ -14,7 +14,7 @@ vi.spyOn(console, 'info').mockImplementation(() => undefined);
 // preview is that the card renders its strings before hass exists, and a stubbed
 // localize would pass no matter what the real one does with `hass === undefined`.
 // These cases assert the real English text from src/translation/en.json.
-const NO_RESORTS_EN = 'You need to define at least one resort entity.';
+const NO_RESORTS_EN = 'You need to define at least one resort.';
 
 interface HaCard extends HTMLElement {
   header?: string;
