@@ -188,6 +188,9 @@ CROSS_COUNTRY_SENSORS: tuple[BergfexSensorEntityDescription, ...] = (
 
 
 SCAN_INTERVAL = timedelta(minutes=30)
+# The sensors only read the coordinator's data and have no update method of
+# their own, so there is nothing to throttle.
+PARALLEL_UPDATES = 0
 _LOGGER = logging.getLogger(__name__)
 
 
