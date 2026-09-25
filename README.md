@@ -24,6 +24,7 @@ This custom integration for Home Assistant fetches snow reports and ski resort d
 - **Efficient Polling**: Fetches data for an entire region/country efficiently, shared across all sensors.
 - **Device per Ski Area**: Creates a dedicated device in Home Assistant for each monitored ski area.
 - **Detailed Sensors**: Provides comprehensive sensors for snow depths, lift status, slope conditions, and avalanche warnings.
+- **Diagnostics**: A ski area's entry offers **Download diagnostics** (**Settings** → **Devices & Services** → **Bergfex Snow Report** → ⋮), with its settings, the state of the last poll and a summary of the parsed data - attach it to a bug report. The webhook URL is redacted.
 
 ### Lovelace Card
 
