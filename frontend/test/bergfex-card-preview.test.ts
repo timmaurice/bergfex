@@ -47,6 +47,13 @@ describe('BergfexCard card picker preview', () => {
     document.body.removeChild(element);
   });
 
+  it('asks the picker for a live preview', () => {
+    // Without it the picker shows a bare name tile, and every case below that
+    // keeps the stub-config preview from breaking guards something nobody sees.
+    const entry = (window.customCards ?? []).find((card) => card.type === 'bergfex-card');
+    expect(entry?.preview).toBe(true);
+  });
+
   it('accepts the stub config the picker builds, before hass is set', () => {
     const stub = BergfexCard.getStubConfig() as BergfexCardConfig;
     expect(() => element.setConfig(stub)).not.toThrow();

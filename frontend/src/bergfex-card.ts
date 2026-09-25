@@ -1782,6 +1782,7 @@ if (typeof window !== 'undefined') {
       name: 'Bergfex Card',
       description: 'A Lovelace card to display ski resort conditions from Bergfex.',
       documentationURL: 'https://github.com/timmaurice/bergfex',
+      preview: true,
       getEntitySuggestion: (hass: HomeAssistant, entityId: string) => {
         const entity = hass.entities[entityId];
         if (entity?.platform === 'bergfex' && entity.device_id) {
