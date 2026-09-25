@@ -58,7 +58,11 @@
       "summary": "Samenvatting",
       "hour": "{hours} uur",
       "today": "Vandaag",
-      "tomorrow": "Morgen"
+      "tomorrow": "Morgen",
+      "previous": "Vorige verwachtingskaart",
+      "next": "Volgende verwachtingskaart",
+      "image_alt": "Sneeuwverwachtingskaart, {label}",
+      "image_unavailable": "Afbeelding niet beschikbaar"
     },
     "accordion": {
       "conditions": "Omstandigheden",
@@ -72,6 +76,19 @@
       "summer_season": "Zomerseizoen",
       "season_from": "vanaf {date}",
       "season_last_year": "vorig jaar: {date}"
+    },
+    "a11y": {
+      "value": "{label}: {value}",
+      "of_total": "{open} van {total}",
+      "not_available": "niet beschikbaar",
+      "trend_up": "gestegen in de afgelopen 24 uur",
+      "trend_down": "gedaald in de afgelopen 24 uur",
+      "trend_same": "onveranderd in de afgelopen 24 uur",
+      "status_prefix": "Status:",
+      "last_updated": "Bijgewerkt {time}",
+      "snow_mountain": "Sneeuwhoogte op de berg",
+      "snow_valley": "Sneeuwhoogte in het dal",
+      "new_snow": "Verse sneeuw"
     },
     "warnings": {
       "not_found": "Skigebied niet gevonden: {subject}",

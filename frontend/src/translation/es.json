@@ -58,7 +58,11 @@
       "summary": "Resumen",
       "hour": "{hours} horas",
       "today": "Hoy",
-      "tomorrow": "Mañana"
+      "tomorrow": "Mañana",
+      "previous": "Mapa de previsión anterior",
+      "next": "Mapa de previsión siguiente",
+      "image_alt": "Mapa de previsión de nieve, {label}",
+      "image_unavailable": "Imagen no disponible"
     },
     "accordion": {
       "conditions": "Condiciones",
@@ -72,6 +76,19 @@
       "summer_season": "Temporada de verano",
       "season_from": "desde el {date}",
       "season_last_year": "el año pasado: {date}"
+    },
+    "a11y": {
+      "value": "{label}: {value}",
+      "of_total": "{open} de {total}",
+      "not_available": "no disponible",
+      "trend_up": "ha subido en las últimas 24 horas",
+      "trend_down": "ha bajado en las últimas 24 horas",
+      "trend_same": "sin cambios en las últimas 24 horas",
+      "status_prefix": "Estado:",
+      "last_updated": "Actualizado {time}",
+      "snow_mountain": "Espesor de nieve en la montaña",
+      "snow_valley": "Espesor de nieve en el valle",
+      "new_snow": "Nieve nueva"
     },
     "warnings": {
       "not_found": "Estación no encontrada: {subject}",

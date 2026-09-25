@@ -1168,7 +1168,7 @@ describe('BergfexCard', () => {
       conditionsHeader?.click();
       await element.updateComplete;
 
-      const accordionContent = conditionsHeader.nextElementSibling;
+      const accordionContent = element.shadowRoot?.getElementById(conditionsHeader.getAttribute('aria-controls')!);
       expect(accordionContent?.textContent).toContain('Good'); // classical_condition
       expect(accordionContent?.textContent).toContain('Freshly Prepared'); // skating_condition
       expect(accordionContent?.textContent).toContain('Partly open'); // operation_status
@@ -1274,7 +1274,7 @@ describe('BergfexCard', () => {
       const conditionsHeader = accordionHeaders.find((h) => h.textContent?.includes('Conditions')) as HTMLElement;
 
       // Check if content is visible without clicking
-      const accordionContent = conditionsHeader.nextElementSibling;
+      const accordionContent = element.shadowRoot?.getElementById(conditionsHeader.getAttribute('aria-controls')!);
       expect(accordionContent).not.toBeNull();
       expect(accordionContent?.textContent).toContain('Powder');
     });

@@ -58,7 +58,11 @@
       "summary": "Zusammenfassung",
       "hour": "{hours} Stunden",
       "today": "Heute",
-      "tomorrow": "Morgen"
+      "tomorrow": "Morgen",
+      "previous": "Vorherige Vorhersagekarte",
+      "next": "Nächste Vorhersagekarte",
+      "image_alt": "Schneevorhersagekarte, {label}",
+      "image_unavailable": "Bild nicht verfügbar"
     },
     "accordion": {
       "conditions": "Bedingungen",
@@ -72,6 +76,19 @@
       "summer_season": "Sommersaison",
       "season_from": "ab {date}",
       "season_last_year": "letztes Jahr: {date}"
+    },
+    "a11y": {
+      "value": "{label}: {value}",
+      "of_total": "{open} von {total}",
+      "not_available": "nicht verfügbar",
+      "trend_up": "in den letzten 24 Stunden gestiegen",
+      "trend_down": "in den letzten 24 Stunden gesunken",
+      "trend_same": "in den letzten 24 Stunden unverändert",
+      "status_prefix": "Status:",
+      "last_updated": "Zuletzt aktualisiert {time}",
+      "snow_mountain": "Schneehöhe am Berg",
+      "snow_valley": "Schneehöhe im Tal",
+      "new_snow": "Neuschnee"
     },
     "warnings": {
       "not_found": "Skigebiet nicht gefunden: {subject}",

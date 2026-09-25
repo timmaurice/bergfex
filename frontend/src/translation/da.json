@@ -58,7 +58,11 @@
       "summary": "Samlet",
       "hour": "{hours} timer",
       "today": "I dag",
-      "tomorrow": "I morgen"
+      "tomorrow": "I morgen",
+      "previous": "Forrige udsigtskort",
+      "next": "Næste udsigtskort",
+      "image_alt": "Sneudsigtskort, {label}",
+      "image_unavailable": "Billedet er ikke tilgængeligt"
     },
     "accordion": {
       "conditions": "Forhold",
@@ -72,6 +76,19 @@
       "summer_season": "Sommersæson",
       "season_from": "fra {date}",
       "season_last_year": "sidste år: {date}"
+    },
+    "a11y": {
+      "value": "{label}: {value}",
+      "of_total": "{open} af {total}",
+      "not_available": "ikke tilgængelig",
+      "trend_up": "steget i løbet af de seneste 24 timer",
+      "trend_down": "faldet i løbet af de seneste 24 timer",
+      "trend_same": "uændret i løbet af de seneste 24 timer",
+      "status_prefix": "Status:",
+      "last_updated": "Senest opdateret {time}",
+      "snow_mountain": "Snedybde på bjerget",
+      "snow_valley": "Snedybde i dalen",
+      "new_snow": "Nysne"
     },
     "warnings": {
       "not_found": "Skisportsstedet blev ikke fundet: {subject}",

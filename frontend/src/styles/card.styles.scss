@@ -1,3 +1,22 @@
+// A <button> drawn as the plain element it replaced: no face, no border, and
+// the surrounding text's font instead of the user agent's control font. Spelled
+// out in longhands - after a `font: inherit` shorthand, jsdom drops the rule's
+// own font-size, and card-styles.test.ts would read the card wrong.
+@mixin bare-button {
+  background: none;
+  border: 0;
+  color: inherit;
+  font-family: inherit;
+  font-size: inherit;
+  font-style: inherit;
+  font-weight: inherit;
+  letter-spacing: inherit;
+  line-height: inherit;
+  margin: 0;
+  padding: 0;
+  text-align: start;
+}
+
 :host ::slotted(.card-content),
 .card-content {
   display: flex;
@@ -35,9 +54,20 @@
 .resort-name {
   font-size: 1.2em;
   font-weight: 500;
+  // An h2 since the resort names became headings; the user-agent margin would
+  // push the header apart.
+  margin: 0;
   // A flex item will not shrink below its content, so a long title pushed the
   // status badge out of the card rather than wrapping.
   min-width: 0;
+}
+
+// Carries the heading's text so the keyboard can open the status, and must look
+// like nothing but that text.
+.resort-name-button {
+  @include bare-button;
+  cursor: pointer;
+  max-width: 100%;
 }
 
 .resort-status-group {
@@ -93,6 +123,12 @@
   display: grid;
   gap: 8px;
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  // A list since the figures became list items: none of the user-agent list
+  // styling may show.
+  list-style: none;
+  margin: 0;
+  padding-left: 0;
+  padding-right: 0;
   padding-top: 12px;
 
   &.cross-country-details {
@@ -100,12 +136,23 @@
   }
 }
 
+.detail-cell {
+  // Lets the button fill its grid cell, and centres its content vertically in a
+  // row as tall as its tallest neighbour, as the item did when it was the cell.
+  display: flex;
+  min-width: 0;
+}
+
+// A button, reset to look like the plain block it was before.
 .detail-item {
+  @include bare-button;
   --mdc-icon-size: 24px;
   align-items: center;
   cursor: pointer;
   display: flex;
+  flex: 1 1 auto;
   gap: 8px;
+  min-width: 0;
 
   ha-icon {
     color: var(--secondary-text-color);
@@ -196,6 +243,19 @@
   padding: 12px 0 0;
 }
 
+.visually-hidden {
+  border: 0;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+
 .link-icon {
   color: var(--secondary-text-color);
   display: flex;
@@ -203,6 +263,7 @@
 }
 
 .last-updated {
+  @include bare-button;
   align-items: center;
   color: var(--secondary-text-color);
   cursor: pointer;
@@ -219,6 +280,8 @@
 .progress-bar-container {
   background-color: var(--divider-color);
   border-radius: 2px;
+  // Spans since the item became a button, which may only hold phrasing content.
+  display: block;
   height: 4px;
   margin-top: 4px;
   overflow: hidden;
@@ -228,6 +291,7 @@
 .progress-bar-fill {
   background-color: var(--primary-color);
   border-radius: 2px;
+  display: block;
   height: 100%;
   transition: width 0.3s ease-in-out;
 }
@@ -241,14 +305,23 @@
   }
 }
 
+.accordion-title {
+  font-size: inherit;
+  font-weight: inherit;
+  margin: 0;
+}
+
 .accordion-header {
+  @include bare-button;
   align-items: center;
+  border-radius: 0;
   color: var(--primary-text-color);
   cursor: pointer;
   display: flex;
   font-weight: 500;
   justify-content: space-between;
   padding: 12px 0;
+  width: 100%;
 
   &:hover {
     background-color: rgba(var(--rgb-primary-text-color), 0.02);
@@ -271,7 +344,9 @@
 }
 
 .forecast-tab {
+  @include bare-button;
   border-bottom: 2px solid transparent;
+  border-radius: 0;
   color: var(--secondary-text-color);
   cursor: pointer;
   font-weight: 500;
@@ -310,7 +385,16 @@
   width: 100%;
 }
 
+.forecast-image-button {
+  @include bare-button;
+  cursor: pointer;
+  display: block;
+  height: 100%;
+  width: 100%;
+}
+
 .forecast-image {
+  display: block;
   height: 100%;
   object-fit: contain;
   width: 100%;
