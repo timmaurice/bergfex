@@ -3,6 +3,59 @@
 All notable changes to this project are documented here.
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.0] — 2026-09-26
+
+### Added
+
+- **Reconfigure a ski area to switch its language** (#46). The entry's
+  Reconfigure step offers the eighteen languages of the setup flow, prefilled
+  with the current one. The language selects the Bergfex domain, so the area's
+  page is loaded from the new domain first; if that fails the form says so and
+  the entry is left as it was. Entity IDs, history and the device stay, because
+  a resort's path is the same on every domain.
+- **Config entry diagnostics** (#43): the entry's settings, the state of the
+  last poll, a summary per area of what the page yielded, and whether the
+  forecast and season caches are serving it. The webhook URL is redacted
+  wherever it appears.
+- **The card works with a keyboard and a screen reader** (#41). Every figure is
+  a button whose accessible name reads label, value and trend; Conditions and
+  Snow Forecast are toggle buttons with `aria-expanded`; the forecast tabs are a
+  real tab list with arrow, Home and End keys; the carousel arrows, the map and
+  the Bergfex link are named. The new strings are in all eight card languages,
+  and nothing looks different.
+- **A live preview in the card picker.** The "Add card" dialog showed the card
+  as a bare name tile.
+
+### Changed
+
+- **The options only set the update interval.** The language moved to
+  Reconfigure (#46); in 3.0.0 it sat next to the interval under Configure.
+- **The Last Update sensors are diagnostic entities** (#45). They are listed
+  under Diagnostic on the device page and left off auto-generated dashboards.
+  The entity ID is unchanged and the card still shows the time.
+- **Sensor icons come from `icons.json`.** The sensors no longer carry an
+  `icon` state attribute. The Status sensor of a cross-country area keeps
+  `icon: mdi:ski-cross-country`, which the card reads to tell it from an alpine
+  one.
+- **Home Assistant 2026.9.1 or newer is required**, up from 2026.9.0, matching
+  the oldest core the tests run against.
+
+### Fixed
+
+- **A resort added twice stopped updating in its second entry** once the first
+  was reloaded, for example after changing its options. The second entry used
+  the first one's coordinator; each entry now polls on its own.
+- The Bergfex link's tooltip showed the raw key
+  `component.bergfex-card.card.link_title`.
+
+### Infrastructure
+
+- Each entry keeps its coordinator in `runtime_data` (#40), the coordinator
+  lives in `coordinator.py` (#42), and the sensor and image platforms declare
+  `PARALLEL_UPDATES`.
+- A test holds `hacs.json` to the `MINIMUM_CORE` of the test workflow.
+- `FUNDING.yml` added (#44). `jsdom` bumped to 30.1.0 (#38).
+
 ## [3.0.1] — 2026-09-24
 
 ### Added
