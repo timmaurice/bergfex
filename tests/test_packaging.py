@@ -5,8 +5,10 @@ import re
 from pathlib import Path
 
 import pytest
+import yaml
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry as dr
+from packaging.version import Version
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.bergfex.__init__ import async_remove_config_entry_device
@@ -47,6 +49,21 @@ def test_hacs_declares_a_minimum_home_assistant_version():
 
     major, minor = (int(part) for part in minimum.split(".")[:2])
     assert (major, minor) >= (2026, 9)
+
+
+def test_hacs_does_not_offer_a_core_ci_never_accepts():
+    """HACS would otherwise install on cores older than any CI run could have used.
+
+    MINIMUM_CORE in tests.yml is the oldest core a test run is allowed to
+    resolve. A hacs.json minimum below it promises support for cores the suite
+    never sees, which is how 2026.9.0 stayed declared while CI floored at 2026.9.1.
+    """
+    hacs = json.loads((ROOT / "hacs.json").read_text())
+    workflow = yaml.safe_load(
+        (ROOT / ".github" / "workflows" / "tests.yml").read_text()
+    )
+
+    assert Version(hacs["homeassistant"]) >= Version(workflow["env"]["MINIMUM_CORE"])
 
 
 TRANSLATIONS = ROOT / "custom_components" / "bergfex" / "translations"
