@@ -23,9 +23,8 @@ from homeassistant.exceptions import ConfigEntryNotReady
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.bergfex.__init__ import async_setup_entry
-from custom_components.bergfex.const import COORDINATORS, DOMAIN
+from custom_components.bergfex.const import DOMAIN
 from custom_components.bergfex.parser import parse_overview_data
-from custom_components.bergfex.unique_id import coordinator_key
 
 AREA_PATH = "/it/test/schneebericht/"
 
@@ -104,7 +103,7 @@ async def test_a_failed_poll_is_not_logged_twice(
         mock_config_entry.add_to_hass(hass)
         await async_setup_entry(hass, mock_config_entry)
 
-        coordinator = hass.data[DOMAIN][COORDINATORS][coordinator_key(AREA_PATH)]
+        coordinator = mock_config_entry.runtime_data
         caplog.clear()
         await coordinator.async_refresh()
 

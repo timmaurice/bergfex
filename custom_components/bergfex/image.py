@@ -13,15 +13,15 @@ from urllib.parse import urljoin
 from homeassistant.util import dt as dt_util
 from homeassistant.util import slugify
 
+from . import BergfexConfigEntry
 from .config_flow import entry_area_name
-from .unique_id import build_unique_id, coordinator_key
+from .unique_id import build_unique_id
 from .const import (
     BASE_URL,
     CONF_DOMAIN,
     CONF_SKI_AREA,
     CONF_TYPE,
     DOMAIN,
-    COORDINATORS,
     TYPE_CROSS_COUNTRY,
 )
 
@@ -36,16 +36,13 @@ PARALLEL_UPDATES = 0
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    entry: ConfigEntry,
+    entry: BergfexConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the Bergfex image platform."""
-    # Get the coordinator stored in hass.data by the integration setup
-    resort_coordinator_name = coordinator_key(entry.data[CONF_SKI_AREA])
-    coordinator = hass.data[DOMAIN][COORDINATORS].get(resort_coordinator_name)
-    if coordinator is None:
-        _LOGGER.error("Coordinator not found for %s", resort_coordinator_name)
-        return
+    # The integration setup stores the coordinator on the entry, and only after
+    # its first refresh succeeded, so it is always there by now.
+    coordinator = entry.runtime_data
 
     entities = []
 
