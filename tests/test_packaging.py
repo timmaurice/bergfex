@@ -1,6 +1,7 @@
 """What the integration declares about itself, and what it lets users delete."""
 
 import json
+import re
 from pathlib import Path
 
 import pytest
@@ -10,6 +11,7 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.bergfex.__init__ import async_remove_config_entry_device
 from custom_components.bergfex.const import DOMAIN
+from custom_components.bergfex.sensor import ALPINE_SENSORS, CROSS_COUNTRY_SENSORS
 
 ROOT = Path(__file__).resolve().parent.parent
 AREA_PATH = "/it/test/schneebericht/"
@@ -84,6 +86,33 @@ def test_every_language_declares_the_same_repair_issues():
         assert {
             key: sorted(issue) for key, issue in issues.items()
         } == expected, f"{path.name} does not match en.json"
+
+
+ICONS = ROOT / "custom_components" / "bergfex" / "icons.json"
+
+
+def test_every_sensor_has_an_icon():
+    """Without one the frontend falls back to the generic sensor icon."""
+    icons = json.loads(ICONS.read_text(encoding="utf-8"))["entity"]["sensor"]
+
+    for description in (*ALPINE_SENSORS, *CROSS_COUNTRY_SENSORS):
+        assert (
+            description.icon or description.translation_key in icons
+        ), f"{description.key} has no icon"
+
+
+def test_icons_json_has_the_shape_hassfest_accepts():
+    """A key no entity translates is a typo the frontend silently ignores."""
+    icons = json.loads(ICONS.read_text(encoding="utf-8"))
+    names = json.loads((TRANSLATIONS / "en.json").read_text(encoding="utf-8"))
+
+    assert set(icons) == {"entity"}
+    for platform, entries in icons["entity"].items():
+        for key, icon in entries.items():
+            where = f"{platform}.{key}"
+            assert key in names["entity"].get(platform, {}), f"{where} is unknown"
+            assert set(icon) == {"default"}, f"{where} carries more than a default"
+            assert re.fullmatch(r"mdi:[a-z0-9-]+", icon["default"]), where
 
 
 @pytest.fixture

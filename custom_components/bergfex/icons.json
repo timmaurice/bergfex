@@ -1,0 +1,57 @@
+{
+  "entity": {
+    "sensor": {
+      "status": {
+        "default": "mdi:ski"
+      },
+      "snow_valley": {
+        "default": "mdi:snowflake"
+      },
+      "snow_mountain": {
+        "default": "mdi:snowflake"
+      },
+      "new_snow": {
+        "default": "mdi:weather-snowy-heavy"
+      },
+      "snow_condition": {
+        "default": "mdi:snowflake-alert"
+      },
+      "last_snowfall": {
+        "default": "mdi:calendar-clock"
+      },
+      "avalanche_warning": {
+        "default": "mdi:alert-octagon"
+      },
+      "lifts_open_count": {
+        "default": "mdi:gondola"
+      },
+      "slopes_open_km": {
+        "default": "mdi:ski"
+      },
+      "slopes_open_count": {
+        "default": "mdi:ski"
+      },
+      "slope_condition": {
+        "default": "mdi:snowflake-variant"
+      },
+      "last_update": {
+        "default": "mdi:clock-outline"
+      },
+      "operation_status": {
+        "default": "mdi:check-circle-outline"
+      },
+      "classical_open_km": {
+        "default": "mdi:ski-cross-country"
+      },
+      "classical_condition": {
+        "default": "mdi:snowflake-variant"
+      },
+      "skating_open_km": {
+        "default": "mdi:ski-cross-country"
+      },
+      "skating_condition": {
+        "default": "mdi:snowflake-variant"
+      }
+    }
+  }
+}
