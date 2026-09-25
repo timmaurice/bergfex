@@ -47,6 +47,16 @@
           "manual_path": "Ruta URL manual (p. ej., serfaus-fiss-ladis)",
           "webhook_url": "URL del Webhook (p. ej., integración con TRMNL)"
         }
+      },
+      "reconfigure": {
+        "title": "Cambiar idioma",
+        "description": "Seleccione el idioma para {name}. También determina el dominio de Bergfex del que se lee el área. El área, sus entidades y su historial se mantienen; la integración se recarga.",
+        "data": {
+          "language": "Idioma"
+        },
+        "data_description": {
+          "language": "Primero se carga la página del área desde el nuevo dominio. Si falla, no se cambia nada."
+        }
       }
     },
     "error": {
@@ -57,17 +67,18 @@
       "invalid_webhook": "Esa no es una dirección de webhook válida. Usa una URL http:// o https:// completa, o deja el campo vacío."
     },
     "abort": {
-      "already_configured": "Esta estación de esquí ya está configurada."
+      "already_configured": "Esta estación de esquí ya está configurada.",
+      "reconfigure_successful": "Se ha guardado el ajuste de idioma.",
+      "unknown_entry": "Esta estación de esquí ya no está configurada."
     }
   },
   "options": {
     "step": {
       "init": {
         "title": "Ajustes",
-        "description": "Intervalo de actualización en minutos. Bergfex puede bloquear direcciones IP que consultan con demasiada frecuencia. El idioma también determina el dominio de Bergfex utilizado; cambiarlo recarga la integración.",
+        "description": "Intervalo de actualización en minutos. Bergfex puede bloquear direcciones IP que consultan con demasiada frecuencia. El idioma se cambia reconfigurando la entrada.",
         "data": {
-          "update_interval": "Intervalo de actualización (minutos)",
-          "language": "Idioma"
+          "update_interval": "Intervalo de actualización (minutos)"
         }
       }
     }

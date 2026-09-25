@@ -47,6 +47,16 @@
           "manual_path": "Manueller URL-Pfad (z.B. serfaus-fiss-ladis)",
           "webhook_url": "Webhook URL (z.B. Integration mit TRMNL)"
         }
+      },
+      "reconfigure": {
+        "title": "Sprache ändern",
+        "description": "Wählen Sie die Sprache für {name}. Sie bestimmt auch die Bergfex-Domain, von der das Gebiet gelesen wird. Das Gebiet, seine Entitäten und deren Verlauf bleiben erhalten; die Integration wird neu geladen.",
+        "data": {
+          "language": "Sprache"
+        },
+        "data_description": {
+          "language": "Die Seite des Gebiets wird zuerst von der neuen Domain geladen. Schlägt das fehl, bleibt alles unverändert."
+        }
       }
     },
     "error": {
@@ -57,17 +67,18 @@
       "invalid_webhook": "Das ist keine gültige Webhook-Adresse. Gib eine vollständige http:// oder https:// URL an oder lass das Feld leer."
     },
     "abort": {
-      "already_configured": "Dieses Skigebiet ist bereits konfiguriert."
+      "already_configured": "Dieses Skigebiet ist bereits konfiguriert.",
+      "reconfigure_successful": "Die Spracheinstellung wurde gespeichert.",
+      "unknown_entry": "Dieses Skigebiet ist nicht mehr konfiguriert."
     }
   },
   "options": {
     "step": {
       "init": {
         "title": "Einstellungen",
-        "description": "Aktualisierungsintervall in Minuten. Bergfex blockiert möglicherweise IP-Adressen, die zu häufig abfragen. Die Sprache bestimmt auch die verwendete Bergfex-Domain; eine Änderung lädt die Integration neu.",
+        "description": "Aktualisierungsintervall in Minuten. Bergfex blockiert möglicherweise IP-Adressen, die zu häufig abfragen. Die Sprache ändern Sie, indem Sie den Eintrag neu konfigurieren.",
         "data": {
-          "update_interval": "Aktualisierungsintervall (Minuten)",
-          "language": "Sprache"
+          "update_interval": "Aktualisierungsintervall (Minuten)"
         }
       }
     }

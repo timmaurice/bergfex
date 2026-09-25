@@ -24,6 +24,7 @@ This custom integration for Home Assistant fetches snow reports and ski resort d
 - **Efficient Polling**: Fetches data for an entire region/country efficiently, shared across all sensors.
 - **Device per Ski Area**: Creates a dedicated device in Home Assistant for each monitored ski area.
 - **Detailed Sensors**: Provides comprehensive sensors for snow depths, lift status, slope conditions, and avalanche warnings.
+- **Reconfigure**: Switch an existing ski area to another language without removing it; its entities, history and device stay as they are (see [Reconfigure](#reconfigure)).
 - **Diagnostics**: A ski area's entry offers **Download diagnostics** (**Settings** → **Devices & Services** → **Bergfex Snow Report** → ⋮), with its settings, the state of the last poll and a summary of the parsed data - attach it to a bug report. The webhook URL is redacted.
 
 ### Lovelace Card
@@ -102,6 +103,18 @@ Configuration is done entirely through the Home Assistant UI.
 7.  Click **Submit**.
 
 A new device will be created for the ski area, containing all the sensors listed below. You can repeat this process to add multiple ski areas.
+
+### Reconfigure
+
+To read an existing ski area in another language, open **Settings** → **Devices & Services** → **Bergfex Snow Report**, choose ⋮ next to the area and then **Reconfigure**, and pick the new language. The language also selects the Bergfex domain (e.g. English → bergfex.com), so the area's page is loaded from the new domain first; if that fails, the entry is left as it was and the form says so. Otherwise the entry reloads in the new language.
+
+Nothing else about the area changes: a resort's path is the same on every Bergfex domain, and it is what the entry, its entities and its device are identified by. Entity IDs, history, dashboards and automations keep working. The device name follows the name Bergfex prints on the page, so it may change with the language unless you renamed the device yourself.
+
+To monitor a different resort, add it as a new entry.
+
+### Options
+
+**Configure** on an entry sets the update interval (15 to 1440 minutes, default 30). Bergfex may block IP addresses that poll too often. The language used to be offered here too; it is now changed through **Reconfigure**.
 
 ## Lovelace Card
 

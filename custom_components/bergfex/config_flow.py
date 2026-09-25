@@ -5,9 +5,11 @@ import re
 from typing import Any
 from urllib.parse import urlsplit
 
+import aiohttp
 import voluptuous as vol
 from bs4 import BeautifulSoup
 from homeassistant import config_entries
+from homeassistant.config_entries import ConfigFlowResult
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.helpers import selector
@@ -33,6 +35,7 @@ from .const import (
     MIN_UPDATE_INTERVAL,
     MAX_UPDATE_INTERVAL,
 )
+from .coordinator import detail_page_url
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -48,6 +51,33 @@ _BERGFEX_HOST = re.compile(r"^(?:[\w-]+\.)*bergfex\.[a-z]{2,}(?::\d+)?$", re.IGN
 # nothing but these names no resort, and the resort's own name is the segment in
 # front of them.
 _SUBPAGE_SEGMENTS = frozenset({SNOW_REPORT_SEGMENT, "loipen", "langlaufen"})
+
+# How long the reconfigure step waits for the area page on the new domain. The
+# user is looking at a spinner meanwhile, so this is far shorter than a poll's.
+_PAGE_CHECK_TIMEOUT = aiohttp.ClientTimeout(total=15)
+
+
+def language_options() -> dict[str, str]:
+    """Return the language selector's choices: {code: name in that language}."""
+    return {code: lang["name"] for code, lang in SUPPORTED_LANGUAGES.items()}
+
+
+async def async_page_loads(hass: HomeAssistant, url: str) -> bool:
+    """Return whether bergfex serves `url`, following redirects.
+
+    Any failure counts - no connection, a timeout, or a status that is not a
+    success, which is how bergfex answers a path it does not know.
+    """
+    session = async_get_clientsession(hass)
+    try:
+        async with session.get(
+            url, allow_redirects=True, timeout=_PAGE_CHECK_TIMEOUT
+        ) as response:
+            response.raise_for_status()
+    except (aiohttp.ClientError, TimeoutError) as err:
+        _LOGGER.debug("Area page %s did not load: %s", url, err)
+        return False
+    return True
 
 
 class InvalidWebhookUrl(ValueError):
@@ -200,8 +230,6 @@ class BergfexConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = 1
     _data: dict[str, Any] = {}
 
-    _data: dict[str, Any] = {}
-
     @staticmethod
     @callback
     def async_get_options_flow(
@@ -221,16 +249,83 @@ class BergfexConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             ]
             return await self.async_step_type()
 
-        language_options = {
-            code: lang["name"] for code, lang in SUPPORTED_LANGUAGES.items()
-        }
         language_schema = vol.Schema(
-            {vol.Required(CONF_LANGUAGE, default="at"): vol.In(language_options)}
+            {vol.Required(CONF_LANGUAGE, default="at"): vol.In(language_options())}
         )
 
         return self.async_show_form(
             step_id="user",
             data_schema=language_schema,
+        )
+
+    async def async_step_reconfigure(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Move an existing entry to another bergfex language.
+
+        The language picks the bergfex domain, and both live in the entry's data.
+        The options flow used to write them, which is what an options flow is
+        not for, and relied on an update listener for the reload.
+
+        Only the language, the domain and the url cached from them move. The
+        resort path is identical on every bergfex domain, and the country is
+        stored under its German key (the one COUNTRIES is keyed on), whatever
+        language it was picked in - so neither is language-dependent. The path is
+        also what the entry's unique id, every entity's unique id and the
+        device's identifier are built from, which is why none of them change.
+        The stored name is left alone too: it is the entry's title and seeded the
+        entity ids, and the device name follows the parsed page after the reload
+        anyway, unless the user renamed it.
+        """
+        try:
+            entry = self._get_reconfigure_entry()
+        except config_entries.UnknownEntry:
+            # The entry was deleted while this form was open.
+            return self.async_abort(reason="unknown_entry")
+
+        errors: dict[str, str] = {}
+        language = entry.data.get(CONF_LANGUAGE, "at")
+
+        if user_input is not None:
+            language = user_input[CONF_LANGUAGE]
+            domain = SUPPORTED_LANGUAGES[language]["domain"]
+            area_path = entry.data[CONF_SKI_AREA]
+
+            # Check the page the coordinator is about to poll, so a resort that
+            # one domain does not list leaves the entry working on the old one
+            # instead of reloading into a setup that keeps failing.
+            page_url = detail_page_url(
+                domain, area_path, entry.data.get(CONF_TYPE, TYPE_ALPINE)
+            )
+            if not await async_page_loads(self.hass, page_url):
+                errors["base"] = "cannot_connect"
+            else:
+                _LOGGER.debug(
+                    "Switching %s to language %s (%s)", entry.title, language, domain
+                )
+                return self.async_update_reload_and_abort(
+                    entry,
+                    data_updates={
+                        CONF_LANGUAGE: language,
+                        CONF_DOMAIN: domain,
+                        "url": f"{domain}{area_path}",
+                    },
+                    # Submitting the current language changes nothing, and a
+                    # reload would only cost bergfex a round of requests.
+                    reload_even_if_entry_is_unchanged=False,
+                )
+
+        return self.async_show_form(
+            step_id="reconfigure",
+            data_schema=vol.Schema(
+                {
+                    vol.Required(CONF_LANGUAGE, default=language): vol.In(
+                        language_options()
+                    )
+                }
+            ),
+            errors=errors,
+            description_placeholders={"name": entry.title},
         )
 
     async def async_step_type(
@@ -423,24 +518,23 @@ class BergfexConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         )
 
 
-class OptionsFlowHandler(config_entries.OptionsFlow):
-    """Handle options."""
+class OptionsFlowHandler(config_entries.OptionsFlowWithReload):
+    """Handle options.
+
+    Only the update interval is an option. The language lives in the entry's
+    data and is changed through the reconfigure step. Core reloads the entry
+    once the options change, which is what applies a new interval.
+    """
 
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         """Manage the options."""
         if user_input is not None:
-            language = user_input.get(CONF_LANGUAGE)
-            if language and language != self.config_entry.data.get(CONF_LANGUAGE):
-                self._async_apply_language(language)
-
             return self.async_create_entry(
                 title="",
                 data={CONF_UPDATE_INTERVAL: user_input[CONF_UPDATE_INTERVAL]},
             )
-
-        current_language = self.config_entry.data.get(CONF_LANGUAGE, "at")
 
         return self.async_show_form(
             step_id="init",
@@ -455,37 +549,6 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                         vol.Coerce(int),
                         vol.Range(min=MIN_UPDATE_INTERVAL, max=MAX_UPDATE_INTERVAL),
                     ),
-                    vol.Optional(CONF_LANGUAGE, default=current_language): vol.In(
-                        {
-                            code: lang["name"]
-                            for code, lang in SUPPORTED_LANGUAGES.items()
-                        }
-                    ),
                 }
             ),
         )
-
-    @callback
-    def _async_apply_language(self, language: str) -> None:
-        """Switch the entry to another bergfex language.
-
-        The language selects the domain and the entry caches a url built from it,
-        so all three move together; resort and country paths are identical on
-        every domain and are left alone. Updating the entry fires the reload
-        listener, and the coordinators refetch against the new domain.
-        """
-        data = dict(self.config_entry.data)
-        data[CONF_LANGUAGE] = language
-        data[CONF_DOMAIN] = SUPPORTED_LANGUAGES[language]["domain"]
-
-        ski_area = data.get(CONF_SKI_AREA)
-        if ski_area:
-            data["url"] = f"{data[CONF_DOMAIN]}{ski_area}"
-
-        _LOGGER.debug(
-            "Switching %s to language %s (%s)",
-            self.config_entry.title,
-            language,
-            data[CONF_DOMAIN],
-        )
-        self.hass.config_entries.async_update_entry(self.config_entry, data=data)

@@ -47,6 +47,16 @@
           "manual_path": "Manual URL Path (e.g., serfaus-fiss-ladis)",
           "webhook_url": "Webhook URL (e.g., TRMNL integration)"
         }
+      },
+      "reconfigure": {
+        "title": "Change language",
+        "description": "Choose the language for {name}. It also selects the Bergfex domain the area is read from. The area, its entities and their history stay as they are; the integration reloads.",
+        "data": {
+          "language": "Language"
+        },
+        "data_description": {
+          "language": "The area's page is loaded from the new domain first. If that fails, nothing is changed."
+        }
       }
     },
     "error": {
@@ -57,17 +67,18 @@
       "invalid_webhook": "That is not a valid webhook address. Use a full http:// or https:// URL, or leave the field empty."
     },
     "abort": {
-      "already_configured": "This ski area is already configured."
+      "already_configured": "This ski area is already configured.",
+      "reconfigure_successful": "The language setting was saved.",
+      "unknown_entry": "This ski area is no longer configured."
     }
   },
   "options": {
     "step": {
       "init": {
         "title": "Settings",
-        "description": "Update interval in minutes. Bergfex may block IP addresses that poll too often. The language also selects which Bergfex domain is used; changing it reloads the integration.",
+        "description": "Update interval in minutes. Bergfex may block IP addresses that poll too often. The language is changed by reconfiguring the entry.",
         "data": {
-          "update_interval": "Update interval (minutes)",
-          "language": "Language"
+          "update_interval": "Update interval (minutes)"
         }
       }
     }

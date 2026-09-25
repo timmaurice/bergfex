@@ -47,6 +47,16 @@
           "manual_path": "Handmatig URL-pad (bijv. serfaus-fiss-ladis)",
           "webhook_url": "Webhook-URL (bijv. TRMNL-integratie)"
         }
+      },
+      "reconfigure": {
+        "title": "Taal wijzigen",
+        "description": "Kies de taal voor {name}. Die bepaalt ook van welk Bergfex-domein het gebied wordt gelezen. Het gebied, de entiteiten en hun geschiedenis blijven behouden; de integratie wordt herladen.",
+        "data": {
+          "language": "Taal"
+        },
+        "data_description": {
+          "language": "De pagina van het gebied wordt eerst van het nieuwe domein geladen. Lukt dat niet, dan verandert er niets."
+        }
       }
     },
     "error": {
@@ -57,17 +67,18 @@
       "invalid_webhook": "Dat is geen geldig webhook-adres. Gebruik een volledige http:// of https:// URL, of laat het veld leeg."
     },
     "abort": {
-      "already_configured": "Dit skigebied is al geconfigureerd."
+      "already_configured": "Dit skigebied is al geconfigureerd.",
+      "reconfigure_successful": "De taalinstelling is opgeslagen.",
+      "unknown_entry": "Dit skigebied is niet meer geconfigureerd."
     }
   },
   "options": {
     "step": {
       "init": {
         "title": "Instellingen",
-        "description": "Update-interval in minuten. Bergfex kan IP-adressen blokkeren die te vaak opvragen. De taal bepaalt ook welk Bergfex-domein wordt gebruikt; wijzigen herlaadt de integratie.",
+        "description": "Update-interval in minuten. Bergfex kan IP-adressen blokkeren die te vaak opvragen. De taal wijzig je door de invoer opnieuw te configureren.",
         "data": {
-          "update_interval": "Update-interval (minuten)",
-          "language": "Taal"
+          "update_interval": "Update-interval (minuten)"
         }
       }
     }

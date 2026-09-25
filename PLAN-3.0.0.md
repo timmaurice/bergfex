@@ -80,6 +80,10 @@ then retire `timmaurice/lovelace-bergfex-card` from HACS and archive the repo.
       the cached url, then reloads the entry; resort and country paths are identical
       on every bergfex domain and are left alone. The options dialog had only ever
       been translated for `de` and `en` — the other five now have it too.
+      _Superseded after 3.0.1:_ the language moved to a **Reconfigure** step
+      (quality scale `reconfiguration-flow`), which checks the area page on the
+      new domain before saving. The options flow carries only the interval and
+      reloads through `OptionsFlowWithReload`; the update listener is gone.
 
 ### Quality _(offline)_
 

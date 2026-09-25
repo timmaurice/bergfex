@@ -13,7 +13,7 @@ custom_components/bergfex/     the integration - and the only thing users receiv
   coordinator.py               the per-resort coordinator: fetching and page caches
   parser.py                    all bergfex HTML scraping
   sensor.py  image.py          entity platforms
-  config_flow.py               setup and options flows
+  config_flow.py               setup, reconfigure and options flows
   const.py                     keywords and domains for 18 languages
   bergfex-card.js              built card, committed on purpose - see below
   translations/                integration strings, 7 languages

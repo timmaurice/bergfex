@@ -469,7 +469,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: BergfexConfigEntry) -> b
     _async_refresh_device_name(hass, entry)
     _async_report_orphaned_entities(hass, entry)
 
-    entry.async_on_unload(entry.add_update_listener(async_reload_entry))
+    # No update listener: the options flow reloads the entry itself
+    # (OptionsFlowWithReload), and so does the reconfigure step. A listener on
+    # top would reload a second time, and core reports the combination.
 
     # Setup got through, so the next outage deserves its warning again.
     _SETUP_FAILURE_LOGGED.discard(entry.entry_id)
@@ -539,8 +541,3 @@ async def async_remove_config_entry_device(
         domain == DOMAIN and identifier == area_path
         for domain, identifier in device.identifiers
     )
-
-
-async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
-    """Reload config entry."""
-    await hass.config_entries.async_reload(entry.entry_id)

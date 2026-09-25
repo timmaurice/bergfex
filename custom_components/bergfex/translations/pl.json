@@ -47,6 +47,16 @@
           "manual_path": "Ręczna ścieżka URL (np. serfaus-fiss-ladis)",
           "webhook_url": "Adres dla Webhook (m.in. integracja z TRMNL)"
         }
+      },
+      "reconfigure": {
+        "title": "Zmień język",
+        "description": "Wybierz język dla {name}. Określa on również domenę Bergfex, z której odczytywany jest obszar. Obszar, jego encje i ich historia pozostają bez zmian; integracja zostanie przeładowana.",
+        "data": {
+          "language": "Język"
+        },
+        "data_description": {
+          "language": "Strona obszaru jest najpierw wczytywana z nowej domeny. Jeśli to się nie uda, nic nie zostanie zmienione."
+        }
       }
     },
     "error": {
@@ -57,17 +67,18 @@
       "invalid_webhook": "To nie jest prawidłowy adres webhooka. Podaj pełny adres http:// lub https:// albo zostaw pole puste."
     },
     "abort": {
-      "already_configured": "Ten ośrodek narciarski jest już skonfigurowany."
+      "already_configured": "Ten ośrodek narciarski jest już skonfigurowany.",
+      "reconfigure_successful": "Ustawienie języka zostało zapisane.",
+      "unknown_entry": "Ten ośrodek narciarski nie jest już skonfigurowany."
     }
   },
   "options": {
     "step": {
       "init": {
         "title": "Ustawienia",
-        "description": "Interwał aktualizacji w minutach. Bergfex może blokować adresy IP odpytujące zbyt często. Język określa również używaną domenę Bergfex; zmiana przeładowuje integrację.",
+        "description": "Interwał aktualizacji w minutach. Bergfex może blokować adresy IP odpytujące zbyt często. Język zmienisz, konfigurując wpis ponownie.",
         "data": {
-          "update_interval": "Interwał aktualizacji (minuty)",
-          "language": "Język"
+          "update_interval": "Interwał aktualizacji (minuty)"
         }
       }
     }
