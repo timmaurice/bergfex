@@ -13,9 +13,10 @@ from unittest.mock import patch
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.bergfex.const import COORDINATORS, DOMAIN
+from custom_components.bergfex.const import DOMAIN
 from custom_components.bergfex.unique_id import (
     build_unique_id,
     coordinator_key,
@@ -376,10 +377,83 @@ async def test_same_name_resorts_get_their_own_coordinator(
     await _setup(hass, first)
     await _setup(hass, second)
 
-    coordinators = hass.data[DOMAIN][COORDINATORS]
-    first_coordinator = coordinators[coordinator_key("/first-valley/schneebericht/")]
-    second_coordinator = coordinators[coordinator_key("/second-valley/schneebericht/")]
+    first_coordinator = first.runtime_data
+    second_coordinator = second.runtime_data
 
     assert first_coordinator is not second_coordinator
     assert "/first-valley/schneebericht/" in first_coordinator.data
     assert "/second-valley/schneebericht/" in second_coordinator.data
+
+
+@pytest.mark.asyncio
+async def test_the_coordinator_lives_on_the_entry(
+    hass: HomeAssistant, enable_custom_integrations
+):
+    """The coordinator is the entry's runtime_data, and goes with the entry.
+
+    It used to sit in hass.data[DOMAIN], which unload had to pop by hand. Nothing
+    of this integration is kept there any more.
+    """
+    entry = _entry(name="Achensee", path="/achensee/schneebericht/", entry_id="a")
+
+    await _setup(hass, entry)
+
+    coordinator = entry.runtime_data
+    assert isinstance(coordinator, DataUpdateCoordinator)
+    assert coordinator.config_entry is entry
+    assert coordinator.name == coordinator_key("/achensee/schneebericht/")
+    assert "/achensee/schneebericht/" in coordinator.data
+    assert DOMAIN not in hass.data
+
+    assert await hass.config_entries.async_unload(entry.entry_id)
+    await hass.async_block_till_done()
+
+    assert not hasattr(entry, "runtime_data")
+    assert DOMAIN not in hass.data
+
+
+@pytest.mark.asyncio
+async def test_duplicate_entries_keep_their_own_coordinator(
+    hass: HomeAssistant, enable_custom_integrations
+):
+    """A second entry for one resort must not live off the first one's coordinator.
+
+    The shared store handed the leftover the winner's coordinator, which belongs
+    to the winner's config entry. Unloading the winner - a reload after changing
+    its options is enough - shut that coordinator down, and the leftover's
+    entities never updated again.
+    """
+    winner = _entry(name="Achensee", path="/achensee/schneebericht/", entry_id="win")
+    leftover = MockConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Achensee",
+        data=dict(winner.data),
+        source="user",
+        entry_id="left",
+    )
+    winner.add_to_hass(hass)
+    leftover.add_to_hass(hass)
+
+    await _setup(hass, winner)
+    await _setup(hass, leftover)
+
+    assert winner.runtime_data is not leftover.runtime_data
+    assert leftover.runtime_data.config_entry is leftover
+
+    assert await hass.config_entries.async_unload(winner.entry_id)
+    await hass.async_block_till_done()
+
+    fetched = []
+    get = MockSession.get
+
+    def _counting_get(self, url, *args, **kwargs):
+        fetched.append(url)
+        return get(self, url, *args, **kwargs)
+
+    with patch.object(MockSession, "get", _counting_get):
+        await leftover.runtime_data.async_refresh()
+
+    assert fetched, "the leftover's coordinator was shut down with the winner"
+    assert leftover.runtime_data.last_update_success

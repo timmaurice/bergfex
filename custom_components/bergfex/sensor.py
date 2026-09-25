@@ -27,15 +27,15 @@ from .const import (
     CONF_LANGUAGE,
     CONF_SKI_AREA,
     CONF_TYPE,
-    COORDINATORS,
     COUNTRIES,
     DOMAIN,
     TYPE_ALPINE,
     TYPE_CROSS_COUNTRY,
 )
+from . import BergfexConfigEntry
 from .config_flow import entry_area_name
 from .parser import parse_overview_data, parse_resort_page
-from .unique_id import build_unique_id, coordinator_key
+from .unique_id import build_unique_id
 
 
 @dataclass
@@ -182,16 +182,13 @@ _LOGGER = logging.getLogger(__name__)
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    entry: ConfigEntry,
+    entry: BergfexConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the Bergfex sensor entry."""
-    # Get the coordinator stored in hass.data by the integration setup
-    resort_coordinator_name = coordinator_key(entry.data[CONF_SKI_AREA])
-    coordinator = hass.data[DOMAIN][COORDINATORS].get(resort_coordinator_name)
-    if coordinator is None:
-        _LOGGER.error("Coordinator not found for %s", resort_coordinator_name)
-        return
+    # The integration setup stores the coordinator on the entry, and only after
+    # its first refresh succeeded, so it is always there by now.
+    coordinator = entry.runtime_data
     _LOGGER.debug(
         "Sensor async_setup_entry - Coordinator: %s, Entry data: %s",
         coordinator,
