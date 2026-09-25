@@ -17,7 +17,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from homeassistant.helpers.update_coordinator import UpdateFailed
 from homeassistant.util import slugify
 
 from .const import (
@@ -32,7 +32,7 @@ from .const import (
     TYPE_ALPINE,
     TYPE_CROSS_COUNTRY,
 )
-from . import BergfexConfigEntry
+from .coordinator import BergfexConfigEntry, BergfexCoordinator
 from .config_flow import entry_area_name
 from .parser import parse_overview_data, parse_resort_page
 from .unique_id import build_unique_id
@@ -218,7 +218,7 @@ class BergfexSensor(SensorEntity):
 
     def __init__(
         self,
-        coordinator: DataUpdateCoordinator,
+        coordinator: BergfexCoordinator,
         entry: ConfigEntry,
         description: BergfexSensorEntityDescription,
     ):

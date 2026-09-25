@@ -16,7 +16,7 @@ from homeassistant.config_entries import ConfigEntryState
 from homeassistant.core import HomeAssistant
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-import custom_components.bergfex as bergfex
+import custom_components.bergfex.coordinator as bergfex_coordinator
 from custom_components.bergfex.const import DOMAIN
 
 # A breadcrumb is what the resort page's region path is read out of, and the
@@ -98,7 +98,8 @@ async def _setup(hass, entry, session):
     if entry.entry_id not in hass.config_entries._entries:
         entry.add_to_hass(hass)
     with patch(
-        "custom_components.bergfex.async_get_clientsession", return_value=session
+        "custom_components.bergfex.coordinator.async_get_clientsession",
+        return_value=session,
     ), patch(
         "custom_components.bergfex.sensor.async_get_clientsession",
         return_value=session,
@@ -115,9 +116,9 @@ async def _setup(hass, entry, session):
 @pytest.fixture(autouse=True)
 def _empty_forecast_cache():
     """The cache is module state, so a test must not inherit another's entries."""
-    bergfex._FORECAST_CACHE.clear()
+    bergfex_coordinator._FORECAST_CACHE.clear()
     yield
-    bergfex._FORECAST_CACHE.clear()
+    bergfex_coordinator._FORECAST_CACHE.clear()
 
 
 @pytest.mark.asyncio
@@ -132,8 +133,8 @@ async def test_pages_are_parsed_off_the_event_loop(
     loop_thread = threading.current_thread()
     parse_threads: list[threading.Thread] = []
 
-    real_resort = bergfex.parse_resort_page
-    real_forecast = bergfex.parse_snow_forecast_images
+    real_resort = bergfex_coordinator.parse_resort_page
+    real_forecast = bergfex_coordinator.parse_snow_forecast_images
 
     def recording_resort(*args, **kwargs):
         parse_threads.append(threading.current_thread())
@@ -144,8 +145,10 @@ async def test_pages_are_parsed_off_the_event_loop(
         return real_forecast(*args, **kwargs)
 
     entry = _entry(name="Ischgl", path="/ischgl/schneebericht/", entry_id="thread")
-    with patch.object(bergfex, "parse_resort_page", recording_resort), patch.object(
-        bergfex, "parse_snow_forecast_images", recording_forecast
+    with patch.object(
+        bergfex_coordinator, "parse_resort_page", recording_resort
+    ), patch.object(
+        bergfex_coordinator, "parse_snow_forecast_images", recording_forecast
     ):
         await _setup(hass, entry, RecordingSession())
 

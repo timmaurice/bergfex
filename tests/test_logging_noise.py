@@ -92,7 +92,7 @@ async def test_a_failed_poll_is_not_logged_twice(
     caplog.set_level(logging.DEBUG)
 
     with patch(
-        "custom_components.bergfex.__init__.async_get_clientsession",
+        "custom_components.bergfex.coordinator.async_get_clientsession",
         return_value=_BrokenSession(),
     ), patch(
         "homeassistant.helpers.update_coordinator.DataUpdateCoordinator.async_config_entry_first_refresh"
@@ -122,7 +122,7 @@ async def test_a_failed_setup_says_why(hass: HomeAssistant, mock_config_entry, c
     caplog.set_level(logging.DEBUG)
 
     with patch(
-        "custom_components.bergfex.__init__.async_get_clientsession",
+        "custom_components.bergfex.coordinator.async_get_clientsession",
         return_value=_BrokenSession(),
     ), patch(
         "homeassistant.config_entries.ConfigEntries.async_forward_entry_setups",
@@ -159,7 +159,7 @@ async def test_a_retried_setup_repeats_the_warning_only_once(
     caplog.set_level(logging.DEBUG)
 
     with patch(
-        "custom_components.bergfex.__init__.async_get_clientsession",
+        "custom_components.bergfex.coordinator.async_get_clientsession",
         return_value=_BrokenSession(),
     ), patch(
         "homeassistant.config_entries.ConfigEntries.async_forward_entry_setups",
