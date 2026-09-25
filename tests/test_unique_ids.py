@@ -10,13 +10,15 @@ entities anybody already has.
 import pytest
 from unittest.mock import patch
 
-from homeassistant.config_entries import ConfigEntryState
+from homeassistant.config_entries import ConfigEntry, ConfigEntryState
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
+from custom_components import bergfex
 from custom_components.bergfex.const import DOMAIN
+from custom_components.bergfex.coordinator import BergfexCoordinator
 from custom_components.bergfex.unique_id import (
     build_unique_id,
     coordinator_key,
@@ -95,7 +97,7 @@ async def _setup(hass, entry):
     if entry.entry_id not in hass.config_entries._entries:
         entry.add_to_hass(hass)
     with patch(
-        "custom_components.bergfex.async_get_clientsession",
+        "custom_components.bergfex.coordinator.async_get_clientsession",
         return_value=MockSession(),
     ), patch(
         "custom_components.bergfex.sensor.async_get_clientsession",
@@ -410,6 +412,23 @@ async def test_the_coordinator_lives_on_the_entry(
 
     assert not hasattr(entry, "runtime_data")
     assert DOMAIN not in hass.data
+
+
+@pytest.mark.asyncio
+async def test_runtime_data_is_the_bergfex_coordinator(
+    hass: HomeAssistant, enable_custom_integrations
+):
+    """Setup stores the integration's own coordinator class, not a bare one.
+
+    The platforms are typed against BergfexCoordinator through
+    BergfexConfigEntry, which is still importable from the package root.
+    """
+    entry = _entry(name="Achensee", path="/achensee/schneebericht/", entry_id="a")
+
+    await _setup(hass, entry)
+
+    assert type(entry.runtime_data) is BergfexCoordinator
+    assert bergfex.BergfexConfigEntry.__value__ == ConfigEntry[BergfexCoordinator]
 
 
 @pytest.mark.asyncio

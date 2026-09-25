@@ -8,12 +8,11 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from urllib.parse import urljoin
 from homeassistant.util import dt as dt_util
 from homeassistant.util import slugify
 
-from . import BergfexConfigEntry
+from .coordinator import BergfexConfigEntry, BergfexCoordinator
 from .config_flow import entry_area_name
 from .unique_id import build_unique_id
 from .const import (
@@ -90,7 +89,7 @@ class BergfexImage(ImageEntity):
 
     def __init__(
         self,
-        coordinator: DataUpdateCoordinator,
+        coordinator: BergfexCoordinator,
         entry: ConfigEntry,
         data_key: str,
     ) -> None:

@@ -9,7 +9,8 @@ fall out of step.
 
 ```
 custom_components/bergfex/     the integration - and the only thing users receive
-  __init__.py                  setup, coordinators, Lovelace resource registration
+  __init__.py                  setup, Lovelace resource registration
+  coordinator.py               the per-resort coordinator: fetching and page caches
   parser.py                    all bergfex HTML scraping
   sensor.py  image.py          entity platforms
   config_flow.py               setup and options flows

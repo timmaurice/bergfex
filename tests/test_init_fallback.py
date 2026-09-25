@@ -95,7 +95,7 @@ async def test_async_update_data_resort_fallback(
 
     # We mock async_get_clientsession to return our mock_session
     with patch(
-        "custom_components.bergfex.__init__.async_get_clientsession",
+        "custom_components.bergfex.coordinator.async_get_clientsession",
         return_value=mock_session,
     ), patch("custom_components.bergfex.parser.datetime") as mock_datetime, patch(
         "homeassistant.helpers.update_coordinator.DataUpdateCoordinator.async_config_entry_first_refresh"
@@ -195,7 +195,7 @@ async def test_async_update_data_resort_fallback_active_season(
 
     # We mock async_get_clientsession to return our mock_session
     with patch(
-        "custom_components.bergfex.__init__.async_get_clientsession",
+        "custom_components.bergfex.coordinator.async_get_clientsession",
         return_value=mock_session,
     ), patch("custom_components.bergfex.parser.datetime") as mock_datetime, patch(
         "homeassistant.helpers.update_coordinator.DataUpdateCoordinator.async_config_entry_first_refresh"
@@ -265,7 +265,7 @@ async def test_setup_backfills_the_unique_id(hass: HomeAssistant, mock_config_en
     assert mock_config_entry.unique_id is None
 
     with patch(
-        "custom_components.bergfex.__init__.async_get_clientsession",
+        "custom_components.bergfex.coordinator.async_get_clientsession",
         return_value=MockSession(),
     ), patch(
         "homeassistant.helpers.update_coordinator.DataUpdateCoordinator.async_config_entry_first_refresh"
@@ -337,7 +337,7 @@ async def test_backfill_skips_an_id_another_entry_already_has(hass: HomeAssistan
     second.add_to_hass(hass)
 
     with patch(
-        "custom_components.bergfex.__init__.async_get_clientsession",
+        "custom_components.bergfex.coordinator.async_get_clientsession",
         return_value=_StubSession(),
     ), patch(
         "homeassistant.helpers.update_coordinator.DataUpdateCoordinator.async_config_entry_first_refresh"
@@ -372,7 +372,7 @@ async def test_duplicate_issue_goes_away_with_the_duplicate_entry(hass: HomeAssi
     second.add_to_hass(hass)
 
     with patch(
-        "custom_components.bergfex.__init__.async_get_clientsession",
+        "custom_components.bergfex.coordinator.async_get_clientsession",
         return_value=_StubSession(),
     ), patch(
         "homeassistant.helpers.update_coordinator.DataUpdateCoordinator.async_config_entry_first_refresh"
@@ -406,7 +406,7 @@ async def _setup_two_duplicates(hass: HomeAssistant):
     second.add_to_hass(hass)
 
     with patch(
-        "custom_components.bergfex.__init__.async_get_clientsession",
+        "custom_components.bergfex.coordinator.async_get_clientsession",
         return_value=_StubSession(),
     ), patch(
         "homeassistant.helpers.update_coordinator.DataUpdateCoordinator.async_config_entry_first_refresh"
@@ -514,7 +514,7 @@ async def test_setup_survives_an_entry_without_a_name(hass: HomeAssistant):
     entry.add_to_hass(hass)
 
     with patch(
-        "custom_components.bergfex.__init__.async_get_clientsession",
+        "custom_components.bergfex.coordinator.async_get_clientsession",
         return_value=_StubSession(),
     ), patch(
         "homeassistant.helpers.update_coordinator.DataUpdateCoordinator.async_config_entry_first_refresh"
