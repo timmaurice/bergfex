@@ -199,6 +199,8 @@ For each configured ski area, the following sensors will be created:
 | **Operation Status**      | The current operational status of the trails. |                                                                                                                                                                                                                                                                                                         | `täglich`             |
 | **Last Update**           | The timestamp of the last data report.        |                                                                                                                                                                                                                                                                                                         | `2024-10-28 21:54:24` |
 
+**Last Update** is a diagnostic entity. It tells you how fresh bergfex's report is, not what the conditions are, so Home Assistant lists it under _Diagnostic_ on the device page and leaves it off auto-generated dashboards. Its entity_id is unchanged, it can still be added to any dashboard by hand, and the bundled card still shows it. Every other sensor, the avalanche warning included, and the forecast images are regular entities.
+
 ## Image Entities
 
 In addition to sensors, the integration provides image entities for snow forecasts. These can be displayed in dashboards using the Picture Entity card or similar.

@@ -14,6 +14,7 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -119,6 +120,11 @@ ALPINE_SENSORS: tuple[BergfexSensorEntityDescription, ...] = (
         name="Last Update",
         translation_key="last_update",
         device_class=SensorDeviceClass.TIMESTAMP,
+        # When bergfex last touched the resort's report: it says how fresh the
+        # other sensors are, not what the snow is like. Diagnostic keeps it off
+        # auto-generated dashboards; the card finds it by its entity_id suffix
+        # and reads its state regardless.
+        entity_category=EntityCategory.DIAGNOSTIC,
     ),
 )
 
@@ -169,6 +175,8 @@ CROSS_COUNTRY_SENSORS: tuple[BergfexSensorEntityDescription, ...] = (
         name="Last Update",
         translation_key="last_update",
         device_class=SensorDeviceClass.TIMESTAMP,
+        # Diagnostic for the same reason as the alpine one.
+        entity_category=EntityCategory.DIAGNOSTIC,
     ),
 )
 
