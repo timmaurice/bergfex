@@ -47,6 +47,16 @@
           "manual_path": "Chemin URL manuel (ex. serfaus-fiss-ladis)",
           "webhook_url": "URL du Webhook (ex. intégration TRMNL)"
         }
+      },
+      "reconfigure": {
+        "title": "Changer la langue",
+        "description": "Choisissez la langue pour {name}. Elle détermine aussi le domaine Bergfex d'où le domaine skiable est lu. Le domaine skiable, ses entités et leur historique restent inchangés ; l'intégration est rechargée.",
+        "data": {
+          "language": "Langue"
+        },
+        "data_description": {
+          "language": "La page du domaine skiable est d'abord chargée depuis le nouveau domaine. En cas d'échec, rien n'est modifié."
+        }
       }
     },
     "error": {
@@ -57,17 +67,18 @@
       "invalid_webhook": "Cette adresse de webhook n'est pas valide. Utilisez une URL http:// ou https:// complète, ou laissez le champ vide."
     },
     "abort": {
-      "already_configured": "Cette station de ski est déjà configurée."
+      "already_configured": "Cette station de ski est déjà configurée.",
+      "reconfigure_successful": "Le réglage de la langue a été enregistré.",
+      "unknown_entry": "Cette station de ski n'est plus configurée."
     }
   },
   "options": {
     "step": {
       "init": {
         "title": "Paramètres",
-        "description": "Intervalle de mise à jour en minutes. Bergfex peut bloquer les adresses IP qui interrogent trop souvent. La langue détermine aussi le domaine Bergfex utilisé ; la modifier recharge l'intégration.",
+        "description": "Intervalle de mise à jour en minutes. Bergfex peut bloquer les adresses IP qui interrogent trop souvent. La langue se change en reconfigurant l'entrée.",
         "data": {
-          "update_interval": "Intervalle de mise à jour (minutes)",
-          "language": "Langue"
+          "update_interval": "Intervalle de mise à jour (minutes)"
         }
       }
     }

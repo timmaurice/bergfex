@@ -71,6 +71,23 @@ _FORECAST_CACHE: dict[str, tuple[float, dict[str, str]]] = {}
 _FORECAST_CACHE_TTL = 10 * 60
 
 
+def detail_page_url(domain: str, area_path: str, resort_type: str) -> str:
+    """Return the page a poll reads an area from.
+
+    A ski resort is read off its own path. A cross-country area is read off its
+    trail report, the "loipen/" page under the area path, unless the path names
+    that page already. The config flow checks the same url before it moves an
+    entry to another domain, so both have to agree on it.
+    """
+    url = urljoin(domain, area_path)
+    if resort_type == TYPE_CROSS_COUNTRY and not url.rstrip("/").endswith("/loipen"):
+        # urljoin replaces the last segment of a path without a trailing slash,
+        # so the slash has to be there before "loipen/" is joined on.
+        fetch_path = area_path if area_path.endswith("/") else f"{area_path}/"
+        url = urljoin(domain, f"{fetch_path}loipen/")
+    return url
+
+
 async def _async_forecast_images(
     hass: HomeAssistant, session, forecast_url: str, page: int
 ) -> dict[str, str] | None:
@@ -152,18 +169,7 @@ class BergfexCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any]]]):
         country_path = self._country_path
 
         try:
-            url = urljoin(domain, area_path)
-
-            # For cross-country skiing, ensure we fetch the detailed trail report page
-            if resort_type == TYPE_CROSS_COUNTRY:
-                if not url.rstrip("/").endswith("/loipen"):
-                    # If the URL ends with a slash, appending "loipen/" works fine with urljoin if we are careful
-                    # But urljoin replaces the last component if it doesn't end in slash.
-                    # It is safer to modify the path before urljoin or append carefully.
-                    fetch_path = area_path
-                    if not fetch_path.endswith("/"):
-                        fetch_path += "/"
-                    url = urljoin(domain, f"{fetch_path}loipen/")
+            url = detail_page_url(domain, area_path, resort_type)
 
             _LOGGER.debug("Fetching resort data from: %s", url)
             async with session.get(url, allow_redirects=True) as response:

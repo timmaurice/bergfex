@@ -1,8 +1,13 @@
-"""Tests for changing a resort's language after setup."""
+"""Tests for the options flow: the update interval, and nothing from the entry data.
+
+The language used to be offered here as well, writing the entry's data from an
+options flow. It moved to the reconfigure step (see test_reconfigure.py).
+"""
 
 import pytest
 from unittest.mock import patch
 
+from homeassistant.config_entries import OptionsFlowWithReload
 from homeassistant.core import HomeAssistant
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
@@ -12,30 +17,31 @@ from custom_components.bergfex.const import (
     CONF_LANGUAGE,
     CONF_SKI_AREA,
     CONF_UPDATE_INTERVAL,
+    DEFAULT_UPDATE_INTERVAL,
     DOMAIN,
     SUPPORTED_LANGUAGES,
 )
 
 
-def _entry(hass: HomeAssistant, language: str = "at") -> MockConfigEntry:
+def _entry(hass: HomeAssistant, options: dict | None = None) -> MockConfigEntry:
     entry = MockConfigEntry(
         domain=DOMAIN,
         title="Serfaus - Fiss - Ladis",
         data={
             CONF_SKI_AREA: "/serfaus-fiss-ladis/schneebericht/",
-            CONF_LANGUAGE: language,
-            CONF_DOMAIN: SUPPORTED_LANGUAGES[language]["domain"],
+            CONF_LANGUAGE: "at",
+            CONF_DOMAIN: SUPPORTED_LANGUAGES["at"]["domain"],
             "name": "Serfaus - Fiss - Ladis",
-            "url": f"{SUPPORTED_LANGUAGES[language]['domain']}/serfaus-fiss-ladis/schneebericht/",
+            "url": f"{SUPPORTED_LANGUAGES['at']['domain']}/serfaus-fiss-ladis/schneebericht/",
         },
-        options={CONF_UPDATE_INTERVAL: 30},
+        options={CONF_UPDATE_INTERVAL: 30} if options is None else options,
     )
     entry.add_to_hass(hass)
     return entry
 
 
-async def _submit(hass: HomeAssistant, entry: MockConfigEntry, user_input: dict):
-    """Run one options-flow submission against `entry`.
+async def _step(hass: HomeAssistant, entry: MockConfigEntry, user_input=None):
+    """Run one options-flow step against `entry`.
 
     The step has to be awaited inside the patch: OptionsFlow resolves
     `config_entry` lazily, so a coroutine created here and awaited outside would
@@ -47,58 +53,38 @@ async def _submit(hass: HomeAssistant, entry: MockConfigEntry, user_input: dict)
         return await handler.async_step_init(user_input)
 
 
-@pytest.mark.asyncio
-async def test_language_change_moves_domain_and_url(hass: HomeAssistant):
-    """The language selects the domain, and the entry caches a url built from it."""
-    entry = _entry(hass, "at")
-    await _submit(hass, entry, {CONF_UPDATE_INTERVAL: 30, CONF_LANGUAGE: "fr"})
-
-    assert entry.data[CONF_LANGUAGE] == "fr"
-    assert entry.data[CONF_DOMAIN] == SUPPORTED_LANGUAGES["fr"]["domain"]
-    assert entry.data["url"].startswith(SUPPORTED_LANGUAGES["fr"]["domain"])
-    assert entry.data["url"].endswith("/serfaus-fiss-ladis/schneebericht/")
+def test_core_reloads_the_entry_after_the_options_change():
+    """The update listener that used to do this is gone."""
+    assert issubclass(OptionsFlowHandler, OptionsFlowWithReload)
 
 
 @pytest.mark.asyncio
-async def test_resort_path_survives_the_switch(hass: HomeAssistant):
-    """Resort paths are identical on every bergfex domain and must not be rewritten."""
-    entry = _entry(hass, "at")
-    await _submit(hass, entry, {CONF_UPDATE_INTERVAL: 30, CONF_LANGUAGE: "pl"})
-
-    assert entry.data[CONF_SKI_AREA] == "/serfaus-fiss-ladis/schneebericht/"
-
-
-@pytest.mark.asyncio
-async def test_keeping_the_language_leaves_the_entry_alone(hass: HomeAssistant):
-    entry = _entry(hass, "at")
+async def test_the_interval_is_stored_in_options(hass: HomeAssistant):
+    entry = _entry(hass)
     before = dict(entry.data)
 
-    result = await _submit(hass, entry, {CONF_UPDATE_INTERVAL: 45, CONF_LANGUAGE: "at"})
+    result = await _step(hass, entry, {CONF_UPDATE_INTERVAL: 45})
 
+    assert result["data"] == {CONF_UPDATE_INTERVAL: 45}
     assert entry.data == before
-    assert result["data"][CONF_UPDATE_INTERVAL] == 45
 
 
 @pytest.mark.asyncio
-async def test_update_interval_is_still_stored_in_options(hass: HomeAssistant):
-    """The language belongs in data, the interval in options - do not mix them."""
-    entry = _entry(hass, "at")
-    result = await _submit(hass, entry, {CONF_UPDATE_INTERVAL: 15, CONF_LANGUAGE: "it"})
+async def test_the_form_offers_only_the_interval(hass: HomeAssistant):
+    """The language lives in the entry's data, which the reconfigure step writes."""
+    entry = _entry(hass, options={CONF_UPDATE_INTERVAL: 90})
 
-    assert result["data"] == {CONF_UPDATE_INTERVAL: 15}
-    assert CONF_LANGUAGE not in result["data"]
-    assert entry.data[CONF_LANGUAGE] == "it"
-
-
-@pytest.mark.asyncio
-async def test_form_offers_every_supported_language(hass: HomeAssistant):
-    entry = _entry(hass, "at")
-    handler = OptionsFlowHandler()
-    handler.hass = hass
-    with patch.object(type(handler), "config_entry", entry):
-        result = await handler.async_step_init()
+    result = await _step(hass, entry)
 
     schema = result["data_schema"].schema
-    language_key = next(k for k in schema if str(k) == CONF_LANGUAGE)
-    assert set(schema[language_key].container) == set(SUPPORTED_LANGUAGES)
-    assert language_key.default() == "at"
+    assert [str(key) for key in schema] == [CONF_UPDATE_INTERVAL]
+    assert next(iter(schema)).default() == 90
+
+
+@pytest.mark.asyncio
+async def test_the_form_defaults_to_the_default_interval(hass: HomeAssistant):
+    entry = _entry(hass, options={})
+
+    result = await _step(hass, entry)
+
+    assert next(iter(result["data_schema"].schema)).default() == DEFAULT_UPDATE_INTERVAL

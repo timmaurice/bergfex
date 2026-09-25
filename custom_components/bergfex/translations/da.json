@@ -47,6 +47,16 @@
           "manual_path": "Manuel URL-sti (f.eks. serfaus-fiss-ladis)",
           "webhook_url": "Webhook-URL (f.eks. TRMNL-integration)"
         }
+      },
+      "reconfigure": {
+        "title": "Skift sprog",
+        "description": "Vælg sproget for {name}. Det bestemmer også, hvilket Bergfex-domæne området læses fra. Området, dets entiteter og deres historik bevares; integrationen genindlæses.",
+        "data": {
+          "language": "Sprog"
+        },
+        "data_description": {
+          "language": "Områdets side indlæses først fra det nye domæne. Mislykkes det, ændres intet."
+        }
       }
     },
     "error": {
@@ -57,17 +67,18 @@
       "invalid_webhook": "Det er ikke en gyldig webhook-adresse. Brug en fuld http://- eller https://-URL, eller lad feltet være tomt."
     },
     "abort": {
-      "already_configured": "Dette skiområde er allerede konfigureret."
+      "already_configured": "Dette skiområde er allerede konfigureret.",
+      "reconfigure_successful": "Sprogindstillingen blev gemt.",
+      "unknown_entry": "Dette skiområde er ikke længere konfigureret."
     }
   },
   "options": {
     "step": {
       "init": {
         "title": "Indstillinger",
-        "description": "Opdateringsinterval i minutter. Bergfex kan blokere IP-adresser, der spørger for ofte. Sproget bestemmer også, hvilket Bergfex-domæne der bruges; hvis du ændrer det, genindlæses integrationen.",
+        "description": "Opdateringsinterval i minutter. Bergfex kan blokere IP-adresser, der spørger for ofte. Sproget skiftes ved at omkonfigurere posten.",
         "data": {
-          "update_interval": "Opdateringsinterval (minutter)",
-          "language": "Sprog"
+          "update_interval": "Opdateringsinterval (minutter)"
         }
       }
     }
