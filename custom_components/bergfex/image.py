@@ -27,7 +27,11 @@ from .const import (
 
 _LOGGER = logging.getLogger(__name__)
 
-# ... (rest of imports)
+# The entities read their URLs from the coordinator and have no update method.
+# The image bytes are fetched on request, from bergfex's CDN rather than the
+# pages its rate limit is about, and only the image.snapshot action would wait
+# on this limit - the frontend's image proxy never does.
+PARALLEL_UPDATES = 0
 
 
 async def async_setup_entry(

@@ -50,13 +50,11 @@ ALPINE_SENSORS: tuple[BergfexSensorEntityDescription, ...] = (
         key="status",
         name="Status",
         translation_key="status",
-        icon="mdi:ski",
     ),
     BergfexSensorEntityDescription(
         key="snow_valley",
         name="Snow Valley",
         translation_key="snow_valley",
-        icon="mdi:snowflake",
         native_unit_of_measurement="cm",
         state_class=SensorStateClass.MEASUREMENT,
     ),
@@ -64,7 +62,6 @@ ALPINE_SENSORS: tuple[BergfexSensorEntityDescription, ...] = (
         key="snow_mountain",
         name="Snow Mountain",
         translation_key="snow_mountain",
-        icon="mdi:snowflake",
         native_unit_of_measurement="cm",
         state_class=SensorStateClass.MEASUREMENT,
     ),
@@ -72,7 +69,6 @@ ALPINE_SENSORS: tuple[BergfexSensorEntityDescription, ...] = (
         key="new_snow",
         name="New Snow",
         translation_key="new_snow",
-        icon="mdi:weather-snowy-heavy",
         native_unit_of_measurement="cm",
         state_class=SensorStateClass.MEASUREMENT,
     ),
@@ -80,26 +76,22 @@ ALPINE_SENSORS: tuple[BergfexSensorEntityDescription, ...] = (
         key="snow_condition",
         name="Snow Condition",
         translation_key="snow_condition",
-        icon="mdi:snowflake-alert",
     ),
     BergfexSensorEntityDescription(
         key="last_snowfall",
         name="Last Snowfall",
         translation_key="last_snowfall",
-        icon="mdi:calendar-clock",
     ),
     BergfexSensorEntityDescription(
         key="avalanche_warning",
         name="Avalanche Warning",
         translation_key="avalanche_warning",
-        icon="mdi:alert-octagon",
     ),
     BergfexSensorEntityDescription(
         key="lifts_open_count",
         name="Lifts Open",
         translation_key="lifts_open_count",
         total_key="lifts_total_count",
-        icon="mdi:gondola",
         state_class=SensorStateClass.MEASUREMENT,
     ),
     BergfexSensorEntityDescription(
@@ -107,7 +99,6 @@ ALPINE_SENSORS: tuple[BergfexSensorEntityDescription, ...] = (
         name="Slopes Open (km)",
         translation_key="slopes_open_km",
         total_key="slopes_total_km",
-        icon="mdi:ski",
         native_unit_of_measurement="km",
         state_class=SensorStateClass.MEASUREMENT,
     ),
@@ -116,20 +107,17 @@ ALPINE_SENSORS: tuple[BergfexSensorEntityDescription, ...] = (
         name="Slopes Open",
         translation_key="slopes_open_count",
         total_key="slopes_total_count",
-        icon="mdi:ski",
         state_class=SensorStateClass.MEASUREMENT,
     ),
     BergfexSensorEntityDescription(
         key="slope_condition",
         name="Slope Condition",
         translation_key="slope_condition",
-        icon="mdi:snowflake-variant",
     ),
     BergfexSensorEntityDescription(
         key="last_update",
         name="Last Update",
         translation_key="last_update",
-        icon="mdi:clock-outline",
         device_class=SensorDeviceClass.TIMESTAMP,
     ),
 )
@@ -139,20 +127,22 @@ CROSS_COUNTRY_SENSORS: tuple[BergfexSensorEntityDescription, ...] = (
         key="status",
         name="Status",
         translation_key="status",
+        # icons.json keys icons by translation_key, and both resort types share
+        # "status", so it holds only the alpine ski. An explicit icon takes
+        # precedence, and the card reads it off the state to spot a
+        # cross-country area.
         icon="mdi:ski-cross-country",
     ),
     BergfexSensorEntityDescription(
         key="operation_status",
         name="Operation Status",
         translation_key="operation_status",
-        icon="mdi:check-circle-outline",
     ),
     BergfexSensorEntityDescription(
         key="classical_open_km",
         name="Classical Trails Open",
         translation_key="classical_open_km",
         total_key="classical_total_km",
-        icon="mdi:ski-cross-country",
         native_unit_of_measurement="km",
         state_class=SensorStateClass.MEASUREMENT,
     ),
@@ -160,14 +150,12 @@ CROSS_COUNTRY_SENSORS: tuple[BergfexSensorEntityDescription, ...] = (
         key="classical_condition",
         name="Classical Condition",
         translation_key="classical_condition",
-        icon="mdi:snowflake-variant",
     ),
     BergfexSensorEntityDescription(
         key="skating_open_km",
         name="Skating Trails Open",
         translation_key="skating_open_km",
         total_key="skating_total_km",
-        icon="mdi:ski-cross-country",
         native_unit_of_measurement="km",
         state_class=SensorStateClass.MEASUREMENT,
     ),
@@ -175,19 +163,20 @@ CROSS_COUNTRY_SENSORS: tuple[BergfexSensorEntityDescription, ...] = (
         key="skating_condition",
         name="Skating Condition",
         translation_key="skating_condition",
-        icon="mdi:snowflake-variant",
     ),
     BergfexSensorEntityDescription(
         key="last_update",
         name="Last Update",
         translation_key="last_update",
-        icon="mdi:clock-outline",
         device_class=SensorDeviceClass.TIMESTAMP,
     ),
 )
 
 
 SCAN_INTERVAL = timedelta(minutes=30)
+# The sensors only read the coordinator's data and have no update method of
+# their own, so there is nothing to throttle.
+PARALLEL_UPDATES = 0
 _LOGGER = logging.getLogger(__name__)
 
 
