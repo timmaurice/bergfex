@@ -58,7 +58,11 @@
       "summary": "Podsumowanie",
       "hour": "{hours} godziny",
       "today": "Dziś",
-      "tomorrow": "Jutro"
+      "tomorrow": "Jutro",
+      "previous": "Poprzednia mapa prognozy",
+      "next": "Następna mapa prognozy",
+      "image_alt": "Mapa prognozy opadów śniegu, {label}",
+      "image_unavailable": "Obraz niedostępny"
     },
     "accordion": {
       "conditions": "Warunki",
@@ -72,6 +76,19 @@
       "summer_season": "Sezon letni",
       "season_from": "od {date}",
       "season_last_year": "w zeszłym roku: {date}"
+    },
+    "a11y": {
+      "value": "{label}: {value}",
+      "of_total": "{open} z {total}",
+      "not_available": "niedostępne",
+      "trend_up": "wzrost w ciągu ostatnich 24 godzin",
+      "trend_down": "spadek w ciągu ostatnich 24 godzin",
+      "trend_same": "bez zmian w ciągu ostatnich 24 godzin",
+      "status_prefix": "Status:",
+      "last_updated": "Zaktualizowano {time}",
+      "snow_mountain": "Pokrywa śnieżna na szczycie",
+      "snow_valley": "Pokrywa śnieżna w dolinie",
+      "new_snow": "Świeży śnieg"
     },
     "warnings": {
       "not_found": "Nie znaleziono ośrodka: {subject}",

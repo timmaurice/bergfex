@@ -58,7 +58,11 @@
       "summary": "Summary",
       "hour": "{hours} Hours",
       "today": "Today",
-      "tomorrow": "Tomorrow"
+      "tomorrow": "Tomorrow",
+      "previous": "Previous forecast map",
+      "next": "Next forecast map",
+      "image_alt": "Snow forecast map, {label}",
+      "image_unavailable": "Image not available"
     },
     "accordion": {
       "conditions": "Conditions",
@@ -72,6 +76,19 @@
       "summer_season": "Summer season",
       "season_from": "from {date}",
       "season_last_year": "last year: {date}"
+    },
+    "a11y": {
+      "value": "{label}: {value}",
+      "of_total": "{open} of {total}",
+      "not_available": "not available",
+      "trend_up": "up over the last 24 hours",
+      "trend_down": "down over the last 24 hours",
+      "trend_same": "unchanged over the last 24 hours",
+      "status_prefix": "Status:",
+      "last_updated": "Last updated {time}",
+      "snow_mountain": "Snow depth on the mountain",
+      "snow_valley": "Snow depth in the valley",
+      "new_snow": "New snow"
     },
     "warnings": {
       "not_found": "Resort not found: {subject}",

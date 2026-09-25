@@ -233,6 +233,62 @@ describe('card.styles.scss at 400px', () => {
   });
 });
 
+describe('the semantic elements look like the divs they replaced', () => {
+  // The resort name became an h2, the figure grids lists, the figures and the
+  // section toggles buttons. Each brings user-agent margins, padding, bullets,
+  // borders or a button face that would shift or restyle the card.
+  let style: (selector: string) => CSSStyleDeclaration;
+
+  beforeAll(async () => {
+    style = await styled();
+  });
+
+  it('drops the heading margin from the resort name', () => {
+    expect(style('.resort-name').margin).toBe('0px');
+  });
+
+  it('draws the figure list without bullets or indent', () => {
+    const list = style('.details');
+
+    expect(list.listStyle).toBe('none');
+    expect(list.margin).toBe('0px');
+    expect(list.paddingLeft).toBe('0px');
+    expect(list.paddingTop).toBe('12px');
+  });
+
+  it.each(['.detail-item', '.resort-name-button', '.accordion-header', '.last-updated'])(
+    'strips the button face from %s',
+    (selector) => {
+      const button = style(selector);
+
+      expect(button.backgroundImage).toBe('none');
+      expect(button.backgroundColor).toBe('rgba(0, 0, 0, 0)');
+      expect(button.borderStyle).toBe('none');
+      expect(button.margin).toBe('0px');
+      expect(button.fontFamily).toBe(style('.card-content').fontFamily);
+      expect(button.letterSpacing).toBe(style('.card-content').letterSpacing);
+    },
+  );
+
+  it('keeps the font sizes and weights the divs had', () => {
+    // The user agent draws buttons in its own control font; each of these
+    // inherits the text around it instead, and only then sets its own.
+    expect(style('.resort-name-button').fontSize).toBe(style('.resort-name').fontSize);
+    expect(style('.resort-name-button').fontWeight).toBe('500');
+    expect(style('.accordion-header').fontWeight).toBe('500');
+    // 0.8em of the footer's 16px, not of a 13px control font.
+    expect(style('.last-updated').fontSize).toBe('12.8px');
+  });
+
+  it('keeps the section headings at the size of the toggle text', () => {
+    const title = style('.accordion-title');
+
+    expect(title.margin).toBe('0px');
+    expect(title.fontSize).toBe(style('.accordion-container').fontSize);
+    expect(title.fontWeight).toBe(style('.accordion-container').fontWeight);
+  });
+});
+
 describe('the harness itself', () => {
   it('reads an overridden rule, not merely a deleted one', async () => {
     // The four rules above, undone by later rules of higher specificity - the
