@@ -7,6 +7,11 @@ updates:
 
   - package-ecosystem: "pip"
     directory: "/"
+    # The floors in requirements.txt are mirrored into manifest.json, and hassfest rejects a
+    # floor above the version Home Assistant pins (beautifulsoup4==4.13.3, lxml==6.1.2 in core).
+    # Raising them on every release broke validation, so only move a requirement when a
+    # release falls outside it.
+    versioning-strategy: "increase-if-necessary"
     schedule:
       interval: "weekly"
 
