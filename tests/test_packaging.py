@@ -206,10 +206,10 @@ async def test_an_entry_without_a_ski_area_deletes_nothing(
 def test_the_manifest_pins_what_requirements_txt_pins():
     """manifest.json is what Home Assistant installs; requirements.txt is not.
 
-    The two drifted once already, and in the direction that matters: the
-    CHANGELOG recorded lxml being raised to >=6.1.1 for CVE-2026-41066, but only
+    The two drifted once already, and in the direction that matters: lxml was
+    raised to >=6.1.1 for CVE-2026-41066 and written up as released, but only
     requirements.txt moved. Users kept installing >=6.1.0, so a security fix that
-    was written down had never actually shipped.
+    was announced had never actually shipped.
     """
     manifest = json.loads(
         (ROOT / "custom_components" / "bergfex" / "manifest.json").read_text()
