@@ -75,19 +75,30 @@ jobs:
               },
             ];
 
-            const open = await github.rest.issues.listForRepo({
+            // Every issue, not just the open ones. Checking `state: 'open'` meant
+            // closing a finished one brought an identical copy back the next
+            // morning, because the resorts are still running and the check still
+            // says so - it runs daily from September to December.
+            const issues = await github.paginate(github.rest.issues.listForRepo, {
               owner: context.repo.owner,
               repo: context.repo.repo,
-              state: 'open',
+              state: 'all',
               per_page: 100,
             });
+
+            // The cron only runs September to December, so the calendar year is
+            // always the year the winter season starts in. Scoping the marker to
+            // it keeps "once per season" rather than "once ever": next autumn
+            // asks again, this autumn does not.
+            const season = new Date().getUTCFullYear();
 
             for (const group of groups) {
               if (!group.started) continue;
 
-              const marker = `<!-- season-watch:${group.key} -->`;
-              if (open.data.some((issue) => (issue.body ?? '').includes(marker))) {
-                core.info(`${group.key}: issue already open`);
+              const marker = `<!-- season-watch:${group.key}:${season} -->`;
+              const raised = issues.find((issue) => (issue.body ?? '').includes(marker));
+              if (raised) {
+                core.info(`${group.key}: already raised this season as #${raised.number} (${raised.state})`);
                 continue;
               }
 
