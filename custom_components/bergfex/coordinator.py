@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 import time
-from datetime import timedelta
+from datetime import date, timedelta
 from typing import Any
 from urllib.parse import urljoin
 
@@ -63,6 +63,19 @@ _SEASON_PANEL_KEYS = (
     "summer_operating_hours_start",
     "summer_operating_hours_end",
 )
+
+
+def _webhook_value(value: Any) -> Any:
+    """A payload value json.dumps can write: dates (and datetimes) as ISO 8601.
+
+    The season panel's start and end are datetime.date objects, and aiohttp's
+    json= refuses them - the whole post failed, so the webhook never fired for
+    any resort that publishes a panel.
+    """
+    if isinstance(value, date):  # datetime is a date subclass
+        return value.isoformat()
+    return value
+
 
 # A region's forecast pages are the same for every resort in it, so they are
 # keyed on the url and shared across coordinators. The TTL is generous: bergfex
@@ -404,12 +417,15 @@ class BergfexCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any]]]):
             # Send data to Webhook
             if webhook_url:
                 try:
-                    # copy parsed_data without last_update, a datetime that
-                    # does not serialise to JSON. A comparison, not `in`: on a
-                    # bare string `in` is a substring test, which also dropped
-                    # any key such as "date" or "update".
+                    # copy parsed_data without last_update, which the payload
+                    # has never carried, and with dates as ISO strings. A
+                    # comparison, not `in`: on a bare string `in` is a
+                    # substring test, which also dropped any key such as
+                    # "date" or "update".
                     json_data = {
-                        k: v for k, v in parsed_data.items() if k != "last_update"
+                        k: _webhook_value(v)
+                        for k, v in parsed_data.items()
+                        if k != "last_update"
                     }
                     async with session.post(
                         webhook_url, json={"merge_variables": json_data}
