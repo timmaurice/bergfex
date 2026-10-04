@@ -357,10 +357,46 @@ reports today. The Hintertux operator confirms it: 3 lifts, 0 km.
 
 ## Phase 2 — Ship 3.0.0 (~end Sept / early Oct)
 
-- [ ] Tag and release; confirm HACS picks up `bergfex.zip`.
-- [ ] Install matrix: clean install · upgrade from 2.3.1 · upgrade with the HACS card
-      still installed · upgrade with a hand-added `/local/` resource.
+- [x] **Tagged, released, and HACS is serving it.** 3.0.0 on 12 Sept, then 3.0.1 and
+      3.1.0 as the Danish and per-language fixes landed; 3.1.0 is Latest. The zip is
+      the shape the Phase 0 guard was written for — 27 files, 636 K unpacked, the
+      built `bergfex-card.js` in it, no fixtures and no `__pycache__`. Downloads are
+      the proof HACS picks it up, since nothing but a HACS client fetches that asset:
+      183 · 174 · 293 across the three releases, against 204 for 2.3.1 in six months.
+- [x] **Install matrix: all four paths, against the published 3.1.0 zip rather than
+      the working tree.** Run in a throwaway container on its own config, so the
+      evidence is what Home Assistant wrote to `.storage`, not what the code intends.
+      The 2.3.1 baseline is the real thing — `git archive 2.3.1`, started first, and
+      left to register its own entities.
+      - **Clean install.** 53 entities, all on the path-based scheme, three devices,
+        one Lovelace resource, no repair, no error.
+      - **Upgrade from 2.3.1.** 53 name-based ids in, 53 path-based ids out, **not one
+        entity_id changed** — which is what dashboards and recorder history hang on —
+        and no orphan repair, because nothing was orphaned. The entries' `unique_id`
+        was backfilled from the resort path.
+      - **Upgrade with the HACS card still installed.** The
+        `/hacsfiles/lovelace-bergfex-card/bergfex-card.js` resource is deleted and
+        logged, a neighbouring `mini-graph-card` resource is untouched, and the
+        "uninstall the HACS card" repair is raised. Driven in both directions
+        afterwards: the repair appears when the files are put back under the renamed
+        `bergfex-card/` directory too, and clears itself when they go.
+      - **Upgrade with a hand-added `/local/` resource.** `/local/bergfex-card.js?v=2.2.1`
+        is removed — the query string does not hide it, the match is on the url path —
+        and `/local/my-own-card.js` survives. No repair, correctly: a hand-placed file
+        is not HACS and will not come back by itself.
+      - **Restart.** One resource before, one after. That was a real defect once.
+      One thing the matrix turned up that was not on the list: the cross-country
+      **device** is renamed by the upgrade, `3 Zinnen Dolomites` → `Trail report 3
+      Zinnen Dolomites`. The Phase 1 device-rename fix writes the parser's
+      `resort_name` onto the device, and for a cross-country area that name still
+      carries the page label. Entities and their ids are unaffected, and a device the
+      user renamed keeps their name. Left as it is, for the same reason the label was
+      left alone before.
 - [ ] Watch the issue tracker **2–3 weeks**. Do not start Phase 3 before this settles.
+      _Day 11 of that window_ (3.0.0 was a pre-release until 23 Sept, so nobody could
+      install it before then): **no user has raised anything.** The only two issues
+      since the release are the integration's own season-watch runs, #37 and #51, both
+      closed. One open PR, a dependabot npm bump. Window closes around **14 October**.
 
 ---
 
