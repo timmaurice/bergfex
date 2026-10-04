@@ -4,10 +4,17 @@ Every other fixture was captured mid-winter, so it can only prove the parser
 reads the site as it *was* - which is how the dropped Tailwind ``tw-`` prefix
 broke resort-name parsing for months with the suite green throughout.
 
-These three were captured on 21 September 2026 and carry no ``tw-`` class. They
-cover the shapes the winter fixtures cannot show at once: a running resort
-(Hintertux on its glacier), one between its seasons (Serfaus, every lift turning
-for hikers), and a country overview, the page a country's sensors all share.
+Three were captured on 21 September 2026 and carry no ``tw-`` class. They cover
+the shapes the winter fixtures cannot show at once: a running resort (Hintertux
+on its glacier), one between its seasons (Serfaus, every lift turning for
+hikers), and a country overview, the page a country's sensors all share.
+
+The fourth is Hintertux again, on 4 October, once the winter season had started.
+It is kept *beside* the September one rather than replacing it, because the two
+differ in exactly the thing the status rule turns on: in September bergfex
+published no piste row at all, in October it publishes 6 of 29 and 15 of 64 km.
+Overwriting would have deleted the only capture of a resort running with nothing
+prepared.
 
 Deliberately not refreshed with the rest: re-capturing the winter fixtures in
 September would replace a populated snow report with an empty one and delete the
@@ -29,6 +36,7 @@ FIXTURES = Path(__file__).parent / "fixtures"
 
 LIVE_MARKUP_FIXTURES = (
     "hintertux-glacier-open.html",
+    "hintertux-winter-open.html",
     "serfaus-off-season.html",
     "overview-at-off-season.html",
 )
@@ -100,6 +108,10 @@ def test_the_running_glacier_names_its_open_pistes():
 def test_a_glacier_with_no_prepared_piste_still_reads_as_open():
     """No ``slopes_open_count`` on the page at all, which is not the same as a
     reported zero: the piste row is absent, so lifts and snow decide.
+
+    The other half of the pair is
+    ``test_the_groomed_glacier_is_open_because_of_its_piste_row`` - same resort,
+    two weeks later, with the row present and deciding instead.
     """
     data = parse_resort_page(
         _fixture("hintertux-glacier-open.html"), "/hintertux/schneebericht/", "at"
@@ -107,6 +119,60 @@ def test_a_glacier_with_no_prepared_piste_still_reads_as_open():
 
     assert "slopes_open_count" not in data
     assert data["status"] == "Open"
+
+
+# --- The same glacier once the winter season has started --------------------
+
+
+def test_the_groomed_glacier_reports_its_piste_row():
+    """Hintertux on 4 October, two weeks after the September capture.
+
+    bergfex had announced the winter season (2 October) and the snow report
+    carries a piste row again - the figure the whole season watcher waits for,
+    and which no other fixture in the suite contains.
+    """
+    data = parse_resort_page(
+        _fixture("hintertux-winter-open.html"), "/hintertux/schneebericht/", "at"
+    )
+
+    assert data["slopes_open_count"] == 6
+    assert data["slopes_total_count"] == 29
+    assert data["slopes_open_km"] == 15
+    assert data["slopes_total_km"] == 64
+    assert data["lifts_open_count"] == 8
+    assert data["lifts_total_count"] == 21
+    assert data["snow_mountain"] == "5"
+    assert len(data["open_pistes"]) == 10
+    assert data["status"] == "Open"
+
+
+def test_the_groomed_glacier_is_open_because_of_its_piste_row():
+    """Prepared terrain is the most specific signal and outranks any season.
+
+    Proven by attaching a winter season that ended months ago - the window the
+    September capture was judged against. There it decided and the resort read
+    Closed; here the piste row answers first and it stays Open.
+    """
+    data = parse_resort_page(
+        _fixture("hintertux-winter-open.html"), "/hintertux/schneebericht/", "at"
+    )
+    data["winter_season_start"] = date(2025, 9, 27)
+    data["winter_season_end"] = date(2026, 7, 19)
+
+    assert evaluate_status(data) == "Open"
+
+
+def test_a_reported_zero_still_closes_the_glacier():
+    """The distinction the rule rests on: an absent row says nothing, a reported
+    zero says nothing is groomed. Same page, piste row set to zero.
+    """
+    data = parse_resort_page(
+        _fixture("hintertux-winter-open.html"), "/hintertux/schneebericht/", "at"
+    )
+    data["slopes_open_count"] = 0
+    data["slopes_open_km"] = 0
+
+    assert evaluate_status(data) == "Closed"
 
 
 # --- A resort between its two seasons ---------------------------------------
