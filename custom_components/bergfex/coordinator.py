@@ -404,9 +404,12 @@ class BergfexCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any]]]):
             # Send data to Webhook
             if webhook_url:
                 try:
-                    # copy parsed_data and remove keys that are not string
+                    # copy parsed_data without last_update, a datetime that
+                    # does not serialise to JSON. A comparison, not `in`: on a
+                    # bare string `in` is a substring test, which also dropped
+                    # any key such as "date" or "update".
                     json_data = {
-                        k: v for k, v in parsed_data.items() if k not in ("last_update")
+                        k: v for k, v in parsed_data.items() if k != "last_update"
                     }
                     async with session.post(
                         webhook_url, json={"merge_variables": json_data}
