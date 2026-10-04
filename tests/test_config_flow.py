@@ -8,12 +8,14 @@ from homeassistant.data_entry_flow import FlowResultType
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.bergfex.config_flow import (
+    BergfexConfigFlow,
     InvalidSkiAreaPath,
     normalize_ski_area_path,
     ski_area_name_from_path,
 )
 from custom_components.bergfex.const import (
     CONF_COUNTRY,
+    CONF_DOMAIN,
     CONF_LANGUAGE,
     CONF_SKI_AREA,
     CONF_TYPE,
@@ -432,3 +434,63 @@ async def test_choosing_nothing_reports_a_key_the_user_can_read(
 
     assert result["type"] == FlowResultType.FORM
     assert result["errors"] == {"base": "no_selection"}
+
+
+def test_each_flow_keeps_its_own_answers():
+    """The answers dict belongs to the flow, not to the class."""
+    first = BergfexConfigFlow()
+    second = BergfexConfigFlow()
+
+    first._data[CONF_LANGUAGE] = "it"
+
+    assert second._data == {}
+    assert first._data is not second._data
+
+
+@pytest.mark.asyncio
+async def test_two_open_flows_do_not_mix_their_answers(
+    hass: HomeAssistant, enable_custom_integrations
+):
+    """A second setup dialog must not rewrite the first one's choices.
+
+    With the dict on the class every flow wrote into one object, so the dialog
+    that answered last decided the language, domain and type of the entry the
+    other one created.
+    """
+    with patch(
+        "custom_components.bergfex.config_flow.get_ski_areas",
+        return_value=SKI_AREAS,
+    ):
+        first = await hass.config_entries.flow.async_init(
+            DOMAIN, context={"source": "user"}
+        )
+        first = await hass.config_entries.flow.async_configure(
+            first["flow_id"], {CONF_LANGUAGE: "at"}
+        )
+        first = await hass.config_entries.flow.async_configure(
+            first["flow_id"], {CONF_TYPE: TYPE_ALPINE}
+        )
+        first = await hass.config_entries.flow.async_configure(
+            first["flow_id"], {CONF_COUNTRY: "Österreich"}
+        )
+
+        # A second dialog, opened while the first waits on its last form.
+        second = await hass.config_entries.flow.async_init(
+            DOMAIN, context={"source": "user"}
+        )
+        second = await hass.config_entries.flow.async_configure(
+            second["flow_id"], {CONF_LANGUAGE: "it"}
+        )
+        second = await hass.config_entries.flow.async_configure(
+            second["flow_id"], {CONF_TYPE: TYPE_CROSS_COUNTRY}
+        )
+        assert second["step_id"] == "country"
+
+        result = await hass.config_entries.flow.async_configure(
+            first["flow_id"], {CONF_SKI_AREA: SKI_AREA_PATH}
+        )
+
+    assert result["type"] == FlowResultType.CREATE_ENTRY
+    assert result["data"][CONF_LANGUAGE] == "at"
+    assert result["data"][CONF_DOMAIN] == "https://www.bergfex.at"
+    assert result["data"][CONF_TYPE] == TYPE_ALPINE

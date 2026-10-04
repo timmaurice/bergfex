@@ -228,7 +228,15 @@ class BergfexConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Bergfex."""
 
     VERSION = 1
-    _data: dict[str, Any] = {}
+
+    def __init__(self) -> None:
+        """Start the flow with answers of its own.
+
+        A class-level dict would be one object shared by every flow, so two
+        setup dialogs open at once, or a new one after an aborted one, would
+        read each other's language, domain, type and country.
+        """
+        self._data: dict[str, Any] = {}
 
     @staticmethod
     @callback
