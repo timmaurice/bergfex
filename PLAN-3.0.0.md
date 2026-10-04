@@ -368,6 +368,7 @@ reports today. The Hintertux operator confirms it: 3 lifts, 0 km.
       evidence is what Home Assistant wrote to `.storage`, not what the code intends.
       The 2.3.1 baseline is the real thing — `git archive 2.3.1`, started first, and
       left to register its own entities.
+
       - **Clean install.** 53 entities, all on the path-based scheme, three devices,
         one Lovelace resource, no repair, no error.
       - **Upgrade from 2.3.1.** 53 name-based ids in, 53 path-based ids out, **not one
@@ -385,6 +386,7 @@ reports today. The Hintertux operator confirms it: 3 lifts, 0 km.
         and `/local/my-own-card.js` survives. No repair, correctly: a hand-placed file
         is not HACS and will not come back by itself.
       - **Restart.** One resource before, one after. That was a real defect once.
+
       One thing the matrix turned up that was not on the list: the cross-country
       **device** is renamed by the upgrade, `3 Zinnen Dolomites` → `Trail report 3
       Zinnen Dolomites`. The Phase 1 device-rename fix writes the parser's
@@ -392,6 +394,7 @@ reports today. The Hintertux operator confirms it: 3 lifts, 0 km.
       carries the page label. Entities and their ids are unaffected, and a device the
       user renamed keeps their name. Left as it is, for the same reason the label was
       left alone before.
+
 - [ ] Watch the issue tracker **2–3 weeks**. Do not start Phase 3 before this settles.
       _Day 11 of that window_ (3.0.0 was a pre-release until 23 Sept, so nobody could
       install it before then): **no user has raised anything.** The only two issues
