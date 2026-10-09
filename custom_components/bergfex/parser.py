@@ -38,6 +38,32 @@ def _translate_value(value: str, lang: str) -> str:
     return translated_value
 
 
+def _says_day(date_str: str, keyword: str) -> bool:
+    """Return True when bergfex printed this day word, spelled out or shortened.
+
+    The same url comes back in two renderings, and one of them abbreviates the
+    day: the French page serves "Aujourd'hui, 16:31" and, in roughly one request
+    in three, "Auj., 16:31". Read as a plain substring the second yields no
+    timestamp at all, so the card loses its "last updated" line for that poll.
+    French was the only one of the eighteen observed doing it - its word is also
+    by far the longest - but matching the stem does not need the abbreviation to
+    be known in advance.
+
+    The stem is only honoured when a bare time follows it. "Fr, 28.11., 09:33"
+    opens with a short word too, and reading that as today would quietly move
+    the date a fortnight.
+    """
+    text = date_str.strip().lower()
+    if keyword in text:
+        return True
+
+    head, _, rest = text.partition(",")
+    stem = head.strip().rstrip(".")
+    if len(stem) < 2 or not stem.isalpha() or not keyword.startswith(stem):
+        return False
+    return bool(re.fullmatch(r"\s*\d{1,2}:\d{2}\s*", rest))
+
+
 def parse_bergfex_datetime(date_str: str, lang: str = "at") -> datetime | None:
     """Parse Bergfex date/time strings to datetime objects.
 
@@ -63,8 +89,14 @@ def parse_bergfex_datetime(date_str: str, lang: str = "at") -> datetime | None:
     today_kw = keywords.get("today", "heute").lower()
     yesterday_kw = keywords.get("yesterday", "gestern").lower()
 
+    is_today = _says_day(date_str, today_kw)
+    is_yesterday = _says_day(date_str, yesterday_kw)
+    if is_today and is_yesterday:
+        # A stem both words share names neither of them.
+        is_today = is_yesterday = False
+
     # Handle "Heute" / "Today"
-    if today_kw in date_str.lower():
+    if is_today:
         time_match = re.search(r"(\d{1,2}):(\d{2})", date_str)
         if time_match:
             hour = int(time_match.group(1))
@@ -72,7 +104,7 @@ def parse_bergfex_datetime(date_str: str, lang: str = "at") -> datetime | None:
             return now.replace(hour=hour, minute=minute, second=0, microsecond=0)
 
     # Handle "Gestern" / "Yesterday"
-    elif yesterday_kw in date_str.lower():
+    elif is_yesterday:
         time_match = re.search(r"(\d{1,2}):(\d{2})", date_str)
         if time_match:
             hour = int(time_match.group(1))
