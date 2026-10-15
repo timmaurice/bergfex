@@ -210,8 +210,8 @@
       }
     },
     "requests_refused": {
-      "title": "bergfex sta rifiutando le richieste da questa rete",
-      "description": "{host} ha risposto {status} a ogni richiesta per {resorts}, quindi non è possibile recuperare dati. Non è un difetto dell'integrazione: la richiesta non raggiunge mai le pagine di bergfex. Di solito dipende dalla rete su cui si trova la macchina Home Assistant: una VPN, un indirizzo condiviso o un proxy possono essere considerati traffico automatico. Verifica aprendo https://{host}/ da quella macchina. Se contatti bergfex, cita l'identificativo ray di Cloudflare {cf_ray}. Questo messaggio sparisce da solo non appena una richiesta va a buon fine."
+      "title": "bergfex sta rifiutando le richieste verso {host}",
+      "description": "{host} ha risposto {status} per {resorts}, che quindi non possono essere letti. Non è un difetto dell'integrazione: la richiesta non raggiunge mai la pagina.\n\n**Da provare per primo:** bergfex serve le stesse località dai suoi altri domini linguistici, e solo quello tedesco invia le località tedesche a {host}. Apri una di queste voci, scegli **Riconfigura** e seleziona un'altra lingua: con l'inglese i valori restano leggibili. Le entità e la loro cronologia vengono mantenute; i valori arriveranno in quella lingua.\n\nSe non basta, la causa è la connessione su cui si trova questo Home Assistant. Verifica aprendo https://{host}/ da quella macchina e cita l'identificativo ray di Cloudflare {cf_ray} se contatti bergfex. Questo messaggio sparisce da solo non appena una richiesta va a buon fine."
     }
   }
 }

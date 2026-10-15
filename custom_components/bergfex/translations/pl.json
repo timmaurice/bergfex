@@ -210,8 +210,8 @@
       }
     },
     "requests_refused": {
-      "title": "bergfex odrzuca żądania z tej sieci",
-      "description": "{host} odpowiedział {status} na każde żądanie dotyczące {resorts}, więc nie można pobrać danych. To nie jest błąd integracji — żądanie w ogóle nie dociera do stron bergfex. Zwykle odpowiada za to sieć, w której działa maszyna z Home Assistant: VPN, współdzielony adres lub serwer proxy mogą zostać uznane za ruch automatyczny. Sprawdź, otwierając https://{host}/ z tej maszyny. Kontaktując się z bergfex, podaj identyfikator ray Cloudflare {cf_ray}. Ten komunikat zniknie sam, gdy tylko jedno żądanie przejdzie."
+      "title": "bergfex odrzuca żądania do {host}",
+      "description": "{host} odpowiedział {status} dla {resorts}, więc nie można ich odczytać. To nie jest błąd integracji - żądanie w ogóle nie dociera do strony.\n\n**Warto spróbować najpierw:** bergfex udostępnia te same ośrodki także w swoich innych domenach językowych, a tylko niemiecka kieruje niemieckie ośrodki do {host}. Otwórz jeden z tych wpisów, wybierz **Skonfiguruj ponownie** i inny język - przy angielskim odczyty pozostają czytelne. Encje i ich historia zostają zachowane; odczyty będą wtedy w tym języku.\n\nJeśli to nie pomoże, przyczyną jest łącze, na którym działa ten Home Assistant. Sprawdź, otwierając https://{host}/ z tej maszyny, i podaj identyfikator ray Cloudflare {cf_ray}, kontaktując się z bergfex. Komunikat zniknie sam, gdy tylko jedno żądanie przejdzie."
     }
   }
 }

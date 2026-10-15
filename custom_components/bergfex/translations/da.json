@@ -210,8 +210,8 @@
       }
     },
     "requests_refused": {
-      "title": "bergfex afviser anmodninger fra dette netværk",
-      "description": "{host} svarede {status} på alle anmodninger om {resorts}, så der kan ikke hentes data. Det er ikke en fejl i integrationen — anmodningen når aldrig frem til bergfex' sider. Det skyldes som regel netværket, Home Assistant-maskinen står på: et VPN, en delt adresse eller en proxy kan alle blive vurderet som automatiseret trafik. Tjek det ved at åbne https://{host}/ fra den maskine. Hvis du kontakter bergfex, så oplys Cloudflare ray-id {cf_ray}. Beskeden forsvinder af sig selv, så snart en anmodning kommer igennem."
+      "title": "bergfex afviser anmodninger til {host}",
+      "description": "{host} svarede {status} for {resorts}, så de kan ikke læses. Det er ikke en fejl i integrationen - anmodningen når slet ikke frem til siden.\n\n**Prøv dette først:** bergfex leverer de samme områder fra sine andre sprogdomæner, og kun det tyske sender tyske områder til {host}. Åbn en af disse poster, vælg **Omkonfigurer** og vælg et andet sprog - engelsk holder aflæsningerne læsbare. Enheder og historik bevares; aflæsningerne kommer derefter på det sprog.\n\nHjælper det ikke, skyldes det den forbindelse, denne Home Assistant sidder på. Tjek det ved at åbne https://{host}/ fra den maskine, og oplys Cloudflare ray-id {cf_ray}, hvis du kontakter bergfex. Beskeden forsvinder af sig selv, så snart en anmodning kommer igennem."
     }
   }
 }

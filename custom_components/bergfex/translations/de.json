@@ -210,8 +210,8 @@
       }
     },
     "requests_refused": {
-      "title": "bergfex weist Anfragen aus diesem Netz ab",
-      "description": "{host} hat jede Anfrage für {resorts} mit {status} beantwortet, daher lassen sich keine Daten abrufen. Das ist kein Fehler der Integration — die Anfrage erreicht die Seiten von bergfex gar nicht. Meist liegt es am Netz des Home-Assistant-Rechners: Ein VPN, eine geteilte Adresse oder ein Proxy können als automatisierter Verkehr gewertet werden. Prüfe es, indem du https://{host}/ von diesem Rechner aus öffnest. Wenn du bergfex kontaktierst, nenne die Cloudflare-Ray-ID {cf_ray}. Diese Meldung verschwindet von selbst, sobald eine Anfrage durchgeht."
+      "title": "bergfex weist Anfragen an {host} ab",
+      "description": "{host} hat {status} für {resorts} geantwortet, sie lassen sich daher nicht lesen. Das ist kein Fehler der Integration - die Anfrage erreicht die Seite gar nicht.\n\n**Zuerst einen Versuch wert:** bergfex liefert dieselben Gebiete auch über seine anderen Sprachdomains aus, und nur die deutsche schickt deutsche Gebiete zu {host}. Öffne einen dieser Einträge, wähle **Neu konfigurieren** und eine andere Sprache - mit Englisch bleiben die Werte gut lesbar. Entitäten und Verlauf bleiben erhalten; die Messwerte kommen dann in dieser Sprache.\n\nHilft das nicht, liegt es am Anschluss, an dem dieses Home Assistant hängt. Prüfe es, indem du https://{host}/ von diesem Rechner aus öffnest, und nenne die Cloudflare-Ray-ID {cf_ray}, wenn du bergfex kontaktierst. Diese Meldung verschwindet von selbst, sobald eine Anfrage durchgeht."
     }
   }
 }

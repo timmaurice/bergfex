@@ -400,3 +400,20 @@ async def test_every_language_can_say_it_was_refused(hass: HomeAssistant):
         errors = json.loads(path.read_text())["config"]["error"]
         assert "refused" in errors, path.name
         assert errors["refused"].strip(), path.name
+
+
+def test_the_repair_card_names_the_way_out():
+    """It is read by somebody who cannot reach the host, so it has to be actionable.
+
+    Switching an entry to another language moves it to another bergfex domain,
+    and only the German one redirects German resorts to the refused host. That
+    was verified against a live installation before it was written down here.
+    """
+    import json
+    from pathlib import Path
+
+    for path in sorted(Path("custom_components/bergfex/translations").glob("*.json")):
+        issue = json.loads(path.read_text())["issues"]["requests_refused"]
+        for placeholder in ("{host}", "{status}", "{resorts}", "{cf_ray}"):
+            assert placeholder in issue["description"], (path.name, placeholder)
+        assert "{host}" in issue["title"], path.name

@@ -210,8 +210,8 @@
       }
     },
     "requests_refused": {
-      "title": "bergfex weigert verzoeken vanaf dit netwerk",
-      "description": "{host} antwoordde {status} op elk verzoek voor {resorts}, dus er kunnen geen gegevens worden opgehaald. Dit is geen fout in de integratie — het verzoek bereikt de pagina's van bergfex niet. Meestal ligt het aan het netwerk waarop de Home Assistant-machine staat: een VPN, een gedeeld adres of een proxy kunnen als geautomatiseerd verkeer worden gezien. Controleer het door https://{host}/ vanaf die machine te openen. Noem bij contact met bergfex het Cloudflare ray-id {cf_ray}. Deze melding verdwijnt vanzelf zodra één verzoek doorkomt."
+      "title": "bergfex weigert verzoeken aan {host}",
+      "description": "{host} antwoordde {status} voor {resorts}, die daardoor niet gelezen kunnen worden. Dit is geen fout in de integratie - het verzoek bereikt de pagina niet.\n\n**Eerst dit proberen:** bergfex levert dezelfde gebieden ook via zijn andere taaldomeinen, en alleen het Duitse stuurt Duitse gebieden naar {host}. Open een van deze items, kies **Opnieuw configureren** en een andere taal - met Engels blijven de waarden goed leesbaar. Entiteiten en hun geschiedenis blijven behouden; de waarden komen daarna in die taal.\n\nHelpt dat niet, dan ligt het aan de verbinding waarop deze Home Assistant zit. Controleer het door https://{host}/ vanaf die machine te openen, en noem het Cloudflare ray-id {cf_ray} bij contact met bergfex. Deze melding verdwijnt vanzelf zodra één verzoek doorkomt."
     }
   }
 }
