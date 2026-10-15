@@ -351,3 +351,52 @@ async def test_it_stays_as_quiet_as_before(
     ]
     assert len(warnings) == 1
     assert "403" in warnings[0].getMessage()
+
+
+# --- the config flow ------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    ("status", "expected"),
+    [(403, "refused"), (429, "refused"), (451, "refused"), (404, "cannot_connect")],
+)
+@pytest.mark.asyncio
+async def test_the_setup_dialog_tells_the_two_apart(
+    hass: HomeAssistant, status, expected
+):
+    """ "Check your internet connection" is the wrong advice for a block.
+
+    The connection is fine; bergfex is turning it away. Sending somebody to
+    their router over that costs them an evening.
+    """
+    from custom_components.bergfex.config_flow import async_page_check
+
+    with patch(
+        "custom_components.bergfex.config_flow.async_get_clientsession",
+        return_value=_Session(lambda: _Response(status, body=BLOCK_PAGE)),
+    ):
+        assert await async_page_check(hass, REQUESTED) == expected
+
+
+@pytest.mark.asyncio
+async def test_a_page_that_serves_is_no_problem(hass: HomeAssistant):
+    from custom_components.bergfex.config_flow import async_page_check
+
+    with patch(
+        "custom_components.bergfex.config_flow.async_get_clientsession",
+        return_value=_Session(lambda: _Response(200, url=REQUESTED)),
+    ):
+        assert await async_page_check(hass, REQUESTED) is None
+
+
+@pytest.mark.asyncio
+async def test_every_language_can_say_it_was_refused(hass: HomeAssistant):
+    """A missing key renders as the raw string in that user's dialog."""
+    import json
+    from pathlib import Path
+
+    folder = Path("custom_components/bergfex/translations")
+    for path in sorted(folder.glob("*.json")):
+        errors = json.loads(path.read_text())["config"]["error"]
+        assert "refused" in errors, path.name
+        assert errors["refused"].strip(), path.name

@@ -15,6 +15,7 @@ from homeassistant.data_entry_flow import FlowResult
 from homeassistant.helpers import selector
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
+from .fetch import BergfexRefused, async_fetch_text
 from .const import (
     BASE_URL,
     CONF_COUNTRY,
@@ -68,16 +69,31 @@ async def async_page_loads(hass: HomeAssistant, url: str) -> bool:
     Any failure counts - no connection, a timeout, or a status that is not a
     success, which is how bergfex answers a path it does not know.
     """
+    return await async_page_check(hass, url) is None
+
+
+async def async_page_check(hass: HomeAssistant, url: str) -> str | None:
+    """Return the error key for `url`, or None when it serves.
+
+    A refusal is told apart from an outage because the two ask different things
+    of the user. Everything that is not a 200 used to collapse into
+    "check your internet connection", which is the wrong advice for somebody
+    whose connection is fine and whose address is being turned away - and it
+    carried no ray id, so there was nothing to pass on either.
+    """
     session = async_get_clientsession(hass)
     try:
-        async with session.get(
-            url, allow_redirects=True, timeout=_PAGE_CHECK_TIMEOUT
-        ) as response:
-            response.raise_for_status()
+        await async_fetch_text(session, url, timeout=_PAGE_CHECK_TIMEOUT)
+    except BergfexRefused as err:
+        if err.is_refusal:
+            _LOGGER.warning("Bergfex refused the check of %s: %s", url, err)
+            return "refused"
+        _LOGGER.debug("Area page %s did not load: %s", url, err)
+        return "cannot_connect"
     except (aiohttp.ClientError, TimeoutError) as err:
         _LOGGER.debug("Area page %s did not load: %s", url, err)
-        return False
-    return True
+        return "cannot_connect"
+    return None
 
 
 class InvalidWebhookUrl(ValueError):
@@ -196,9 +212,7 @@ async def get_ski_areas(
     try:
         session = async_get_clientsession(hass)
         url = f"{domain}{country_path}"
-        async with session.get(url, allow_redirects=True) as response:
-            response.raise_for_status()
-            html = await response.text()
+        html = await async_fetch_text(session, url)
         soup = BeautifulSoup(html, "html.parser")
         table = soup.find("table", class_="snow") or soup.find(
             "table", class_="status-table"
@@ -305,8 +319,8 @@ class BergfexConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             page_url = detail_page_url(
                 domain, area_path, entry.data.get(CONF_TYPE, TYPE_ALPINE)
             )
-            if not await async_page_loads(self.hass, page_url):
-                errors["base"] = "cannot_connect"
+            if problem := await async_page_check(self.hass, page_url):
+                errors["base"] = problem
             else:
                 _LOGGER.debug(
                     "Switching %s to language %s (%s)", entry.title, language, domain

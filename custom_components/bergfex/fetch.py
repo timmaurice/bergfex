@@ -112,9 +112,16 @@ async def _async_refusal(response: Any, requested_url: str) -> BergfexRefused:
     )
 
 
-async def async_fetch_text(session: Any, url: str) -> str:
-    """Return a bergfex page, or raise BergfexRefused saying why not."""
-    async with session.get(url, allow_redirects=True) as response:
+async def async_fetch_text(session: Any, url: str, *, timeout: Any = None) -> str:
+    """Return a bergfex page, or raise BergfexRefused saying why not.
+
+    `timeout` is passed through only when given, because the mock sessions in
+    the tests take the arguments the integration actually uses.
+    """
+    kwargs = {"allow_redirects": True}
+    if timeout is not None:
+        kwargs["timeout"] = timeout
+    async with session.get(url, **kwargs) as response:
         if response.status != 200:
             raise await _async_refusal(response, url)
         return await response.text()

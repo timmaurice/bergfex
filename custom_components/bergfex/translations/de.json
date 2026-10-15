@@ -64,7 +64,8 @@
       "no_areas_found": "Keine Skigebiete für das ausgewählte Land gefunden. Möglicherweise sind aktuell keine Schneeberichte verfügbar.",
       "no_selection": "Bitte wählen Sie ein Skigebiet aus der Liste oder geben Sie einen manuellen Pfad an.",
       "invalid_path": "Diese Adresse benennt kein Skigebiet. Gib einen Gebietspfad wie \"/ischgl/schneebericht/\" ein oder füge die vollständige URL der Gebietsseite ein.",
-      "invalid_webhook": "Das ist keine gültige Webhook-Adresse. Gib eine vollständige http:// oder https:// URL an oder lass das Feld leer."
+      "invalid_webhook": "Das ist keine gültige Webhook-Adresse. Gib eine vollständige http:// oder https:// URL an oder lass das Feld leer.",
+      "refused": "bergfex hat die Anfrage abgewiesen. Deine Verbindung funktioniert, bergfex weist sie aber ab - die Cloudflare-Ray-ID steht im Home-Assistant-Log."
     },
     "abort": {
       "already_configured": "Dieses Skigebiet ist bereits konfiguriert.",
