@@ -1,6 +1,6 @@
 {
   "name": "bergfex-card",
-  "version": "3.2.0-beta.2",
+  "version": "3.2.0-beta.3",
   "description": "A Lovelace card to display ski resort conditions from Bergfex.",
   "homepage": "https://github.com/timmaurice/bergfex#readme",
   "bugs": {
