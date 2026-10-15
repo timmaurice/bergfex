@@ -207,6 +207,10 @@
           }
         }
       }
+    },
+    "requests_refused": {
+      "title": "bergfex está rechazando las peticiones desde esta red",
+      "description": "{host} respondió {status} a todas las peticiones de {resorts}, así que no se pueden obtener datos. No es un fallo de la integración: la petición no llega a las páginas de bergfex. Suele deberse a la red en la que está el equipo de Home Assistant: una VPN, una dirección compartida o un proxy pueden considerarse tráfico automatizado. Compruébalo abriendo https://{host}/ desde ese equipo. Si contactas con bergfex, indica el identificador ray de Cloudflare {cf_ray}. Este aviso desaparece solo en cuanto una petición pase."
     }
   }
 }

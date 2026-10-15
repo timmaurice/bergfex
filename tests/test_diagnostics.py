@@ -28,7 +28,7 @@ from pytest_homeassistant_custom_component.components.diagnostics import (
     get_diagnostics_for_config_entry,
 )
 
-from custom_components.bergfex import coordinator, diagnostics
+from custom_components.bergfex import coordinator, diagnostics, refusal
 from custom_components.bergfex.const import DOMAIN
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -104,9 +104,11 @@ def _empty_poll_caches():
     """The caches are module state, so a test must not inherit another's entries."""
     coordinator._FORECAST_CACHE.clear()
     coordinator._SEASON_PANEL_CACHE.clear()
+    refusal._STATE.clear()
     yield
     coordinator._FORECAST_CACHE.clear()
     coordinator._SEASON_PANEL_CACHE.clear()
+    refusal._STATE.clear()
 
 
 async def _setup(hass: HomeAssistant, entry: MockConfigEntry) -> None:
@@ -249,6 +251,36 @@ async def test_diagnostics_for_an_entry_that_never_set_up(
     assert result["coordinator"] is None
     assert result["areas"] is None
     assert result["caches"] is None
+
+
+async def test_a_refused_entry_carries_the_evidence(
+    hass: HomeAssistant, enable_custom_integrations, aioclient_mock, hass_client
+):
+    """The whole point of the section: it survives where the coordinator does not.
+
+    An entry that is being turned away never finishes setting up, so it has no
+    coordinator and therefore no ``last_exception`` in the download - and that is
+    exactly the entry a bug report is attached to. Without this, the Cloudflare
+    ray id only ever reaches a log line the reporter has to go and find.
+    """
+    aioclient_mock.get(
+        re.compile(r"."),
+        status=403,
+        text="<html><title>Attention Required!</title>blocked</html>",
+        headers={"cf-ray": "9a1b2c3d4e5f6789-FRA", "server": "cloudflare"},
+    )
+    entry = _entry()
+    await _setup(hass, entry)
+    assert entry.state is ConfigEntryState.SETUP_RETRY
+
+    result = await get_diagnostics_for_config_entry(hass, hass_client, entry)
+
+    assert result["coordinator"] is None
+    refused = result["refusals"][entry.entry_id]
+    assert refused["status"] == 403
+    assert refused["cf_ray"] == "9a1b2c3d4e5f6789-FRA"
+    assert "Attention Required" in refused["excerpt"]
+    assert refused["requested_url"].endswith(AREA_PATH)
 
 
 def test_a_cross_country_area_reports_its_trails():

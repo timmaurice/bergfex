@@ -13,6 +13,8 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
+from .fetch import BergfexRefused, async_fetch_text, async_fetch_text_or_none
+from .refusal import async_note_refusal, async_note_success
 from .const import (
     BASE_URL,
     CONF_COUNTRY,
@@ -115,13 +117,11 @@ async def _async_forecast_images(
         return cached[1]
 
     _LOGGER.debug("Fetching forecast images from: %s", forecast_url)
-    async with session.get(forecast_url, allow_redirects=True) as response:
-        if response.status != 200:
-            _LOGGER.warning(
-                "Could not fetch forecast page %d: %s", page, response.status
-            )
-            return None
-        forecast_html = await response.text()
+    forecast_html = await async_fetch_text_or_none(
+        session, forecast_url, context=f"forecast page {page}"
+    )
+    if forecast_html is None:
+        return None
 
     image_data = await hass.async_add_executor_job(
         parse_snow_forecast_images, forecast_html, page
@@ -185,9 +185,9 @@ class BergfexCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any]]]):
             url = detail_page_url(domain, area_path, resort_type)
 
             _LOGGER.debug("Fetching resort data from: %s", url)
-            async with session.get(url, allow_redirects=True) as response:
-                response.raise_for_status()
-                html = await response.text()
+            html = await async_fetch_text(session, url)
+            # One page through is proof the network is not being turned away.
+            async_note_success(hass, self.config_entry)
 
             parsed_data = {}
             if resort_type == TYPE_CROSS_COUNTRY:
@@ -205,82 +205,78 @@ class BergfexCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any]]]):
                             "Fetching cross-country overview from: %s",
                             overview_url,
                         )
-                        async with session.get(
-                            overview_url, allow_redirects=True
-                        ) as response:
-                            if response.status == 200:
-                                overview_html = await response.text()
-                                # This will parse totals for all resorts on the page
-                                overview_data = await hass.async_add_executor_job(
-                                    parse_cross_country_overview_data,
-                                    overview_html,
-                                    lang,
-                                )
-                                # Find our specific resort in the overview data and update totals
-                                # Find our specific resort in the overview data and update totals
-                                resort_name_from_detail_page = parsed_data.get(
-                                    "resort_name"
-                                )
-                                found_match = False
-                                if resort_name_from_detail_page:
-                                    try:
-                                        trail_report_kw = KEYWORDS.get(
-                                            lang, KEYWORDS["at"]
-                                        ).get("trail_report", "Loipenbericht")
-                                        resort_name_clean = (
-                                            resort_name_from_detail_page.replace(
-                                                trail_report_kw, ""
-                                            ).strip()
-                                        )
-                                        # Normalize by taking the first part before any slash
-                                        if "/" in resort_name_clean:
-                                            resort_name_clean = resort_name_clean.split(
-                                                "/"
-                                            )[0].strip()
-
-                                        for key, data in overview_data.items():
-                                            overview_name = data.get("name", "")
-                                            if (
-                                                overview_name
-                                                and resort_name_clean in overview_name
-                                            ):
-                                                parsed_data.update(data)
-                                                _LOGGER.debug(
-                                                    f"Merged overview data for {resort_name_clean} using name matching."
-                                                )
-                                                found_match = True
-                                                break
-                                    except Exception as e:
-                                        _LOGGER.debug(
-                                            f"Name matching for cross-country overview failed: {e}"
-                                        )
-
-                                if not found_match:
-                                    _LOGGER.debug(
-                                        "Falling back to URL-based matching for cross-country overview."
+                        overview_html = await async_fetch_text_or_none(
+                            session,
+                            overview_url,
+                            context="cross-country overview page",
+                        )
+                        if overview_html is not None:
+                            # This will parse totals for all resorts on the page
+                            overview_data = await hass.async_add_executor_job(
+                                parse_cross_country_overview_data,
+                                overview_html,
+                                lang,
+                            )
+                            # Find our specific resort in the overview data and update totals
+                            # Find our specific resort in the overview data and update totals
+                            resort_name_from_detail_page = parsed_data.get(
+                                "resort_name"
+                            )
+                            found_match = False
+                            if resort_name_from_detail_page:
+                                try:
+                                    trail_report_kw = KEYWORDS.get(
+                                        lang, KEYWORDS["at"]
+                                    ).get("trail_report", "Loipenbericht")
+                                    resort_name_clean = (
+                                        resort_name_from_detail_page.replace(
+                                            trail_report_kw, ""
+                                        ).strip()
                                     )
+                                    # Normalize by taking the first part before any slash
+                                    if "/" in resort_name_clean:
+                                        resort_name_clean = resort_name_clean.split(
+                                            "/"
+                                        )[0].strip()
+
                                     for key, data in overview_data.items():
-                                        # Normalize keys and area_path to compare reliably
-                                        k_clean = key.strip("/")
-                                        ap_clean = area_path.strip("/")
-                                        # Match if overview key equals suffix of area_path or vice versa
-                                        if k_clean and (
-                                            ap_clean.endswith(k_clean)
-                                            or k_clean in ap_clean
+                                        overview_name = data.get("name", "")
+                                        if (
+                                            overview_name
+                                            and resort_name_clean in overview_name
                                         ):
                                             parsed_data.update(data)
                                             _LOGGER.debug(
-                                                "Merged overview data for %s using URL matching on key %s.",
-                                                area_path,
-                                                key,
+                                                f"Merged overview data for {resort_name_clean} using name matching."
                                             )
                                             found_match = True
                                             break
-                            else:
-                                _LOGGER.warning(
-                                    "Could not fetch cross-country overview page: %s",
-                                    response.status,
+                                except Exception as e:
+                                    _LOGGER.debug(
+                                        f"Name matching for cross-country overview failed: {e}"
+                                    )
+
+                            if not found_match:
+                                _LOGGER.debug(
+                                    "Falling back to URL-based matching for cross-country overview."
                                 )
+                                for key, data in overview_data.items():
+                                    # Normalize keys and area_path to compare reliably
+                                    k_clean = key.strip("/")
+                                    ap_clean = area_path.strip("/")
+                                    # Match if overview key equals suffix of area_path or vice versa
+                                    if k_clean and (
+                                        ap_clean.endswith(k_clean)
+                                        or k_clean in ap_clean
+                                    ):
+                                        parsed_data.update(data)
+                                        _LOGGER.debug(
+                                            "Merged overview data for %s using URL matching on key %s.",
+                                            area_path,
+                                            key,
+                                        )
+                                        found_match = True
+                                        break
                     except Exception as err:
                         _LOGGER.warning(
                             "Error fetching cross-country overview: %s", err
@@ -320,41 +316,42 @@ class BergfexCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any]]]):
                             main_url,
                         )
                         try:
-                            async with session.get(
-                                main_url, allow_redirects=True
-                            ) as response:
-                                if response.status == 200:
-                                    main_html = await response.text()
-                                    main_data = await hass.async_add_executor_job(
-                                        parse_resort_page,
-                                        main_html,
-                                        main_path,
-                                        lang,
-                                    )
-                                    for key in [
-                                        "price",
-                                        "operating_hours_start",
-                                        "operating_hours_end",
-                                        "operation_status",
-                                        *_SEASON_PANEL_KEYS,
-                                    ]:
-                                        if key in main_data and key not in parsed_data:
-                                            parsed_data[key] = main_data[key]
-                                            _LOGGER.debug(
-                                                "Found %s on main page: %s",
-                                                key,
-                                                parsed_data[key],
-                                            )
+                            main_html = await async_fetch_text_or_none(
+                                session,
+                                main_url,
+                                context="main page for the price",
+                            )
+                            if main_html is not None:
+                                main_data = await hass.async_add_executor_job(
+                                    parse_resort_page,
+                                    main_html,
+                                    main_path,
+                                    lang,
+                                )
+                                for key in [
+                                    "price",
+                                    "operating_hours_start",
+                                    "operating_hours_end",
+                                    "operation_status",
+                                    *_SEASON_PANEL_KEYS,
+                                ]:
+                                    if key in main_data and key not in parsed_data:
+                                        parsed_data[key] = main_data[key]
+                                        _LOGGER.debug(
+                                            "Found %s on main page: %s",
+                                            key,
+                                            parsed_data[key],
+                                        )
 
-                                    panel = {
-                                        k: main_data[k]
-                                        for k in _SEASON_PANEL_KEYS
-                                        if k in main_data
-                                    }
-                                    # Store even when empty: a resort that
-                                    # publishes no panel must not be re-fetched
-                                    # on every single poll.
-                                    _SEASON_PANEL_CACHE[area_path] = panel
+                                panel = {
+                                    k: main_data[k]
+                                    for k in _SEASON_PANEL_KEYS
+                                    if k in main_data
+                                }
+                                # Store even when empty: a resort that
+                                # publishes no panel must not be re-fetched
+                                # on every single poll.
+                                _SEASON_PANEL_CACHE[area_path] = panel
 
                         except Exception as err:
                             _LOGGER.debug(
@@ -378,35 +375,30 @@ class BergfexCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any]]]):
                     _LOGGER.debug(
                         "Fetching region snow report from: %s", snow_report_url
                     )
-                    async with session.get(
-                        snow_report_url, allow_redirects=True
-                    ) as response:
-                        if response.status == 200:
-                            overview_html = await response.text()
-                            overview_data = await hass.async_add_executor_job(
-                                parse_overview_data, overview_html, lang
-                            )
-                            # The keys in overview_data are full paths e.g. /skimountaineering/tirol/hintertux/
-                            # area_path is e.g. /hintertux/
-                            # We need to find the matching entry
-                            for key, data in overview_data.items():
-                                if area_path.strip("/") in key:
-                                    if "new_snow" in data:
-                                        parsed_data["new_snow"] = data["new_snow"]
-                                        _LOGGER.debug(
-                                            "Updated new_snow from overview: %s",
-                                            parsed_data["new_snow"],
-                                        )
-                                    break
-                        else:
-                            # Naming the url matters: this is a region page,
-                            # not the resort's, so the entry the warning is
-                            # logged against does not identify what failed.
-                            _LOGGER.warning(
-                                "Could not fetch region snow report %s: %s",
-                                snow_report_url,
-                                response.status,
-                            )
+                    # Naming the url matters: this is a region page, not the
+                    # resort's, so the entry a failure is logged against does
+                    # not identify what failed. The refusal carries it.
+                    overview_html = await async_fetch_text_or_none(
+                        session,
+                        snow_report_url,
+                        context="region snow report",
+                    )
+                    if overview_html is not None:
+                        overview_data = await hass.async_add_executor_job(
+                            parse_overview_data, overview_html, lang
+                        )
+                        # The keys in overview_data are full paths e.g. /skimountaineering/tirol/hintertux/
+                        # area_path is e.g. /hintertux/
+                        # We need to find the matching entry
+                        for key, data in overview_data.items():
+                            if area_path.strip("/") in key:
+                                if "new_snow" in data:
+                                    parsed_data["new_snow"] = data["new_snow"]
+                                    _LOGGER.debug(
+                                        "Updated new_snow from overview: %s",
+                                        parsed_data["new_snow"],
+                                    )
+                                break
                 except Exception as err:
                     _LOGGER.warning(
                         "Error fetching region snow report %s: %s",
@@ -491,6 +483,14 @@ class BergfexCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any]]]):
 
             _LOGGER.debug("Parsed resort data for %s: %s", area_path, parsed_data)
             return {area_path: parsed_data}
+        except BergfexRefused as err:
+            # Counted before it is re-raised, so the run survives the fresh
+            # coordinator Home Assistant builds for every setup retry.
+            async_note_refusal(self.hass, self.config_entry, err)
+            # The excerpt only here, and only at debug: it is a block page, not
+            # a reading, and the diagnostics download is where it belongs.
+            _LOGGER.debug("Bergfex refused %s: %s | %s", area_path, err, err.excerpt)
+            raise UpdateFailed(f"Error communicating with Bergfex: {err}") from err
         except Exception as err:
             # No error log here: the coordinator logs the UpdateFailed itself,
             # once, and then stays quiet while the failure persists. Logging

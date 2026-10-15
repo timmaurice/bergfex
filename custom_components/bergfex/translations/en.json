@@ -207,6 +207,10 @@
           }
         }
       }
+    },
+    "requests_refused": {
+      "title": "bergfex is refusing requests from this network",
+      "description": "{host} answered {status} to every request for {resorts}, so no data can be fetched. This is not a fault in the integration — the request never reaches bergfex's pages. It is usually the network the Home Assistant host sits on: a VPN, a shared address or a proxy can all be scored as automated traffic. Check by opening https://{host}/ from that machine. If you contact bergfex, quote the Cloudflare ray id {cf_ray}. This message clears itself as soon as one request gets through."
     }
   }
 }

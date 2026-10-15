@@ -207,6 +207,10 @@
           }
         }
       }
+    },
+    "requests_refused": {
+      "title": "bergfex refuse les requêtes venant de ce réseau",
+      "description": "{host} a répondu {status} à chaque requête pour {resorts}, aucune donnée ne peut donc être récupérée. Ce n'est pas un défaut de l'intégration : la requête n'atteint jamais les pages de bergfex. C'est généralement le réseau de la machine Home Assistant qui est en cause : un VPN, une adresse partagée ou un proxy peuvent être considérés comme du trafic automatisé. Vérifiez en ouvrant https://{host}/ depuis cette machine. Si vous contactez bergfex, indiquez l'identifiant ray Cloudflare {cf_ray}. Ce message disparaît de lui-même dès qu'une requête aboutit."
     }
   }
 }

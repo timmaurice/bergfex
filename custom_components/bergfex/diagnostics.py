@@ -18,6 +18,7 @@ from .const import (
     TYPE_ALPINE,
     TYPE_CROSS_COUNTRY,
 )
+from .refusal import refusal_snapshot
 from .coordinator import (
     _FORECAST_CACHE,
     _FORECAST_CACHE_TTL,
@@ -169,6 +170,17 @@ async def async_get_config_entry_diagnostics(
         "coordinator": None,
         "areas": None,
         "caches": None,
+        # Outside the coordinator block on purpose. An entry that never finished
+        # setting up has no coordinator and therefore no last_exception here -
+        # and that is precisely the entry a report gets attached to. This is
+        # where the Cloudflare ray id and the refusal text survive.
+        "refusals": {
+            entry_id: {
+                key: _redact_text(value, secrets) if isinstance(value, str) else value
+                for key, value in record.items()
+            }
+            for entry_id, record in refusal_snapshot().items()
+        },
     }
 
     if coordinator is not None:

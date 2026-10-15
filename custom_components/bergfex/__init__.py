@@ -26,6 +26,7 @@ from .config_flow import entry_area_name
 # BergfexConfigEntry lives with the coordinator it types. It stays importable
 # from the package, where the platforms and other modules look for it.
 from .coordinator import BergfexConfigEntry, BergfexCoordinator
+from .refusal import async_forget_entry
 from .unique_id import (
     legacy_unique_id_prefixes,
     unique_id_prefix,
@@ -497,6 +498,9 @@ async def async_remove_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
     Whether the removed entry is still listed depends on the Home Assistant
     version, so the handover names it explicitly.
     """
+    # A removed entry can no longer be refused, and with it goes the host's
+    # issue if nothing else is still being turned away.
+    async_forget_entry(hass, entry)
     ir.async_delete_issue(hass, DOMAIN, f"{DUPLICATE_ENTRY_ISSUE_ID}_{entry.entry_id}")
     # Removing the entry takes its registry rows with it, leftovers included, so
     # the orphan repair has nothing left to fix either.

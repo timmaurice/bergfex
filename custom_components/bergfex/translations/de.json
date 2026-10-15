@@ -207,6 +207,10 @@
           }
         }
       }
+    },
+    "requests_refused": {
+      "title": "bergfex weist Anfragen aus diesem Netz ab",
+      "description": "{host} hat jede Anfrage für {resorts} mit {status} beantwortet, daher lassen sich keine Daten abrufen. Das ist kein Fehler der Integration — die Anfrage erreicht die Seiten von bergfex gar nicht. Meist liegt es am Netz des Home-Assistant-Rechners: Ein VPN, eine geteilte Adresse oder ein Proxy können als automatisierter Verkehr gewertet werden. Prüfe es, indem du https://{host}/ von diesem Rechner aus öffnest. Wenn du bergfex kontaktierst, nenne die Cloudflare-Ray-ID {cf_ray}. Diese Meldung verschwindet von selbst, sobald eine Anfrage durchgeht."
     }
   }
 }
