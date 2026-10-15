@@ -143,12 +143,28 @@ TARGET_RESORTS = [
         "loipen_path": "/steiermark/langlaufen/ramsau/loipen/",
     },
     {"name": "Axamer Lizum", "path": "/axamer-lizum/"},
+    # German, and therefore served from www.bergfex.de after a 301. The resort
+    # from issue #57: no German one was checked anywhere before it.
+    {
+        "name": "Feldberg",
+        "path": "/liftverbund-feldberg/",
+        "expect_host": "www.bergfex.de",
+    },
 ]
 
-USER_AGENTS = [
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
-]
+# What Home Assistant's shared session sends, which is what the integration is
+# stuck with: async_get_clientsession freezes the User-Agent and refuses to let
+# an integration override it ("It's important that we identify as Home
+# Assistant"). This used to rotate two real Chrome strings, which made the check
+# green on markup no user ever receives - a canary that asks a different
+# question than the thing it is watching is not a canary.
+USER_AGENT = "HomeAssistant/2026.10.0 aiohttp/3.12.15 Python/3.13"
+
+# Statuses that mean we were turned away rather than missed, as in fetch.py.
+REFUSAL_STATUSES = frozenset({403, 429, 451})
+
+# Every refusal seen during a run, so one cannot hide inside a retry loop.
+REFUSALS = []
 
 
 def sanitize(text):
@@ -170,23 +186,66 @@ def get_group_elements(soup, selector):
 
 
 async def fetch_html_async(session, url, retries=50):
-    for i in range(retries):
-        headers = {
-            "User-Agent": random.choice(USER_AGENTS),
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-            "Cache-Control": "no-cache",
-            "Pragma": "no-cache",
-        }
+    """Fetch a page the way the integration would, and remember a refusal.
+
+    The retry loop used to swallow the status, so a 403 was indistinguishable
+    from a page that happened not to load - which is how a blocked host could
+    have stayed invisible here for as long as anyone cared to look.
+    """
+    headers = {"User-Agent": USER_AGENT}
+    for _ in range(retries):
         try:
             async with session.get(url, headers=headers, timeout=10) as response:
                 if response.status == 200:
                     return await response.text()
-                if response.status in [429, 404]:
+                if response.status in REFUSAL_STATUSES:
+                    REFUSALS.append(
+                        {
+                            "url": url,
+                            "final_url": str(response.url),
+                            "status": response.status,
+                            "cf_ray": response.headers.get("cf-ray"),
+                        }
+                    )
+                    if response.status != 429:
+                        # A refusal does not become a yes by being asked again.
+                        return None
+                if response.status in (429, 404):
                     await asyncio.sleep(random.uniform(0.1, 0.4))
                     continue
         except Exception:
             continue
     return None
+
+
+async def check_hosts(session):
+    """Report which host each resort actually ends up on.
+
+    bergfex 301s German resorts from www.bergfex.at to www.bergfex.de, so the
+    .de host is reached by every installation with a German resort and by no
+    test, fixture or check here - which is why a report of 403 against it came
+    as a surprise. Reported, not asserted: the runners are datacenter addresses
+    and a refusal of those says nothing about what a home connection sees.
+    """
+    print("\nResolving hosts...")
+    headers = {"User-Agent": USER_AGENT}
+    for resort in TARGET_RESORTS:
+        if "expect_host" not in resort:
+            continue
+        url = f"https://www.bergfex.at{resort['path']}schneebericht/"
+        try:
+            async with session.get(
+                url, headers=headers, allow_redirects=True, timeout=15
+            ) as response:
+                host = str(response.url).split("/")[2]
+                note = "" if host == resort["expect_host"] else "  <-- CHANGED"
+                ray = response.headers.get("cf-ray", "-")
+                print(
+                    f"  {resort['name']}: {response.status} -> {host}"
+                    f" (cf-ray={ray}){note}"
+                )
+        except Exception as exc:
+            print(f"  {resort['name']}: could not be resolved ({exc})")
 
 
 async def build_baseline(session):
@@ -477,6 +536,7 @@ async def validate(session, lang_code, lang_info, baseline, reference, semaphore
 
 async def main():
     async with aiohttp.ClientSession() as session:
+        await check_hosts(session)
         global_baseline, baseline_gaps = await build_baseline(session)
         if not global_baseline:
             print("\nCRITICAL: No baseline could be built at all. Aborting.")
@@ -570,6 +630,22 @@ def report(results, baseline_gaps):
                 if e["kind"] == "unnormalised":
                     print(f"{lang.upper():<6} | {e['key']:<20} | {e['found']}")
         print('\nAdd the wording to that language\'s "values" map in const.py.')
+
+    if REFUSALS:
+        # Reported, never fatal, at least until this has been watched for a
+        # while: these runners are datacenter addresses, and Cloudflare scoring
+        # them down would make the daily check permanently red - the one failure
+        # a canary must not have.
+        print("\nbergfex refused some requests during this run:")
+        print(f"{'STATUS':<7} | {'CF-RAY':<24} | URL")
+        print("-" * 100)
+        for refusal in REFUSALS:
+            print(
+                f"{refusal['status']:<7} | {refusal['cf_ray'] or '-':<24} | "
+                f"{refusal['final_url']}"
+            )
+        print("\nThis is what a user sees as 403 in their log. Not failing the")
+        print("run on it yet - a refused runner says nothing about a home line.")
 
     if baseline_gaps:
         print(
