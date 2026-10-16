@@ -9,6 +9,7 @@ grew with the number of resorts rather than with the number of regions.
 
 import asyncio
 import threading
+import time
 
 import pytest
 from unittest.mock import patch
@@ -344,3 +345,31 @@ async def test_a_page_that_could_not_be_read_is_asked_for_again(
     assert await bergfex_coordinator._async_shared(hass, cache, key, 600, fetch) == {
         "new_snow": "5 cm"
     }
+
+
+@pytest.mark.asyncio
+async def test_a_forecast_page_read_an_hour_ago_is_not_fetched_again(
+    hass: HomeAssistant, enable_custom_integrations
+):
+    """bergfex republishes the forecast a few times a day, not every poll.
+
+    With ten minutes, every region's six pages were fetched again on every poll
+    of thirty - about half of all the requests an installation sends.
+    """
+    an_hour_ago = time.monotonic() - 60 * 60
+    four_hours_ago = time.monotonic() - 4 * 60 * 60
+    for i in range(6):
+        url = f"https://www.bergfex.at/tirol/wetter/schneevorhersage/{i}/"
+        stamp = four_hours_ago if i == 5 else an_hour_ago
+        bergfex_coordinator._FORECAST_CACHE[url] = (stamp, {"daily_caption": "x"})
+
+    session = RecordingSession()
+    await _setup(
+        hass,
+        _entry(name="Ischgl", path="/ischgl/schneebericht/", entry_id="hour"),
+        session,
+    )
+
+    assert [u for u in session.urls if "schneevorhersage" in u] == [
+        "https://www.bergfex.at/tirol/wetter/schneevorhersage/5/"
+    ], "only the page older than the TTL should be asked for again"

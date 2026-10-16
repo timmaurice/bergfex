@@ -82,10 +82,13 @@ def _webhook_value(value: Any) -> Any:
 
 
 # A region's forecast pages are the same for every resort in it, so they are
-# keyed on the url and shared across coordinators. The TTL is generous: bergfex
-# republishes these graphics a few times a day.
+# keyed on the url and shared across coordinators. bergfex republishes these
+# graphics a few times a day, and the images they link are named after their
+# content, so a page read three hours ago still points at pictures that exist.
+# Ten minutes had every region's six pages fetched again on every poll - about
+# half of all the requests an installation sends.
 _FORECAST_CACHE: dict[str, tuple[float, dict[str, str]]] = {}
-_FORECAST_CACHE_TTL = 10 * 60
+_FORECAST_CACHE_TTL = 3 * 60 * 60
 
 # The region snow report and the country's cross-country overview list every
 # area of the region (or country) at once, so they are shared the same way,

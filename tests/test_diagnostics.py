@@ -187,7 +187,7 @@ async def test_diagnostics_for_a_loaded_entry(
     ]
 
     assert result["caches"] == {
-        "forecast_ttl_seconds": 600,
+        "forecast_ttl_seconds": 3 * 60 * 60,
         "forecast_entries": 6,
         "region_page_ttl_seconds": 600,
         "region_page_entries": 1,
