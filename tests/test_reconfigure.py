@@ -116,9 +116,11 @@ def _identity(hass: HomeAssistant, entry: MockConfigEntry):
 def _empty_poll_caches():
     """The caches are module state, so a test must not inherit another's entries."""
     coordinator._FORECAST_CACHE.clear()
+    coordinator._REGION_PAGE_CACHE.clear()
     coordinator._SEASON_PANEL_CACHE.clear()
     yield
     coordinator._FORECAST_CACHE.clear()
+    coordinator._REGION_PAGE_CACHE.clear()
     coordinator._SEASON_PANEL_CACHE.clear()
 
 

@@ -22,6 +22,8 @@ from .refusal import refusal_snapshot
 from .coordinator import (
     _FORECAST_CACHE,
     _FORECAST_CACHE_TTL,
+    _REGION_PAGE_CACHE,
+    _REGION_PAGE_CACHE_TTL,
     _SEASON_PANEL_CACHE,
     BergfexConfigEntry,
 )
@@ -237,6 +239,8 @@ async def async_get_config_entry_diagnostics(
         diagnostics["caches"] = {
             "forecast_ttl_seconds": forecast_ttl,
             "forecast_entries": len(forecast_cache),
+            "region_page_ttl_seconds": _REGION_PAGE_CACHE_TTL,
+            "region_page_entries": len(_REGION_PAGE_CACHE),
             "season_panel_entries": len(season_panel_cache),
         }
 

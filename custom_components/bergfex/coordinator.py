@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import time
+from collections.abc import Awaitable, Callable, Hashable
 from datetime import date, timedelta
 from typing import Any
 from urllib.parse import urljoin
@@ -85,6 +87,84 @@ def _webhook_value(value: Any) -> Any:
 _FORECAST_CACHE: dict[str, tuple[float, dict[str, str]]] = {}
 _FORECAST_CACHE_TTL = 10 * 60
 
+# The region snow report and the country's cross-country overview list every
+# area of the region (or country) at once, so they are shared the same way,
+# keyed on the url and the language they are parsed in. The TTL is short on
+# purpose: they carry the new snow and the trail totals, which must not lag a
+# poll behind. It only has to span one round of polls.
+_REGION_PAGE_CACHE: dict[tuple[str, str], tuple[float, dict[str, Any]]] = {}
+_REGION_PAGE_CACHE_TTL = 10 * 60
+
+# Fetches under way, by cache key. The coordinators poll in step - all of them
+# at setup, and each interval after - so a shared page is usually asked for by
+# several at once, before any answer has reached the cache. They wait on the one
+# request instead of each sending their own.
+_IN_FLIGHT: dict[Hashable, asyncio.Task] = {}
+
+
+async def _async_shared(
+    hass: HomeAssistant,
+    cache: dict,
+    key: Hashable,
+    ttl: float,
+    fetch: Callable[[], Awaitable[Any]],
+) -> Any:
+    """Return `fetch()`'s result for `key`, asking bergfex at most once per TTL.
+
+    A None result, or an exception, is not cached: the next poll asks again. A
+    caller waiting on someone else's fetch gets the same result or exception.
+    """
+    cached = cache.get(key)
+    if cached is not None and (time.monotonic() - cached[0]) < ttl:
+        _LOGGER.debug("Reusing cached page: %s", key)
+        return cached[1]
+
+    task = _IN_FLIGHT.get(key)
+    if task is None:
+
+        async def run() -> Any:
+            try:
+                value = await fetch()
+                if value is not None:
+                    cache[key] = (time.monotonic(), value)
+                return value
+            finally:
+                _IN_FLIGHT.pop(key, None)
+
+        task = hass.async_create_task(run(), f"bergfex shared fetch {key}")
+        # An eager task can be finished already, and then its finally has run.
+        if not task.done():
+            _IN_FLIGHT[key] = task
+    else:
+        _LOGGER.debug("Waiting on a fetch already under way: %s", key)
+
+    # Shielded so that one poll being cancelled does not cancel the fetch the
+    # others are waiting on.
+    return await asyncio.shield(task)
+
+
+async def _async_region_page(
+    hass: HomeAssistant,
+    session,
+    url: str,
+    lang: str,
+    parser: Callable[[str, str], dict[str, Any]],
+    *,
+    context: str,
+) -> dict[str, Any] | None:
+    """Return a region-wide page parsed, shared by every area that reads it."""
+
+    async def fetch() -> dict[str, Any] | None:
+        _LOGGER.debug("Fetching %s from: %s", context, url)
+        html = await async_fetch_text_or_none(session, url, context=context)
+        if html is None:
+            return None
+        return await hass.async_add_executor_job(parser, html, lang)
+
+    return await _async_shared(
+        hass, _REGION_PAGE_CACHE, (url, lang), _REGION_PAGE_CACHE_TTL, fetch
+    )
+
 
 def detail_page_url(domain: str, area_path: str, resort_type: str) -> str:
     """Return the page a poll reads an area from.
@@ -111,23 +191,21 @@ async def _async_forecast_images(
     Forecast pages are per region, so the work grows with the number of regions
     rather than of resorts. Returns None when the page could not be read.
     """
-    cached = _FORECAST_CACHE.get(forecast_url)
-    if cached is not None and (time.monotonic() - cached[0]) < _FORECAST_CACHE_TTL:
-        _LOGGER.debug("Reusing cached forecast page: %s", forecast_url)
-        return cached[1]
 
-    _LOGGER.debug("Fetching forecast images from: %s", forecast_url)
-    forecast_html = await async_fetch_text_or_none(
-        session, forecast_url, context=f"forecast page {page}"
-    )
-    if forecast_html is None:
-        return None
+    async def fetch() -> dict[str, str] | None:
+        _LOGGER.debug("Fetching forecast images from: %s", forecast_url)
+        forecast_html = await async_fetch_text_or_none(
+            session, forecast_url, context=f"forecast page {page}"
+        )
+        if forecast_html is None:
+            return None
+        return await hass.async_add_executor_job(
+            parse_snow_forecast_images, forecast_html, page
+        )
 
-    image_data = await hass.async_add_executor_job(
-        parse_snow_forecast_images, forecast_html, page
+    return await _async_shared(
+        hass, _FORECAST_CACHE, forecast_url, _FORECAST_CACHE_TTL, fetch
     )
-    _FORECAST_CACHE[forecast_url] = (time.monotonic(), image_data)
-    return image_data
 
 
 class BergfexCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any]]]):
@@ -201,22 +279,17 @@ class BergfexCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any]]]):
                 if country_path:
                     try:
                         overview_url = urljoin(domain, country_path)
-                        _LOGGER.debug(
-                            "Fetching cross-country overview from: %s",
-                            overview_url,
-                        )
-                        overview_html = await async_fetch_text_or_none(
+                        # The totals of every area in the country, so one
+                        # fetch serves all of that country's entries.
+                        overview_data = await _async_region_page(
+                            hass,
                             session,
                             overview_url,
+                            lang,
+                            parse_cross_country_overview_data,
                             context="cross-country overview page",
                         )
-                        if overview_html is not None:
-                            # This will parse totals for all resorts on the page
-                            overview_data = await hass.async_add_executor_job(
-                                parse_cross_country_overview_data,
-                                overview_html,
-                                lang,
-                            )
+                        if overview_data is not None:
                             # Find our specific resort in the overview data and update totals
                             # Find our specific resort in the overview data and update totals
                             resort_name_from_detail_page = parsed_data.get(
@@ -372,21 +445,18 @@ class BergfexCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any]]]):
                     domain, f"/{region_path_from_data}/schneebericht/"
                 )
                 try:
-                    _LOGGER.debug(
-                        "Fetching region snow report from: %s", snow_report_url
-                    )
                     # Naming the url matters: this is a region page, not the
                     # resort's, so the entry a failure is logged against does
                     # not identify what failed. The refusal carries it.
-                    overview_html = await async_fetch_text_or_none(
+                    overview_data = await _async_region_page(
+                        hass,
                         session,
                         snow_report_url,
+                        lang,
+                        parse_overview_data,
                         context="region snow report",
                     )
-                    if overview_html is not None:
-                        overview_data = await hass.async_add_executor_job(
-                            parse_overview_data, overview_html, lang
-                        )
+                    if overview_data is not None:
                         # The keys in overview_data are full paths e.g. /skimountaineering/tirol/hintertux/
                         # area_path is e.g. /hintertux/
                         # We need to find the matching entry

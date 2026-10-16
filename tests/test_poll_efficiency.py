@@ -7,6 +7,7 @@ forecast, which is the same page for every resort in the region - so the work
 grew with the number of resorts rather than with the number of regions.
 """
 
+import asyncio
 import threading
 
 import pytest
@@ -117,8 +118,10 @@ async def _setup(hass, entry, session):
 def _empty_forecast_cache():
     """The cache is module state, so a test must not inherit another's entries."""
     bergfex_coordinator._FORECAST_CACHE.clear()
+    bergfex_coordinator._REGION_PAGE_CACHE.clear()
     yield
     bergfex_coordinator._FORECAST_CACHE.clear()
+    bergfex_coordinator._REGION_PAGE_CACHE.clear()
 
 
 @pytest.mark.asyncio
@@ -209,3 +212,135 @@ async def test_a_different_region_is_still_fetched(
     )
 
     assert [u for u in salzburg.urls if "/salzburg/wetter/schneevorhersage/" in u]
+
+
+def _cross_country_entry(*, name, path, entry_id):
+    entry = _entry(name=name, path=path, entry_id=entry_id)
+    entry = MockConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title=name,
+        data={**entry.data, "type": "cross_country"},
+        source="user",
+        entry_id=entry_id,
+        unique_id=path,
+    )
+    return entry
+
+
+@pytest.mark.asyncio
+async def test_a_regions_snow_report_is_fetched_once(
+    hass: HomeAssistant, enable_custom_integrations
+):
+    """The region snow report lists every resort of the region, so one is enough.
+
+    It was fetched per resort: the five resorts of Les 3 Vallées asked for the
+    same page five times on every poll.
+    """
+    report = "https://www.bergfex.at/tirol/schneebericht/"
+    first_session = RecordingSession(slug="ischgl")
+    second_session = RecordingSession(slug="soelden")
+
+    await _setup(
+        hass,
+        _entry(name="Ischgl", path="/ischgl/schneebericht/", entry_id="one"),
+        first_session,
+    )
+    await _setup(
+        hass,
+        _entry(name="Sölden", path="/soelden/schneebericht/", entry_id="two"),
+        second_session,
+    )
+
+    assert first_session.urls.count(report) == 1
+    assert report not in second_session.urls, "the second resort refetched it"
+
+
+@pytest.mark.asyncio
+async def test_a_countrys_cross_country_overview_is_fetched_once(
+    hass: HomeAssistant, enable_custom_integrations
+):
+    """The overview carries the trail totals of every area in the country."""
+    overview = "https://www.bergfex.at/oesterreich/langlaufen/loipenberichte/"
+    first_session = RecordingSession()
+    second_session = RecordingSession()
+
+    await _setup(
+        hass,
+        _cross_country_entry(
+            name="Absam", path="/tirol/langlaufen/absam/", entry_id="absam"
+        ),
+        first_session,
+    )
+    await _setup(
+        hass,
+        _cross_country_entry(
+            name="Almtal",
+            path="/oberoesterreich/langlaufen/almtal-gruenau/",
+            entry_id="almtal",
+        ),
+        second_session,
+    )
+
+    assert first_session.urls.count(overview) == 1
+    assert overview not in second_session.urls, "the second area refetched it"
+    # Each area's own trail report is still its own.
+    assert (
+        "https://www.bergfex.at/oberoesterreich/langlaufen/almtal-gruenau/loipen/"
+        in (second_session.urls)
+    )
+
+
+@pytest.mark.asyncio
+async def test_polls_running_at_once_share_one_request(hass: HomeAssistant):
+    """The coordinators poll in step, so the cache alone is too late.
+
+    Every one of them asks before the first answer is in. They must wait on the
+    request already under way rather than send their own.
+    """
+    release = asyncio.Event()
+    calls = 0
+
+    async def fetch():
+        nonlocal calls
+        calls += 1
+        await release.wait()
+        return {"new_snow": "5 cm"}
+
+    key = ("https://www.bergfex.at/tirol/schneebericht/", "at")
+    waiting = [
+        hass.async_create_task(
+            bergfex_coordinator._async_shared(
+                hass, bergfex_coordinator._REGION_PAGE_CACHE, key, 600, fetch
+            )
+        )
+        for _ in range(5)
+    ]
+    await asyncio.sleep(0)
+    release.set()
+    results = await asyncio.gather(*waiting)
+
+    assert calls == 1
+    assert results == [{"new_snow": "5 cm"}] * 5
+    assert key not in bergfex_coordinator._IN_FLIGHT
+
+
+@pytest.mark.asyncio
+async def test_a_page_that_could_not_be_read_is_asked_for_again(
+    hass: HomeAssistant,
+):
+    """Only an answer is cached. A refusal must not stick for the whole TTL."""
+    answers = iter([None, {"new_snow": "5 cm"}])
+
+    async def fetch():
+        return next(answers)
+
+    key = ("https://www.bergfex.de/bayern/schneebericht/", "at")
+    cache = bergfex_coordinator._REGION_PAGE_CACHE
+
+    assert await bergfex_coordinator._async_shared(hass, cache, key, 600, fetch) is None
+    assert key not in cache
+    assert await bergfex_coordinator._async_shared(hass, cache, key, 600, fetch) == {
+        "new_snow": "5 cm"
+    }

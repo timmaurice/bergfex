@@ -103,10 +103,12 @@ def _mock_bergfex(aioclient_mock) -> None:
 def _empty_poll_caches():
     """The caches are module state, so a test must not inherit another's entries."""
     coordinator._FORECAST_CACHE.clear()
+    coordinator._REGION_PAGE_CACHE.clear()
     coordinator._SEASON_PANEL_CACHE.clear()
     refusal._STATE.clear()
     yield
     coordinator._FORECAST_CACHE.clear()
+    coordinator._REGION_PAGE_CACHE.clear()
     coordinator._SEASON_PANEL_CACHE.clear()
     refusal._STATE.clear()
 
@@ -187,6 +189,8 @@ async def test_diagnostics_for_a_loaded_entry(
     assert result["caches"] == {
         "forecast_ttl_seconds": 600,
         "forecast_entries": 6,
+        "region_page_ttl_seconds": 600,
+        "region_page_entries": 1,
         "season_panel_entries": 1,
     }
 
