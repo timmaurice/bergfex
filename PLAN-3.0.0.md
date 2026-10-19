@@ -395,37 +395,42 @@ reports today. The Hintertux operator confirms it: 3 lifts, 0 km.
       user renamed keeps their name. Left as it is, for the same reason the label was
       left alone before.
 
-- [ ] Watch the issue tracker **2–3 weeks**. Do not start Phase 3 before this settles.
+- [x] Watch the issue tracker **2–3 weeks**. Do not start Phase 3 before this settles.
       _Day 11 of that window_ (3.0.0 was a pre-release until 23 Sept, so nobody could
       install it before then): **no user has raised anything.** The only two issues
       since the release are the integration's own season-watch runs, #37 and #51, both
       closed. One open PR, a dependabot npm bump. Window closes around **14 October**.
+      _Closed 15 October, not quite quiet:_ #57 (403 Forbidden on every entry of one
+      installation) opened on 13 October. It is bergfex.de refusing clients, not the
+      card or the migration, so Phase 3 went ahead; #57 is followed up on its own.
 
 ---
 
-## Phase 3 — Retire the card (mid/late Oct, gated on Phase 2)
+## Phase 3 — Retire the card (done 19 Oct)
 
-**Order matters — remove from HACS default _before_ archiving,** or hacs/default CI
-will flag the archived repo.
+**Done 19 October — by archiving, not by PR.** The plan below assumed the card had to
+leave `hacs/default` before it could be archived. It does not: per
+<https://hacs.xyz/docs/publish/remove/>, archived repositories need no removal PR, the
+HACS team removes them itself (batch PRs such as "Remove 14 archived repositories").
 
-- [ ] Final `2.2.2` release on `lovelace-bergfex-card`: deprecation notice only.
-- [ ] README banner pointing at `timmaurice/bergfex`.
-- [ ] PR to `hacs/default`: remove `"timmaurice/lovelace-bergfex-card"` from `plugin`
-      (line 690) and add the entry below to `removed`. `replaced` is the established
-      type for this case — see `Bre77/myair`, `mattieha/slider-button-card`.
-
-```json
-{
-  "repository": "timmaurice/lovelace-bergfex-card",
-  "reason": "Card is now bundled with the Bergfex Snow Report integration",
-  "removal_type": "replaced",
-  "link": "https://github.com/timmaurice/bergfex"
-}
-```
-
-- [ ] Wait for merge.
-- [ ] Then archive `timmaurice/lovelace-bergfex-card`.
-- [ ] Repoint any `documentation` / `issue_tracker` links that still reference the card repo.
+- [x] Final `2.2.2` release on `lovelace-bergfex-card`: deprecation notice only.
+      Released 15 October, Latest the same evening.
+- [x] README banner pointing at `timmaurice/bergfex`.
+- [x] ~~PR to `hacs/default`~~ — dropped. Four attempts (#12012, #12239, #12240,
+      #12241) all ran into `hacs-bot`, which treats any change to a category file as a
+      new submission: one file only, exactly five ticked boxes for a plugin (the
+      hassfest box must stay empty), two links, and then the new-repository checks,
+      which fail on a removal ("Category Bad data []"). A change to `removed` alone
+      kept conflicting with the maintainers' own batches. The intended entry, for the
+      record, was `removal_type: replaced` with a link to `timmaurice/bergfex`.
+- [x] ~~Wait for merge.~~ Not needed.
+- [x] Archive `timmaurice/lovelace-bergfex-card`. Done 19 October.
+      Cost: the HACS removal entry will read "Repository is archived" rather than
+      `replaced`. Users are pointed at the integration anyway — by the 2.2.2 notice in
+      the card, the README banner and the repair 3.0 raises for a leftover install.
+- [x] Repoint `documentation` / `issue_tracker` links. Nothing to do: `manifest.json`
+      already points at `timmaurice/bergfex`. The remaining mentions of the card repo
+      are the stale-resource paths that `__init__.py` cleans up and its tests.
 
 ---
 
