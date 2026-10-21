@@ -26,7 +26,7 @@ from .config_flow import entry_area_name
 # BergfexConfigEntry lives with the coordinator it types. It stays importable
 # from the package, where the platforms and other modules look for it.
 from .coordinator import BergfexConfigEntry, BergfexCoordinator
-from .refusal import async_forget_entry
+from .refusal import async_drop_stale_issues, async_forget_entry
 from .unique_id import (
     legacy_unique_id_prefixes,
     unique_id_prefix,
@@ -151,6 +151,10 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     """Set up the Bergfex component and register the Lovelace card."""
     from homeassistant.components.http import StaticPathConfig
     from homeassistant.loader import async_get_integration
+
+    # Runs once per start, before any entry: what refused before the restart is
+    # unknown now, and a repair nothing stands behind would never clear.
+    async_drop_stale_issues(hass)
 
     integration = await async_get_integration(hass, DOMAIN)
     version = integration.version or "1.0.0"

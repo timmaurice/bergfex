@@ -11,7 +11,7 @@ in one round instead of three.
 import logging
 
 import pytest
-from unittest.mock import patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.core import HomeAssistant
@@ -292,6 +292,83 @@ async def test_one_page_through_takes_it_away(hass: HomeAssistant, mock_config_e
     ):
         mock_config_entry.mock_state(hass, ConfigEntryState.SETUP_IN_PROGRESS)
         assert await async_setup_entry(hass, mock_config_entry) is True
+
+    assert _issue(hass) is None
+
+
+def _leftover_issue(hass, host="www.bergfex.de"):
+    """A repair as the issue registry hands it back after a restart: no count behind it."""
+    ir.async_create_issue(
+        hass,
+        DOMAIN,
+        f"{REQUESTS_REFUSED_ISSUE_ID}_{host}",
+        is_fixable=False,
+        is_persistent=True,
+        severity=ir.IssueSeverity.ERROR,
+        translation_key=REQUESTS_REFUSED_ISSUE_ID,
+        translation_placeholders={
+            "host": host,
+            "status": "403",
+            "resorts": "Feldberg",
+            "cf_ray": "-",
+        },
+    )
+
+
+@pytest.mark.asyncio
+async def test_a_repair_from_before_the_restart_is_dropped(hass: HomeAssistant):
+    """Seen on a real instance: every entry had moved to www.bergfex.com, yet
+    the www.bergfex.de repair stayed, because nothing polled that host any more."""
+    _leftover_issue(hass)
+    _leftover_issue(hass, "www.bergfex.at")
+
+    refusal.async_drop_stale_issues(hass)
+
+    assert _issue(hass) is None
+    assert _issue(hass, "www.bergfex.at") is None
+
+
+@pytest.mark.asyncio
+async def test_a_repair_with_a_count_behind_it_stays(
+    hass: HomeAssistant, mock_config_entry
+):
+    mock_config_entry.add_to_hass(hass)
+    for _ in range(REFUSAL_THRESHOLD):
+        await _fail_setup(hass, mock_config_entry, _refused_session())
+
+    refusal.async_drop_stale_issues(hass)
+
+    assert _issue(hass) is not None
+
+
+@pytest.mark.asyncio
+async def test_a_host_that_still_refuses_is_reported_again(
+    hass: HomeAssistant, mock_config_entry
+):
+    _leftover_issue(hass)
+    refusal.async_drop_stale_issues(hass)
+    mock_config_entry.add_to_hass(hass)
+
+    for _ in range(REFUSAL_THRESHOLD):
+        await _fail_setup(hass, mock_config_entry, _refused_session())
+
+    issue = _issue(hass)
+    assert issue is not None
+    assert issue.translation_placeholders["resorts"] == "Feldberg"
+
+
+@pytest.mark.asyncio
+async def test_setup_drops_the_leftover_before_any_entry_runs(hass: HomeAssistant):
+    from custom_components.bergfex.__init__ import async_setup
+
+    _leftover_issue(hass)
+    hass.http = MagicMock(async_register_static_paths=AsyncMock())
+
+    with patch(
+        "homeassistant.loader.async_get_integration",
+        return_value=MagicMock(version="3.2.0"),
+    ):
+        assert await async_setup(hass, {}) is True
 
     assert _issue(hass) is None
 

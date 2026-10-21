@@ -149,6 +149,32 @@ def async_note_success(hass: HomeAssistant, entry: ConfigEntry) -> None:
 
 
 @callback
+def async_drop_stale_issues(hass: HomeAssistant) -> None:
+    """Drop refused-host repairs that nothing in this run stands behind.
+
+    The repair is persistent so that it survives the restart it is usually raised
+    right after, but the count behind it lives in _STATE, which a restart empties.
+    A repair carried over from before then has no owner: only an entry polling
+    that host can clear it, and once every entry has moved to another host - the
+    way out the repair itself suggests - none ever will. Dropping it at setup is
+    safe because it is rebuilt from fresh evidence: a host that still refuses
+    raises it again after REFUSAL_THRESHOLD polls.
+    """
+    prefix = f"{REQUESTS_REFUSED_ISSUE_ID}_"
+    backed = {state.host for state in _STATE.values()}
+    stale = [
+        issue_id
+        for domain, issue_id in ir.async_get(hass).issues
+        if domain == DOMAIN
+        and issue_id.startswith(prefix)
+        and issue_id.removeprefix(prefix) not in backed
+    ]
+    for issue_id in stale:
+        _LOGGER.debug("Dropping %s, left over from before this start", issue_id)
+        ir.async_delete_issue(hass, DOMAIN, issue_id)
+
+
+@callback
 def async_forget_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Drop a removed entry, and the issue with it if it was the last one."""
     async_note_success(hass, entry)
