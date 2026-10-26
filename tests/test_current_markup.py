@@ -16,6 +16,12 @@ published no piste row at all, in October it publishes 6 of 29 and 15 of 64 km.
 Overwriting would have deleted the only capture of a resort running with nothing
 prepared.
 
+The fifth is Sölden on 26 October, captured for the glacier season check (#59).
+Hintertux leaves the number and length columns of its piste table empty, so
+until this capture the only proof that a piste's number, length and difficulty
+are read was Airolo, a page still in the ``tw-`` markup. Sölden fills both
+columns.
+
 Deliberately not refreshed with the rest: re-capturing the winter fixtures in
 September would replace a populated snow report with an empty one and delete the
 coverage that caught the eighteen-language keyword bugs.
@@ -37,6 +43,7 @@ FIXTURES = Path(__file__).parent / "fixtures"
 LIVE_MARKUP_FIXTURES = (
     "hintertux-glacier-open.html",
     "hintertux-winter-open.html",
+    "soelden-glacier-open.html",
     "serfaus-off-season.html",
     "overview-at-off-season.html",
 )
@@ -173,6 +180,49 @@ def test_a_reported_zero_still_closes_the_glacier():
     data["slopes_open_km"] = 0
 
     assert evaluate_status(data) == "Closed"
+
+
+# --- A second glacier, with a filled piste table -----------------------------
+
+
+def test_the_second_glacier_reports_snow_lifts_and_pistes():
+    """Sölden on 26 October: 51 cm, 9 of 31 lifts, 6 of 58 pistes."""
+    data = parse_resort_page(
+        _fixture("soelden-glacier-open.html"), "/soelden/schneebericht/", "at"
+    )
+
+    assert data["resort_name"] == "Sölden"
+    assert data["snow_mountain"] == "51"
+    assert data["snow_condition"] == "Pulver"
+    assert data["lifts_open_count"] == 9
+    assert data["lifts_total_count"] == 31
+    assert data["slopes_open_count"] == 6
+    assert data["slopes_total_count"] == 58
+    assert data["slopes_open_km"] == 31
+    assert data["slopes_total_km"] == 144
+    assert data["status"] == "Open"
+
+
+def test_the_open_pistes_carry_number_length_and_difficulty():
+    """The piste table's number and length columns, in the current markup.
+
+    Hintertux leaves both empty, and the Airolo fixture that does fill them
+    predates the restyle. If bergfex moved either column, this is the test that
+    would notice.
+    """
+    data = parse_resort_page(
+        _fixture("soelden-glacier-open.html"), "/soelden/schneebericht/", "at"
+    )
+
+    pistes = {piste["number"]: piste for piste in data["open_pistes"]}
+    assert sorted(pistes) == ["31", "32", "33", "34", "38", "39"]
+
+    assert pistes["31"]["name"] == "Piste Nr. 31"
+    assert pistes["31"]["length"] == "2.400 m"
+    assert pistes["31"]["difficulty"] == {"id": "3", "description": "schwer"}
+
+    assert pistes["38"]["length"] == "8.400 m"
+    assert pistes["38"]["difficulty"] == {"id": "1", "description": "leicht"}
 
 
 # --- A resort between its two seasons ---------------------------------------
