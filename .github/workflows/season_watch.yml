@@ -52,7 +52,7 @@ jobs:
                 title: 'Glacier skiing has started — first live check',
                 lead: 'is running prepared piste. Glacier operation depends on the first real snowfall, so this is the earliest the live pages carry a full winter snow report.',
                 tasks: [
-                  'Re-capture tests/fixtures/hintertux-glacier-open.html from a running glacier, so the suite keeps a populated page in current markup',
+                  'Capture a running glacier as a new fixture beside the existing ones, so the suite keeps a populated page in current markup. Never over hintertux-glacier-open.html: it is the only capture of a resort running with no piste row (see tests/test_current_markup.py)',
                   'Verify the card against real snow depths, lift and piste counts',
                   'Sweep for selectors the live pages no longer serve — the winter fixtures cannot reveal those, which is how the dropped Tailwind `tw-` prefix went unnoticed for months',
                   'Check the per-language "no report" strings `_isNA` does not recognise',
