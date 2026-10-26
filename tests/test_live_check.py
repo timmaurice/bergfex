@@ -182,3 +182,34 @@ class TestParserFindings:
     def test_a_clean_run_still_claims_success(self, capsys):
         run([("hu", [], [])], winter=False)
         assert "Validation successful" in capsys.readouterr().out
+
+
+def unverified(key="parser"):
+    return {"kind": "unverified", "key": key, "detail": "page never loaded"}
+
+
+class TestUnverified:
+    """A language whose page never loaded used to be reported "OK".
+
+    The parser check returned no findings when its fetch failed, so a run in
+    which bergfex refused half the pages still summed up as all languages clean.
+    """
+
+    def test_is_not_counted_as_clean(self, capsys):
+        run([("de", [unverified()], []), ("fr", [], [])], winter=False)
+        out = capsys.readouterr().out
+        assert "1 languages clean, 1 unverified" in out
+
+    def test_never_claims_success(self, capsys):
+        run([("de", [unverified()], [])], winter=False)
+        out = capsys.readouterr().out
+        assert "Validation successful" not in out
+        assert "could not be verified" in out
+        assert "DE" in out
+
+    def test_does_not_fail_the_run(self):
+        """Like a refusal, it says more about the runner than about bergfex."""
+        assert run([("de", [unverified("lifts")], [])], winter=True) == 0
+
+    def test_a_real_finding_still_fails_beside_it(self):
+        assert run([("de", [unverified(), mismatch()], [])], winter=False) == 1

@@ -2,44 +2,41 @@ import asyncio
 import aiohttp
 import sys
 import os
-import random
 
-# Ensure we can import the component
-sys.path.insert(0, os.getcwd())
-from custom_components.bergfex.const import SUPPORTED_LANGUAGES
-from custom_components.bergfex.parser import parse_resort_page
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+from _integration import import_integration_module  # noqa: E402
+from _polite import fetch_html  # noqa: E402
+
+# The leaf modules only, so this runs without Home Assistant installed.
+SUPPORTED_LANGUAGES = import_integration_module("const").SUPPORTED_LANGUAGES
+parse_resort_page = import_integration_module("parser").parse_resort_page
 
 # Most stable and widely available paths on all domains
 ALPINE_PATH = "/stubaier-gletscher/schneebericht/"
 CC_PATH = "/suedtirol/langlaufen/drei-zinnen-dolomiten/loipen/"
 
 
-async def fetch_burst(session, url, lang_code, resort_name):
-    # "reload 100 times fast till the 429 error is gone"
-    # We use a burst retry with minimal delay (0.5s) to attempt to slip through the WAF.
-    for attempt in range(100):
-        headers = {
-            "User-Agent": f"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{random.randint(120,124)}.0.0.0 Safari/537.36",
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
-            "Accept-Language": "en-US,en;q=0.9",
-            "Cache-Control": "no-cache",
-            "Pragma": "no-cache",
-        }
-        try:
-            async with session.get(url, headers=headers, timeout=10) as response:
-                if response.status == 200:
-                    return await response.text()
-                if response.status == 429:
-                    if (attempt + 1) % 25 == 0:
-                        print(
-                            f"    [{lang_code.upper()}] {resort_name}: 429 Blocked (Attempt {attempt+1}/100)..."
-                        )
-                    await asyncio.sleep(0.4)  # Fast retry
-                    continue
-                return f"ERROR_{response.status}"
-        except Exception as e:
-            await asyncio.sleep(0.4)
-    return "FAILED"
+async def fetch_page(session, url, lang_code, resort_name):
+    """Fetch politely - see _polite.py - and say why a page did not come back.
+
+    This used to reload up to a hundred times with a spoofed Chrome User-Agent
+    to slip past bergfex's rate limit. A refusal is now taken as one.
+    """
+    statuses = []
+
+    def remember(response):
+        statuses.append(response.status)
+        retry_after = response.headers.get("retry-after") or "-"
+        print(
+            f"    [{lang_code.upper()}] {resort_name}: {response.status} "
+            f"(retry-after {retry_after})"
+        )
+
+    html = await fetch_html(session, url, on_refusal=remember)
+    if html is not None:
+        return html
+    return f"ERROR_{statuses[-1]}" if statuses else "FAILED"
 
 
 async def run_report():
@@ -62,7 +59,7 @@ async def run_report():
                 ("3 Zinnen", CC_PATH, True),
             ]:
                 url = f"{SUPPORTED_LANGUAGES[lang_code]['domain']}{path}"
-                html = await fetch_burst(session, url, lang_code, resort_name)
+                html = await fetch_page(session, url, lang_code, resort_name)
 
                 if (
                     html
@@ -70,7 +67,7 @@ async def run_report():
                     and not html.startswith("FAILED")
                 ):
                     try:
-                        data = parse_resort_page(html, lang=lang_code)
+                        data = parse_resort_page(html, path, lang_code)
                         results.append(
                             {
                                 "lang": lang_code.upper(),
@@ -80,16 +77,10 @@ async def run_report():
                             }
                         )
                         print(f"    ✅ {resort_name} Success")
-                    except Exception as e:
+                    except Exception:
                         print(f"    ❌ {resort_name} Parse Error")
                 else:
                     print(f"    ❌ {resort_name} Failed: {html}")
-
-                # Small jittered pause between types
-                await asyncio.sleep(random.uniform(0.5, 1.5))
-
-            # Small jittered pause between languages
-            await asyncio.sleep(random.uniform(1, 2))
 
         print("\n" + "=" * 145)
         print(
