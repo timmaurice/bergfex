@@ -125,10 +125,13 @@ TARGET_RESORTS = [
         "name": "Stubai",
         "path": "/stubaier-gletscher/",
     },
+    # Italian, and therefore served from www.bergfex.it after a 301, in German
+    # like the other baseline pages.
     {
         "name": "Cortina",
-        "path": "/cortina-dampezzo/",
-        "loipen_path": "/veneto/langlaufen/cortina-dampezzo/loipen/",
+        "path": "/cortina-ampezzo/",
+        "loipen_path": "/venetien/langlaufen/cortina-ampezzo/loipen/",
+        "expect_host": "www.bergfex.it",
     },
     {
         "name": "Soelden",
@@ -139,7 +142,7 @@ TARGET_RESORTS = [
     {"name": "Hintertux", "path": "/hintertux/"},
     {
         "name": "Ramsau",
-        "path": "/ramsau-am-dachstein/",
+        "path": "/ramsau-dachstein/",
         "loipen_path": "/steiermark/langlaufen/ramsau/loipen/",
     },
     {"name": "Axamer Lizum", "path": "/axamer-lizum/"},
