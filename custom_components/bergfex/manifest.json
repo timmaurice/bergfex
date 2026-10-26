@@ -2,6 +2,7 @@
   "domain": "bergfex",
   "name": "Bergfex Snow Report",
   "after_dependencies": ["lovelace"],
+  "categories": ["weather_alerts"],
   "codeowners": ["@timmaurice"],
   "config_flow": true,
   "dependencies": ["http"],
