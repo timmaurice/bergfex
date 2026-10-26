@@ -70,6 +70,7 @@ print("OK")
     [
         ("scripts/check_season_start.py", "parse_resort_page"),
         ("scripts/check_live_site.py", "KEYWORDS"),
+        ("scripts/e2e_report.py", "parse_resort_page"),
     ],
 )
 def test_the_script_runs_without_home_assistant(script, symbol):

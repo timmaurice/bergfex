@@ -10,7 +10,6 @@ import os
 import asyncio
 import collections
 import datetime
-import random
 import re
 import aiohttp
 from bs4 import BeautifulSoup
@@ -21,6 +20,7 @@ base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, base_dir)
 
 from _integration import import_integration_module  # noqa: E402
+from _polite import PACER, USER_AGENT, fetch_html  # noqa: E402
 
 # This job installs only requirements.txt, so Home Assistant is absent - and the
 # integration's package __init__ needs it. The constants below do not.
@@ -125,10 +125,13 @@ TARGET_RESORTS = [
         "name": "Stubai",
         "path": "/stubaier-gletscher/",
     },
+    # Italian, and therefore served from www.bergfex.it after a 301, in German
+    # like the other baseline pages.
     {
         "name": "Cortina",
-        "path": "/cortina-dampezzo/",
-        "loipen_path": "/veneto/langlaufen/cortina-dampezzo/loipen/",
+        "path": "/cortina-ampezzo/",
+        "loipen_path": "/venetien/langlaufen/cortina-ampezzo/loipen/",
+        "expect_host": "www.bergfex.it",
     },
     {
         "name": "Soelden",
@@ -139,7 +142,7 @@ TARGET_RESORTS = [
     {"name": "Hintertux", "path": "/hintertux/"},
     {
         "name": "Ramsau",
-        "path": "/ramsau-am-dachstein/",
+        "path": "/ramsau-dachstein/",
         "loipen_path": "/steiermark/langlaufen/ramsau/loipen/",
     },
     {"name": "Axamer Lizum", "path": "/axamer-lizum/"},
@@ -152,19 +155,17 @@ TARGET_RESORTS = [
     },
 ]
 
-# What Home Assistant's shared session sends, which is what the integration is
-# stuck with: async_get_clientsession freezes the User-Agent and refuses to let
-# an integration override it ("It's important that we identify as Home
-# Assistant"). This used to rotate two real Chrome strings, which made the check
+# The User-Agent is the one Home Assistant's shared session sends (see
+# _polite.py). This used to rotate two real Chrome strings, which made the check
 # green on markup no user ever receives - a canary that asks a different
 # question than the thing it is watching is not a canary.
-USER_AGENT = "HomeAssistant/2026.10.0 aiohttp/3.12.15 Python/3.13"
-
-# Statuses that mean we were turned away rather than missed, as in fetch.py.
-REFUSAL_STATUSES = frozenset({403, 429, 451})
 
 # Every refusal seen during a run, so one cannot hide inside a retry loop.
 REFUSALS = []
+
+# Every page that never loaded. What was not fetched was not checked, and must
+# not be counted as clean.
+UNLOADED = []
 
 
 def sanitize(text):
@@ -185,37 +186,31 @@ def get_group_elements(soup, selector):
     return results
 
 
-async def fetch_html_async(session, url, retries=50):
+async def fetch_html_async(session, url):
     """Fetch a page the way the integration would, and remember a refusal.
 
     The retry loop used to swallow the status, so a 403 was indistinguishable
     from a page that happened not to load - which is how a blocked host could
-    have stayed invisible here for as long as anyone cared to look.
+    have stayed invisible here for as long as anyone cared to look. It also
+    retried a 429 fifty times in a few seconds; see _polite.py for what it does
+    now.
     """
-    headers = {"User-Agent": USER_AGENT}
-    for _ in range(retries):
-        try:
-            async with session.get(url, headers=headers, timeout=10) as response:
-                if response.status == 200:
-                    return await response.text()
-                if response.status in REFUSAL_STATUSES:
-                    REFUSALS.append(
-                        {
-                            "url": url,
-                            "final_url": str(response.url),
-                            "status": response.status,
-                            "cf_ray": response.headers.get("cf-ray"),
-                        }
-                    )
-                    if response.status != 429:
-                        # A refusal does not become a yes by being asked again.
-                        return None
-                if response.status in (429, 404):
-                    await asyncio.sleep(random.uniform(0.1, 0.4))
-                    continue
-        except Exception:
-            continue
-    return None
+
+    def remember(response):
+        REFUSALS.append(
+            {
+                "url": url,
+                "final_url": str(response.url),
+                "status": response.status,
+                "cf_ray": response.headers.get("cf-ray"),
+                "retry_after": response.headers.get("retry-after"),
+            }
+        )
+
+    html = await fetch_html(session, url, on_refusal=remember)
+    if html is None:
+        UNLOADED.append(url)
+    return html
 
 
 async def check_hosts(session):
@@ -233,6 +228,7 @@ async def check_hosts(session):
         if "expect_host" not in resort:
             continue
         url = f"https://www.bergfex.at{resort['path']}schneebericht/"
+        await PACER.wait()
         try:
             async with session.get(
                 url, headers=headers, allow_redirects=True, timeout=15
@@ -359,12 +355,24 @@ async def validate_language(session, lang_code, lang_info, global_baseline, sema
                         resort["path"] + ("schneebericht/" if ptype == "snow" else "")
                     )
                 )
-                html = await fetch_html_async(session, f"{domain}{path}")
+                url = f"{domain}{path}"
+                html = await fetch_html_async(session, url)
                 resort_caches[resort["name"]][ptype] = (
-                    BeautifulSoup(html, "html.parser") if html else None
+                    BeautifulSoup(html, "html.parser") if html else url
                 )
 
             soup = resort_caches[resort["name"]][ptype]
+            if isinstance(soup, str):
+                # The page never loaded, so nothing on it was checked. Calling
+                # that "absent" would excuse it off-season as a summer gap.
+                lang_errors.append(
+                    {
+                        "kind": "unverified",
+                        "key": key,
+                        "detail": f"{soup} never loaded",
+                    }
+                )
+                continue
             actual_elements = get_group_elements(soup, group_cfg["selector"])
             expected_raw = lang_keywords.get(key, "MISSING_IN_CONST")
             expected = sanitize(expected_raw)
@@ -466,14 +474,22 @@ async def parse_reference(session):
 async def validate_parser_output(session, lang_code, lang_info, reference, semaphore):
     """Run the integration's own parser and compare it against the reference."""
     if not reference:
-        return []
+        return [
+            {
+                "kind": "unverified",
+                "key": "parser",
+                "detail": "the German reference page never loaded",
+            }
+        ]
 
     async with semaphore:
         url = lang_info["domain"] + PARSER_REFERENCE["path"]
         html = await fetch_html_async(session, url)
 
     if not html:
-        return []
+        return [
+            {"kind": "unverified", "key": "parser", "detail": f"{url} never loaded"}
+        ]
 
     data = parse_resort_page(html, PARSER_REFERENCE["path"], lang_code)
     errors = []
@@ -550,7 +566,9 @@ async def main():
             )
 
         print("\nStarting Async Cross-Language Validation...")
-        semaphore = asyncio.Semaphore(3)
+        # One language at a time. The pacer in _polite.py spaces the requests
+        # anyway; running languages side by side would only make them queue.
+        semaphore = asyncio.Semaphore(1)
         tasks = [
             validate(
                 session, lang_code, lang_info, global_baseline, reference, semaphore
@@ -571,6 +589,10 @@ def report(results, baseline_gaps):
 
     The parser findings always fail, and cannot be seasonal: both are raised only
     where the German reference page carries what the language is missing.
+
+    A language whose pages did not load is unverified: never counted as clean,
+    never allowed to end in "Validation successful", but not failed either -
+    like a refusal, it says more about the runner's address than about bergfex.
     """
 
     def of_kind(*kinds):
@@ -581,6 +603,13 @@ def report(results, baseline_gaps):
     field_missing = of_kind("field_missing")
     unnormalised = of_kind("unnormalised")
     clean = sum(1 for _, errs, _ in results if not errs)
+    unverified = sorted(
+        {
+            lang
+            for lang, errs, _ in results
+            if any(e["kind"] == "unverified" for e in errs)
+        }
+    )
 
     absent_keys = {e["key"] for e in absences} | set(baseline_gaps)
     seasonal_absent = {k for k in absent_keys if key_is_seasonal(k)}
@@ -589,7 +618,8 @@ def report(results, baseline_gaps):
 
     print("\n" + "=" * 60)
     print(
-        f"SUMMARY: {clean} languages clean, {len(mismatches)} mismatches, "
+        f"SUMMARY: {clean} languages clean, {len(unverified)} unverified, "
+        f"{len(mismatches)} mismatches, "
         f"{len(absences)} absent structures, {len(field_missing)} unparsed fields, "
         f"{len(unnormalised)} unnormalised phrases"
     )
@@ -637,15 +667,27 @@ def report(results, baseline_gaps):
         # them down would make the daily check permanently red - the one failure
         # a canary must not have.
         print("\nbergfex refused some requests during this run:")
-        print(f"{'STATUS':<7} | {'CF-RAY':<24} | URL")
+        print(f"{'STATUS':<7} | {'RETRY-AFTER':<11} | {'CF-RAY':<24} | URL")
         print("-" * 100)
         for refusal in REFUSALS:
             print(
-                f"{refusal['status']:<7} | {refusal['cf_ray'] or '-':<24} | "
-                f"{refusal['final_url']}"
+                f"{refusal['status']:<7} | {refusal.get('retry_after') or '-':<11} | "
+                f"{refusal['cf_ray'] or '-':<24} | {refusal['final_url']}"
             )
         print("\nThis is what a user sees as 403 in their log. Not failing the")
         print("run on it yet - a refused runner says nothing about a home line.")
+
+    if UNLOADED:
+        print("\nThese pages never loaded, so nothing on them was checked:")
+        for url in UNLOADED:
+            print(f"  {url}")
+
+    if unverified:
+        print(
+            f"\nUNVERIFIED: {', '.join(lang.upper() for lang in unverified)} - "
+            "a page these languages are checked against never loaded."
+        )
+        print("Not clean, and not failing either: re-run once bergfex answers.")
 
     if baseline_gaps:
         print(
@@ -678,7 +720,12 @@ def report(results, baseline_gaps):
     if failed:
         sys.exit(1)
 
-    if seasonal_absent:
+    if unverified:
+        print(
+            f"\nNo mismatches found, but {len(unverified)} of {len(results)} "
+            "languages could not be verified."
+        )
+    elif seasonal_absent:
         print("\nNo mismatches found, but the snow report could not be verified.")
     else:
         print("\nValidation successful - every tracked structure was found.")

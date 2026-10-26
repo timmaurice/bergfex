@@ -10,14 +10,16 @@ This directory contains utility scripts for maintaining and validating the Bergf
 
 - **Usage**: `./venv/bin/python3 scripts/check_live_site.py`
 - **When to use**: Run this after Bergfex updates their website or when adding support for a new language. It uses a "Golden Baseline" (AT) to detect positional shifts and ensures all languages stay in sync. Runs daily via the `Live Website Check` workflow.
+- **Politeness**: one request at a time, two seconds apart, identifying as Home Assistant. A 429 is retried at most twice, after the `Retry-After` it names or an exponential back-off, and the wait holds back every other request too. A 403 or 451 is never retried. The rules live in `_polite.py`, shared with `e2e_report.py`.
 - **Exit code**: fails on a keyword mismatch, on missing year-round structure (season dates, prices, operating hours), and on a missing snow report during the winter season. Outside the season the snow report is reported as unverifiable without failing, because bergfex removes that block every summer. Set `BERGFEX_FORCE_SEASON=1` to override the calendar.
+- **Unverified languages**: a language whose pages never loaded is reported as unverified and counted separately in the summary — never as clean, and never ending in "Validation successful". It does not fail the run, for the same reason refusals do not: a refused runner says nothing about a home connection.
 
 ### 2. `e2e_report.py`
 
 **Purpose**: Performs a full end-to-end (E2E) validation across all 18 supported languages.
 
 - **Usage**: `./venv/bin/python3 scripts/e2e_report.py`
-- **When to use**: Run this to verify the entire integration stack (fetching, parsing, and attribute mapping) against live data. It uses an aggressive "rapid-retry" strategy to bypass Bergfex's rate-limiting.
+- **When to use**: Run this to verify the entire integration stack (fetching, parsing, and attribute mapping) against live data. It fetches with the same polite rules as `check_live_site.py` (see `_polite.py`), so a full run takes a few minutes. A page bergfex refuses is reported with its status rather than retried until it gives in.
 
 ### 3. `maintain_const.py`
 
