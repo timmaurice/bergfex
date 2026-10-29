@@ -73,21 +73,7 @@ Two things happen on their own, so you do not need to touch them:
 
 Until you complete step 2 both copies define the same `bergfex-card` element. Whichever loads second stays inactive and logs a warning to the browser console — the card keeps working, but you may be looking at the older version.
 
-<details>
-<summary>If your Lovelace runs in YAML mode</summary>
-
-Automatic resource registration only works in storage mode. In YAML mode the integration logs a warning and you add the resource yourself:
-
-```yaml
-lovelace:
-  resources:
-    - url: /bergfex_frontend/bergfex-card.js
-      type: module
-```
-
-Remove any earlier `lovelace-bergfex-card` entry at the same time.
-
-</details>
+If your Lovelace runs in YAML mode, add the card's resource yourself and remove the old `lovelace-bergfex-card` entry; see [The card does not show up](#faq).
 
 ## Configuration
 
@@ -99,14 +85,10 @@ Configuration is done entirely through the Home Assistant UI.
 4.  **Step 2: Select Report Type**: Alpine Ski-Resort or Cross-Country Skiing Area.
 5.  **Step 3: Select Country**: Select the country where your desired area is located.
 6.  **Step 4: Select Ski Area**: Choose an area from the list.
-    - **Manual Entry**: If your desired area is not in the list, you can manually enter its URL path (e.g., `nebelhorn-oberstdorf` or `lelex-crozet`) in the "Manual URL Path" field. The list only holds areas that currently publish a snow report, so before the season starts most resorts have to be entered this way.
+    - **Manual Entry**: If your desired area is not in the list, you can manually enter its URL path (e.g., `nebelhorn-oberstdorf` or `lelex-crozet`) in the "Manual URL Path" field. See [My resort is not in the list](#faq).
 7.  Click **Submit**.
 
 A new device will be created for the ski area, containing all the sensors listed below. You can repeat this process to add multiple ski areas.
-
-### Linked ski areas
-
-Some large ski areas, such as SkiWelt Wilder Kaiser - Brixental, have no page of their own on Bergfex. Bergfex lists their parts as separate resorts instead (SkiWelt / Söll, SkiWelt / Ellmau, …), so they appear that way in the list, and the integration cannot combine them into one entry. One part is usually enough: the total lift count and slope length on its page cover the whole ski area, while snow depths and season dates are the part's own. Pick the part whose snow depths matter most to you.
 
 ### Reconfigure
 
@@ -216,8 +198,6 @@ For each configured ski area, the following sensors will be created:
 | **Operation Status**      | The current operational status of the trails. |                                                                                                                                                                                                                                                                                                         | `täglich`             |
 | **Last Update**           | The timestamp of the last data report.        |                                                                                                                                                                                                                                                                                                         | `2024-10-28 21:54:24` |
 
-**Last Update** is a diagnostic entity. It tells you how fresh bergfex's report is, not what the conditions are, so Home Assistant lists it under _Diagnostic_ on the device page and leaves it off auto-generated dashboards. Its entity_id is unchanged, it can still be added to any dashboard by hand, and the bundled card still shows it. Every other sensor, the avalanche warning included, and the forecast images are regular entities.
-
 ## Image Entities
 
 In addition to sensors, the integration provides image entities for snow forecasts. These can be displayed in dashboards using the Picture Entity card or similar.
@@ -228,6 +208,63 @@ In addition to sensors, the integration provides image entities for snow forecas
 | **Snow Forecast Summary Xh** | Summary forecast maps (48h, 72h, 96h, 120h, 144h). |
 
 > **Note on `open_pistes`**: The `open_pistes` attribute on the Slopes Open sensor is a list of objects containing detailed information about each open or partially open slope. Each object includes the `name`, `number`, `length`, and `difficulty` (with an `id` and localized `description`).
+
+## FAQ
+
+<details>
+<summary>My resort is not in the list</summary>
+
+The list only holds areas that currently publish a snow report, so before the season starts most resorts are missing from it. Enter the resort's URL path in the "Manual URL Path" field instead. Copy it from the resort's page on Bergfex: the full URL works, and so does the path alone (e.g. `/soell/schneebericht/` or just `soell`).
+
+</details>
+
+<details>
+<summary>Why can't I add SkiWelt (or another linked ski area) as one entry?</summary>
+
+Some large ski areas, such as SkiWelt Wilder Kaiser - Brixental, have no page of their own on Bergfex. Bergfex lists their parts as separate resorts instead (SkiWelt / Söll, SkiWelt / Ellmau, …), so they appear that way in the list, and the integration cannot combine them into one entry. One part is usually enough: the total lift count and slope length on its page cover the whole ski area, while snow depths and season dates are the part's own. Pick the part whose snow depths matter most to you.
+
+</details>
+
+<details>
+<summary>Setup fails, or a repair says "bergfex is refusing requests to www.bergfex.de"</summary>
+
+Bergfex sometimes refuses requests from Home Assistant, which reaches it without a browser. When that keeps happening, a repair appears under **Settings** → **System** → **Repairs** and the affected entries stop updating. It is not a fault in the integration: the request never reaches the page.
+
+So far this has only affected www.bergfex.de, which serves the entries set to German. The other language domains serve the same resorts, so switch the entry to another language with [Reconfigure](#reconfigure); English keeps the readings legible. The entities and their history are kept. The repair clears itself as soon as one request gets through.
+
+Keep the update interval at its default of 30 minutes or longer (see [Options](#options)): Bergfex may block addresses that poll too often.
+
+</details>
+
+<details>
+<summary>Why do some sensors show "unknown"?</summary>
+
+Where Bergfex has no reading, it prints a phrase such as "keine Meldung" or "no information" instead of a value. This happens most often outside the season. The integration turns that phrase into `unknown`, and the card greys the value out, rather than showing the phrase as if it were a snow or slope condition.
+
+</details>
+
+<details>
+<summary>Why isn't Last Update on my dashboard?</summary>
+
+**Last Update** is a diagnostic entity. It tells you how fresh bergfex's report is, not what the conditions are, so Home Assistant lists it under _Diagnostic_ on the device page and leaves it off auto-generated dashboards. Its entity_id is unchanged, it can still be added to any dashboard by hand, and the bundled card still shows it. Every other sensor, the avalanche warning included, and the forecast images are regular entities.
+
+</details>
+
+<details>
+<summary>The card does not show up (Lovelace in YAML mode)</summary>
+
+The integration registers the card's resource automatically, but only when Lovelace runs in storage mode. In YAML mode it logs a warning and you add the resource yourself:
+
+```yaml
+lovelace:
+  resources:
+    - url: /bergfex_frontend/bergfex-card.js
+      type: module
+```
+
+If you used the standalone Bergfex Card before, remove its `lovelace-bergfex-card` entry at the same time.
+
+</details>
 
 ## Development
 
