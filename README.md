@@ -99,10 +99,14 @@ Configuration is done entirely through the Home Assistant UI.
 4.  **Step 2: Select Report Type**: Alpine Ski-Resort or Cross-Country Skiing Area.
 5.  **Step 3: Select Country**: Select the country where your desired area is located.
 6.  **Step 4: Select Ski Area**: Choose an area from the list.
-    - **Manual Entry**: If your desired area is not in the list, you can manually enter its URL path (e.g., `nebelhorn-oberstdorf` or `lelex-crozet`) in the "Manual URL Path" field.
+    - **Manual Entry**: If your desired area is not in the list, you can manually enter its URL path (e.g., `nebelhorn-oberstdorf` or `lelex-crozet`) in the "Manual URL Path" field. The list only holds areas that currently publish a snow report, so before the season starts most resorts have to be entered this way.
 7.  Click **Submit**.
 
 A new device will be created for the ski area, containing all the sensors listed below. You can repeat this process to add multiple ski areas.
+
+### Linked ski areas
+
+Some large ski areas, such as SkiWelt Wilder Kaiser - Brixental, have no page of their own on Bergfex. Bergfex lists their parts as separate resorts instead (SkiWelt / Söll, SkiWelt / Ellmau, …), so they appear that way in the list, and the integration cannot combine them into one entry. One part is usually enough: the total lift count and slope length on its page cover the whole ski area, while snow depths and season dates are the part's own. Pick the part whose snow depths matter most to you.
 
 ### Reconfigure
 
