@@ -185,7 +185,7 @@
   "issues": {
     "standalone_card_installed": {
       "title": "Eigenständige Bergfex Card entfernen",
-      "description": "Die Bergfex-Karte ist jetzt Teil dieser Integration. Die separate \"Bergfex Card\" ist weiterhin über HACS installiert und lädt eine zweite, konfliktbehaftete Kopie. Öffne HACS, deinstalliere \"Bergfex Card\" und starte Home Assistant neu."
+      "description": "Die Bergfex-Karte ist jetzt Teil dieser Integration. Die separate \"Bergfex Card\" ist weiterhin installiert und lädt eine zweite, konfliktbehaftete Kopie. Deinstalliere \"Bergfex Card\" unter Einstellungen → Marketplace (ab Home Assistant 2026.11) oder in HACS (ältere Versionen) und starte Home Assistant danach neu."
     },
     "duplicate_resort_entry": {
       "title": "Bergfex Skigebiet \"{resort}\" doppelt eingerichtet",
