@@ -185,7 +185,7 @@
   "issues": {
     "standalone_card_installed": {
       "title": "Remove the standalone Bergfex Card",
-      "description": "The Bergfex card now ships with this integration. The separate \"Bergfex Card\" is still installed via HACS and loads a second, conflicting copy. Open HACS, uninstall \"Bergfex Card\", then restart Home Assistant."
+      "description": "The Bergfex card now ships with this integration. The separate \"Bergfex Card\" is still installed and loads a second, conflicting copy. Uninstall \"Bergfex Card\" under Settings → Marketplace (Home Assistant 2026.11 and later) or in HACS (earlier versions), then restart Home Assistant."
     },
     "duplicate_resort_entry": {
       "title": "Bergfex resort \"{resort}\" configured twice",

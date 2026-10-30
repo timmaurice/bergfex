@@ -1561,7 +1561,8 @@ export class BergfexCard extends LitElement implements LovelaceCard {
 if (customElements.get(ELEMENT_NAME)) {
   console.warn(
     `${ELEMENT_NAME}: another copy of this card is already loaded, so this one stays inactive. ` +
-      'The card now ships with the Bergfex integration - uninstall "Bergfex Card" from HACS and reload your browser.',
+      'The card now ships with the Bergfex integration - uninstall "Bergfex Card" (Settings → Marketplace from ' +
+      'Home Assistant 2026.11, HACS before) and reload your browser.',
   );
 } else {
   customElements.define(ELEMENT_NAME, BergfexCard);
