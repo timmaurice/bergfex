@@ -185,7 +185,7 @@
   "issues": {
     "standalone_card_installed": {
       "title": "Supprimer la Bergfex Card autonome",
-      "description": "La carte Bergfex est désormais fournie avec cette intégration. La « Bergfex Card » séparée est toujours installée via HACS et charge une seconde copie en conflit. Ouvrez HACS, désinstallez « Bergfex Card », puis redémarrez Home Assistant."
+      "description": "La carte Bergfex est désormais fournie avec cette intégration. La « Bergfex Card » séparée est toujours installée et charge une seconde copie en conflit. Désinstallez « Bergfex Card » dans Paramètres → Marketplace (Home Assistant 2026.11 et versions ultérieures) ou dans HACS (versions antérieures), puis redémarrez Home Assistant."
     },
     "duplicate_resort_entry": {
       "title": "Station Bergfex « {resort} » configurée deux fois",
