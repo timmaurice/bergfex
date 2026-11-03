@@ -1,6 +1,6 @@
 # Bergfex Snow Report Integration for Home Assistant
 
-[![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg?style=flat-square)](https://github.com/hacs/integration)
+[![Marketplace / HACS](https://img.shields.io/badge/Marketplace%20%2F%20HACS-Default-41BDF5.svg?style=flat-square)](https://hacs.xyz/docs/marketplace/)
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/timmaurice/bergfex?style=flat-square)
 [![GH-downloads](https://img.shields.io/github/downloads/timmaurice/bergfex/total?style=flat-square)](https://github.com/timmaurice/bergfex/releases)
 [![GH-last-commit](https://img.shields.io/github/last-commit/timmaurice/bergfex.svg?style=flat-square)](https://github.com/timmaurice/bergfex/commits/master)
@@ -40,11 +40,13 @@ This custom integration for Home Assistant fetches snow reports and ski resort d
 
 ## Installation
 
-### HACS (Recommended)
+### Marketplace or HACS (Recommended)
 
-This integration is available in the [Home Assistant Community Store (HACS)](https://hacs.xyz/).
+This integration is in the default catalog. From Home Assistant 2026.11, find it under **Settings** → **Marketplace**; on earlier versions, in the [Home Assistant Community Store (HACS)](https://hacs.xyz/). The button opens it in whichever of the two your Home Assistant has:
 
-<a href="https://my.home-assistant.io/redirect/hacs_repository/?owner=timmaurice&repository=bergfex&category=integration" target="_blank" rel="noreferrer noopener"><img src="https://my.home-assistant.io/badges/hacs_repository.svg" alt="Open your Home Assistant instance and open a repository inside the Home Assistant Community Store." /></a>
+<a href="https://my.home-assistant.io/redirect/hacs_repository/?owner=timmaurice&repository=bergfex&category=integration" target="_blank" rel="noreferrer noopener"><img src="https://my.home-assistant.io/badges/hacs_repository.svg" alt="Open this repository in the Marketplace or HACS of your Home Assistant instance." /></a>
+
+After installing from HACS, restart Home Assistant. The Marketplace sets up a new integration without a restart.
 
 <details>
 <summary>Manual Installation</summary>
@@ -61,7 +63,7 @@ The Bergfex card is bundled with this integration and registered automatically �
 Up to version 2.x the card lived in its own repository, [timmaurice/lovelace-bergfex-card](https://github.com/timmaurice/lovelace-bergfex-card). From 3.0.0 it ships with the integration, so that repository is no longer needed. If you have it installed:
 
 1.  Update the integration to 3.0.0 and restart Home Assistant.
-2.  Open **HACS** → **Frontend** → **Bergfex Card** → **Uninstall**.
+2.  Uninstall **Bergfex Card**: under **Settings** → **Marketplace** from Home Assistant 2026.11, or under **HACS** → **Frontend** before.
 3.  Reload your browser with a cache-bypassing refresh (<kbd>Ctrl</kbd>/<kbd>Cmd</kbd> + <kbd>Shift</kbd> + <kbd>R</kbd>).
 
 **Your dashboard configuration does not change.** The card type is still `custom:bergfex-card` and every option keeps its meaning, so your existing YAML and any cards placed through the UI keep working.
@@ -69,7 +71,7 @@ Up to version 2.x the card lived in its own repository, [timmaurice/lovelace-ber
 Two things happen on their own, so you do not need to touch them:
 
 - The stale Lovelace resource pointing at `/hacsfiles/lovelace-bergfex-card/bergfex-card.js` (or a hand-added `/local/bergfex-card.js`) is removed on startup.
-- A repair notice appears under **Settings** → **System** → **Repairs** reminding you to uninstall the HACS repository, because removing the resource does not uninstall the files.
+- A repair notice appears under **Settings** → **System** → **Repairs** reminding you to uninstall the old card, because removing the resource does not uninstall the files.
 
 Until you complete step 2 both copies define the same `bergfex-card` element. Whichever loads second stays inactive and logs a warning to the browser console — the card keeps working, but you may be looking at the older version.
 
