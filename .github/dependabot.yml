@@ -4,6 +4,8 @@ updates:
     directory: "/"
     schedule:
       interval: "monthly"
+    cooldown:
+      default-days: 7
 
   - package-ecosystem: "pip"
     directory: "/"
@@ -14,11 +16,15 @@ updates:
     versioning-strategy: "increase-if-necessary"
     schedule:
       interval: "monthly"
+    cooldown:
+      default-days: 7
 
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
       interval: "monthly"
+    cooldown:
+      default-days: 7
     labels:
       - "dependencies"
     # TypeScript 7 is deliberately held back: `typescript-eslint` still declares
