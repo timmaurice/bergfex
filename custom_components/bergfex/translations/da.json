@@ -36,7 +36,7 @@
         "data": {
           "ski_area": "Skisportssted",
           "manual_path": "Manuel URL-sti (f.eks. serfaus-fiss-ladis)",
-          "webhook_url": "Webhook-URL (f.eks. TRMNL-integration)"
+          "webhook_url": "Webhook-URL"
         }
       },
       "ski_area_list_cross_country": {
@@ -45,7 +45,7 @@
         "data": {
           "ski_area": "Område",
           "manual_path": "Manuel URL-sti (f.eks. serfaus-fiss-ladis)",
-          "webhook_url": "Webhook-URL (f.eks. TRMNL-integration)"
+          "webhook_url": "Webhook-URL"
         }
       },
       "reconfigure": {

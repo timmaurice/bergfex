@@ -20,7 +20,7 @@ This custom integration for Home Assistant fetches snow reports and ski resort d
 - **Dynamic Domain Mapping**: Automatically uses the correct Bergfex domain (e.g., .at, .com, .fr, .it) based on your language selection.
 - **Enhanced Localization**: Data values (like "Powder", "Open", "Moderate") are automatically translated into your selected language.
 - **Multi-Country Support**: Select ski areas from various European countries including Austria, Germany, Switzerland, Italy, France, Slovenia, Czech Republic, Poland, and Slovakia.
-- **Webhook Support**: Send data to external displays via webhooks (e.g., [TRMNL](https://usetrmnl.com) integration).
+- **Webhook Support**: Send data to external displays via webhooks.
 - **Efficient Polling**: Fetches data for an entire region/country efficiently, shared across all sensors.
 - **Device per Ski Area**: Creates a dedicated device in Home Assistant for each monitored ski area.
 - **Detailed Sensors**: Provides comprehensive sensors for snow depths, lift status, slope conditions, and avalanche warnings.
