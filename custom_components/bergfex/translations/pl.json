@@ -36,7 +36,7 @@
         "data": {
           "ski_area": "Ośrodek",
           "manual_path": "Ręczna ścieżka URL (np. lelex-crozet)",
-          "webhook_url": "Adres dla Webhook (m.in. integracja z TRMNL)"
+          "webhook_url": "Adres dla Webhook"
         }
       },
       "ski_area_list_cross_country": {
@@ -45,7 +45,7 @@
         "data": {
           "ski_area": "Ośrodek",
           "manual_path": "Ręczna ścieżka URL (np. serfaus-fiss-ladis)",
-          "webhook_url": "Adres dla Webhook (m.in. integracja z TRMNL)"
+          "webhook_url": "Adres dla Webhook"
         }
       },
       "reconfigure": {
