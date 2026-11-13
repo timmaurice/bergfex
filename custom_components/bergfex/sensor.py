@@ -15,10 +15,10 @@ from homeassistant.components.sensor import (
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EntityCategory
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.update_coordinator import UpdateFailed
+from homeassistant.helpers.update_coordinator import CoordinatorEntity, UpdateFailed
 from homeassistant.util import slugify
 
 from .const import (
@@ -219,7 +219,7 @@ async def async_setup_entry(
     async_add_entities(sensors)
 
 
-class BergfexSensor(SensorEntity):
+class BergfexSensor(CoordinatorEntity[BergfexCoordinator], SensorEntity):
     """Representation of a Bergfex Sensor."""
 
     _attr_has_entity_name = True
@@ -231,7 +231,7 @@ class BergfexSensor(SensorEntity):
         description: BergfexSensorEntityDescription,
     ):
         """Initialize the sensor."""
-        self.coordinator = coordinator
+        super().__init__(coordinator)
         self.entity_description = description
         self._resort_type = entry.data.get(CONF_TYPE, TYPE_ALPINE)
         # Store initial name as fallback
@@ -375,11 +375,6 @@ class BergfexSensor(SensorEntity):
         return attrs if attrs else None
 
     @property
-    def available(self) -> bool:
-        """Return if entity is available."""
-        return self.coordinator.last_update_success
-
-    @property
     def device_info(self):
         """Return device information."""
         return {
@@ -396,14 +391,11 @@ class BergfexSensor(SensorEntity):
 
     async def async_added_to_hass(self) -> None:
         """When entity is added to hass."""
+        await super().async_added_to_hass()
         self._update_names()  # Set initial names based on available data
-        self.async_on_remove(
-            self.coordinator.async_add_listener(
-                lambda: self.hass.async_create_task(self._handle_coordinator_update())
-            )
-        )
 
-    async def _handle_coordinator_update(self) -> None:
+    @callback
+    def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
         self._update_names()
-        self.async_write_ha_state()
+        super()._handle_coordinator_update()
