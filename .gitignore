@@ -25,3 +25,6 @@ test-results/
 # tokens, so they are matched by name at any depth rather than by path.
 .auth.json
 .storage-state.json
+
+# Local Claude Code files
+.claude/
