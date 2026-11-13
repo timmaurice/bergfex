@@ -8,6 +8,7 @@ export default defineConfig({
     alias: { '\\.scss$': './frontend/test/styleMock.ts' },
     // The end-to-end specs are Playwright's, not Vitest's: they import
     // node:child_process and drive a browser, and jsdom cannot run them.
-    exclude: ['**/node_modules/**', '**/dist/**', 'test/e2e/**'],
+    // .claude/ holds agent worktrees, each with its own copy of those specs.
+    exclude: ['**/node_modules/**', '**/dist/**', '**/.claude/**', 'test/e2e/**'],
   },
 });
