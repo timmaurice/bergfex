@@ -14,7 +14,6 @@
 import { describe, expect, it, vi } from 'vitest';
 // Vite inlines the file as a string, which keeps this in the jsdom
 // environment the card element needs.
-// @ts-expect-error - no type declaration for a ?raw import of a .py file
 import constPySource from '../../custom_components/bergfex/const.py?raw';
 
 import '../src/bergfex-card';
