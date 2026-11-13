@@ -22,6 +22,7 @@
     "lint": "eslint frontend/ scripts/ *.config.mjs rollup.config.js",
     "test": "NODE_ENV=production vitest run",
     "watch": "rollup -c -w",
+    "pretest:e2e": "node scripts/ensure-deps.mjs",
     "test:e2e": "playwright test"
   },
   "devDependencies": {
