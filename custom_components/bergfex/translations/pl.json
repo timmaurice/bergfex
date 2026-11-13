@@ -64,6 +64,7 @@
       "no_areas_found": "Nie można znaleźć żadnych ośrodków narciarskich dla wybranego kraju. Być może obecnie nie są dostępne żadne raporty śniegowe.",
       "no_selection": "Wybierz ośrodek narciarski z listy lub podaj ręcznie ścieżkę URL.",
       "invalid_path": "Ten adres nie wskazuje żadnego ośrodka narciarskiego. Podaj ścieżkę ośrodka, na przykład „/ischgl/schneebericht/”, albo wklej pełny adres URL strony ośrodka.",
+      "path_not_found": "bergfex nie udostępnia tej ścieżki lub jest nieosiągalny. Sprawdź pisownię ścieżki ośrodka.",
       "invalid_webhook": "To nie jest prawidłowy adres webhooka. Podaj pełny adres http:// lub https:// albo zostaw pole puste.",
       "refused": "bergfex odrzucił żądanie. Twoje połączenie działa, ale bergfex je odrzuca - identyfikator ray Cloudflare znajdziesz w dzienniku Home Assistant."
     },
