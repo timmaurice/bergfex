@@ -198,9 +198,9 @@ async def async_setup_entry(
     # its first refresh succeeded, so it is always there by now.
     coordinator = entry.runtime_data
     _LOGGER.debug(
-        "Sensor async_setup_entry - Coordinator: %s, Entry data: %s",
-        coordinator,
-        entry.data,
+        "Sensor async_setup_entry - Entry: %s, Area Path: %s",
+        entry.entry_id,
+        entry.data.get(CONF_SKI_AREA),
     )
 
     resort_type = entry.data.get(CONF_TYPE, TYPE_ALPINE)
@@ -272,8 +272,7 @@ class BergfexSensor(SensorEntity):
             self._area_name = self._initial_area_name
 
         _LOGGER.debug(
-            "BergfexSensor _update_names - Coordinator Data: %s, Area Path: %s, Resulting Area Name: %s",
-            self.coordinator.data,
+            "BergfexSensor _update_names - Area Path: %s, Resulting Area Name: %s",
             self._area_path,
             self._area_name,
         )
@@ -291,9 +290,8 @@ class BergfexSensor(SensorEntity):
         if area_data and data_key in area_data:
             value = area_data[data_key]
             _LOGGER.debug(
-                "BergfexSensor native_value - Coordinator Data: %s, Area Data: %s, Data Key: %s, Value: %s",
-                self.coordinator.data,
-                area_data,
+                "BergfexSensor native_value - Area Path: %s, Data Key: %s, Value: %s",
+                self._area_path,
                 data_key,
                 value,
             )
@@ -311,9 +309,8 @@ class BergfexSensor(SensorEntity):
             return value
 
         _LOGGER.debug(
-            "BergfexSensor native_value - Coordinator Data: %s, Area Data: %s, Data Key: %s, Returning None",
-            self.coordinator.data,
-            area_data,
+            "BergfexSensor native_value - Area Path: %s, Data Key: %s, Returning None",
+            self._area_path,
             self.entity_description.key,
         )
         return None
