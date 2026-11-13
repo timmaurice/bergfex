@@ -91,6 +91,15 @@ _OLD_REPORT = {
     "dk": "04-11-2026, 11:02",
     "hu": "2026-11-04, 11:02",
     "se": "2026-11-04, 11:02",
+    "no": "04. nov. 2026, 11:02",
+    "fi": "04.11.2026, 11:02",
+    "cz": "4.11.2026, 11:02",
+    "sk": "04.11.2026, 11:02",
+    "pl": "04.11.2026, 11:02",
+    "hr": "04.11.2026, 11:02",
+    "si": "04. 11. 2026, 11:02",
+    "ru": "04.11.2026, 11:02",
+    "ro": "04.11.2026, 11:02",
 }
 _WEEKDAY_REPORT = {
     "at": "Mi, 11.11., 12:27",
@@ -102,6 +111,15 @@ _WEEKDAY_REPORT = {
     "dk": "Ons, 11.11., 12:27",
     "hu": "Sze, 11.11., 12:27",
     "se": "Ons, 11.11., 12:27",
+    "no": "On., 11.11., 12:27",
+    "fi": "Ke, 11.11., 12:27",
+    "cz": "St, 11.11., 12:27",
+    "sk": "St, 11.11., 12:27",
+    "pl": "Śro, 11.11., 12:27",
+    "hr": "Sri, 11.11., 12:27",
+    "si": "Sre, 11.11., 12:27",
+    "ru": "Ср, 11.11., 12:27",
+    "ro": "Mi, 11.11., 12:27",
 }
 
 
@@ -128,3 +146,59 @@ def test_only_english_reads_the_month_first():
 
 def test_an_impossible_full_date_is_none():
     assert parse_bergfex_datetime("31/31/2026, 11:02", "fr") is None
+
+
+@pytest.mark.parametrize(
+    ("lang", "words"),
+    [
+        ("no", ("I dag, 16:05", "I går, 13:00")),
+        ("fi", ("Tänään, 16:05", "Eilen, 13:00")),
+        ("ru", ("Сегодня, 16:05", "Вчера, 13:00")),
+    ],
+)
+def test_today_and_yesterday_as_printed_live(lang, words):
+    today, yesterday = (parse_bergfex_datetime(w, lang) for w in words)
+    assert today.date() == _today()
+    assert yesterday.date() == _today() - timedelta(days=1)
+
+
+def test_every_language_has_a_working_today_and_yesterday_word():
+    from custom_components.bergfex.const import KEYWORDS
+
+    for lang, kw in KEYWORDS.items():
+        today = parse_bergfex_datetime(f"{kw['today'].capitalize()}, 10:00", lang)
+        yesterday = parse_bergfex_datetime(
+            f"{kw['yesterday'].capitalize()}, 10:00", lang
+        )
+        assert today is not None and today.date() == _today(), lang
+        assert yesterday is not None, lang
+        assert yesterday.date() == _today() - timedelta(days=1), lang
+
+
+def test_si_today_word_is_read():
+    assert parse_bergfex_datetime("Danes, 05:00", "si").date() == _today()
+
+
+@pytest.mark.parametrize(
+    ("printed", "month"),
+    [
+        ("05. jan. 2026, 10:00", 1),
+        ("05. feb. 2026, 10:00", 2),
+        ("05. mars 2026, 10:00", 3),
+        ("05. apr. 2026, 10:00", 4),
+        ("05. mai 2026, 10:00", 5),
+        ("05. juni 2026, 10:00", 6),
+        ("05. juli 2026, 10:00", 7),
+        ("05. aug. 2026, 10:00", 8),
+        ("05. sep. 2026, 10:00", 9),
+        ("05. okt. 2026, 10:00", 10),
+        ("05. des. 2026, 10:00", 12),
+    ],
+)
+def test_norwegian_month_names(printed, month):
+    # Only "nov." was seen live; the others are the standard bokmal abbreviations.
+    assert parse_bergfex_datetime(printed, "no").month == month
+
+
+def test_an_unknown_month_name_is_none():
+    assert parse_bergfex_datetime("05. xyz. 2026, 10:00", "no") is None
