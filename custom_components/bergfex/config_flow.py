@@ -472,6 +472,21 @@ class BergfexConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         # Nothing to complete "bergfex.at" or "/" into. Say so on
                         # the form instead of letting it fail somewhere later.
                         errors["base"] = "invalid_path"
+                    else:
+                        # A typo is a well-formed path that bergfex answers
+                        # with a 404, and an entry for it never loads: it sits
+                        # in setup retry polling that 404 for good. A path
+                        # picked from the list is known to exist, a typed one
+                        # is not, so check it while the user can still fix it.
+                        page_url = detail_page_url(
+                            domain,
+                            ski_area_path,
+                            self._data.get(CONF_TYPE, TYPE_ALPINE),
+                        )
+                        if problem := await async_page_check(self.hass, page_url):
+                            errors["base"] = (
+                                "refused" if problem == "refused" else "path_not_found"
+                            )
 
                 if webhook_url:
                     try:

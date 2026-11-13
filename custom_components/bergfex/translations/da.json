@@ -64,6 +64,7 @@
       "no_areas_found": "Der blev ikke fundet nogen skiområder for det valgte land. Der er muligvis ingen aktuelle snerapporter.",
       "no_selection": "Vælg et skiområde på listen, eller angiv en manuel sti.",
       "invalid_path": "Den adresse angiver ikke et skiområde. Indtast en sti til et skisportssted som \"/ischgl/schneebericht/\", eller indsæt den fulde URL til skisportsstedets side.",
+      "path_not_found": "bergfex leverer ikke den sti, eller kunne ikke nås. Kontrollér stavningen af skiområdets sti.",
       "invalid_webhook": "Det er ikke en gyldig webhook-adresse. Brug en fuld http://- eller https://-URL, eller lad feltet være tomt.",
       "refused": "bergfex afviste anmodningen. Din forbindelse virker, men bergfex afviser den - Cloudflare ray-id'et står i Home Assistant-loggen."
     },

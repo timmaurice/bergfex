@@ -47,6 +47,16 @@ def _never_really_set_up():
         yield
 
 
+@pytest.fixture(autouse=True)
+def _typed_paths_exist():
+    """Let a hand-typed path pass the live check unless a test says otherwise."""
+    with patch(
+        "custom_components.bergfex.config_flow.async_page_check",
+        AsyncMock(return_value=None),
+    ) as check:
+        yield check
+
+
 def _existing_entry(hass: HomeAssistant, ski_area: str) -> MockConfigEntry:
     """Register a resort that is already set up."""
     entry = MockConfigEntry(
@@ -494,3 +504,44 @@ async def test_two_open_flows_do_not_mix_their_answers(
     assert result["data"][CONF_LANGUAGE] == "at"
     assert result["data"][CONF_DOMAIN] == "https://www.bergfex.at"
     assert result["data"][CONF_TYPE] == TYPE_ALPINE
+
+
+@pytest.mark.parametrize(
+    ("problem", "error"),
+    [("cannot_connect", "path_not_found"), ("refused", "refused")],
+)
+@pytest.mark.asyncio
+async def test_a_typed_path_bergfex_does_not_serve_is_rejected_on_the_form(
+    hass: HomeAssistant,
+    enable_custom_integrations,
+    _typed_paths_exist,
+    problem: str,
+    error: str,
+):
+    """A mistyped path used to create an entry that retried a 404 forever.
+
+    The path was only normalized, never fetched, so "ischgll" became an entry
+    stuck in setup retry. It has to come back as a form error instead.
+    """
+    _typed_paths_exist.return_value = problem
+
+    result = await _run_flow(hass, {"manual_path": "ischgll"})
+
+    assert result["type"] == FlowResultType.FORM
+    assert result["step_id"] == "ski_area_list_alpine"
+    assert result["errors"] == {"base": error}
+    _typed_paths_exist.assert_awaited_once_with(
+        hass, "https://www.bergfex.at/ischgll/schneebericht/"
+    )
+    assert hass.config_entries.async_entries(DOMAIN) == []
+
+
+@pytest.mark.asyncio
+async def test_a_path_picked_from_the_list_is_not_fetched_again(
+    hass: HomeAssistant, enable_custom_integrations, _typed_paths_exist
+):
+    """The list only holds resorts bergfex serves, so there is nothing to check."""
+    result = await _run_flow(hass, {CONF_SKI_AREA: SKI_AREA_PATH})
+
+    assert result["type"] == FlowResultType.CREATE_ENTRY
+    _typed_paths_exist.assert_not_awaited()
