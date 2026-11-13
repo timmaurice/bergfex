@@ -157,9 +157,11 @@ jobs:
           npm ci
           npm run build
           # Integrations commit their bundled card. If the build rewrote it, the
-          # committed copy was stale; the release ships the fresh build.
+          # committed copy is stale: fail instead of shipping a bundle that no
+          # reviewed commit contains. Rebuild, commit, and re-tag.
           if ! git diff --quiet; then
-            echo "::warning::The build changed tracked files: $(git diff --name-only | tr '\n' ' ')"
+            echo "::error::The build changed tracked files: $(git diff --name-only | tr '\n' ' ')"
+            exit 1
           fi
 
       - name: Package the asset
