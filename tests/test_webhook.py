@@ -167,3 +167,67 @@ async def test_webhook_sends_season_dates_as_iso(
     assert sent["winter_operating_hours_end"] == "16:30"
     assert sent["snow_mountain"] == "80 cm"
     assert "last_update" not in sent
+
+
+@pytest.mark.asyncio
+async def test_webhook_url_and_payload_stay_out_of_logs(
+    hass: HomeAssistant, enable_custom_integrations, caplog
+):
+    """Neither the webhook URL nor the parsed payload is written to the log.
+
+    The URL is a secret, yet it was logged in the error path and with the
+    entry data on setup, and the whole payload went out once per sensor and
+    poll, which grew the rotated log to 100+ MB.
+    """
+    import logging
+
+    secret = "https://hooks.example.com/SECRET-TOKEN"
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        title="Ischgl",
+        unique_id="/ischgl/",
+        data={
+            "name": "Ischgl",
+            "country": "Österreich",
+            "ski_area": "/ischgl/",
+            "language": "at",
+            "type": "alpine",
+            CONF_WEBHOOK_URL: secret,
+        },
+    )
+    entry.add_to_hass(hass)
+
+    class FailingPost(RecordingSession):
+        def post(self, url, *args, **kwargs):
+            raise OSError(f"cannot reach {url}")
+
+    caplog.set_level(logging.DEBUG)
+    with (
+        patch(
+            "custom_components.bergfex.coordinator.async_get_clientsession",
+            return_value=FailingPost(),
+        ),
+        patch(
+            "custom_components.bergfex.coordinator.parse_resort_page",
+            return_value={"snow_mountain": "PAYLOAD-MARKER"},
+        ),
+    ):
+        coordinator = BergfexCoordinator(hass, entry)
+        await coordinator._async_update_data()
+
+    from custom_components.bergfex.sensor import (
+        ALPINE_SENSORS,
+        BergfexSensor,
+        async_setup_entry,
+    )
+
+    coordinator.data = {"/ischgl/": {"snow_mountain": "PAYLOAD-MARKER"}}
+    entry.runtime_data = coordinator
+    await async_setup_entry(hass, entry, lambda ents: None)
+    sensor = BergfexSensor(coordinator, entry, ALPINE_SENSORS[0])
+    sensor._update_names()
+    _ = sensor.native_value
+
+    assert "SECRET-TOKEN" not in caplog.text
+    assert "Error sending data to webhook" in caplog.text
+    assert "{'snow_mountain'" not in caplog.text

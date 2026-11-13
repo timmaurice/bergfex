@@ -498,10 +498,10 @@ class BergfexCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any]]]):
                         _LOGGER.debug("Webhook data sent: %d", response.status)
 
                 except Exception as err:
+                    # The URL is a secret, and aiohttp errors quote it.
                     _LOGGER.error(
-                        "Error sending data to webhook %s: %s",
-                        webhook_url,
-                        err,
+                        "Error sending data to webhook: %s",
+                        str(err).replace(webhook_url, "<webhook>"),
                     )
 
             # Fetch snow forecast images (pages 0-5). These pages belong
@@ -554,7 +554,9 @@ class BergfexCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any]]]):
                             err,
                         )
 
-            _LOGGER.debug("Parsed resort data for %s: %s", area_path, parsed_data)
+            _LOGGER.debug(
+                "Parsed resort data for %s: %d values", area_path, len(parsed_data)
+            )
             return {area_path: parsed_data}
         except BergfexRefused as err:
             # Counted before it is re-raised, so the run survives the fresh
