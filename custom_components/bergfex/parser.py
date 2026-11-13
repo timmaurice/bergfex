@@ -64,6 +64,41 @@ def _says_day(date_str: str, keyword: str) -> bool:
     return bool(re.fullmatch(r"\s*\d{1,2}:\d{2}\s*", rest))
 
 
+# bergfex prints a report older than a week as a full date in the locale's own
+# shape: 04.11.2026 (de), 11/04/2026 (en), 04/11/2026 (fr, it), 04/11/26 (es),
+# 04-11-26 (nl), 04-11-2026 (dk), 2026-11-04 (hu, se). Only English puts the
+# month first; a four-digit leading number is always year-first.
+_MONTH_FIRST_LANGS = {"en"}
+_SLASH_DASH_DATE = re.compile(
+    r"(?<!\d)(\d{1,4})([/-])(\d{1,2})\2(\d{1,4})(?!\d)[,\s]*(\d{1,2}):(\d{2})"
+)
+
+
+def _parse_slash_dash_date(
+    date_str: str, lang: str, tz: Any
+) -> tuple[bool, datetime | None]:
+    """Parse "11/04/2026, 11:02" style dates; the flag says the shape matched."""
+    match = _SLASH_DASH_DATE.search(date_str)
+    if not match:
+        return False, None
+    first, _, second, third, hour, minute = match.groups()
+    if len(first) == 4:
+        year, month, day = int(first), int(second), int(third)
+    else:
+        if lang in _MONTH_FIRST_LANGS:
+            month, day = int(first), int(second)
+        else:
+            day, month = int(first), int(second)
+        year = int(third)
+        if len(third) <= 2:
+            year += 2000
+    try:
+        return True, datetime(year, month, day, int(hour), int(minute), 0, 0, tzinfo=tz)
+    except ValueError:
+        _LOGGER.debug("Could not parse date: %s", date_str)
+        return True, None
+
+
 def parse_bergfex_datetime(date_str: str, lang: str = "at") -> datetime | None:
     """Parse Bergfex date/time strings to datetime objects.
 
@@ -71,6 +106,8 @@ def parse_bergfex_datetime(date_str: str, lang: str = "at") -> datetime | None:
     - "Heute, 11:14" (Today, 11:14)
     - "Gestern, 11:14" (Yesterday, 11:14)
     - "Fr, 28.11., 09:33" (Fri, 28.11., 09:33)
+    - "04.11.2026, 11:02", "11/04/2026, 11:02" (en), "04/11/26, 11:02" (es),
+      "04-11-26, 11:02" (nl), "2026-11-04, 11:02" (hu, se), ... for older reports
     """
     if not date_str:
         return None
@@ -114,6 +151,10 @@ def parse_bergfex_datetime(date_str: str, lang: str = "at") -> datetime | None:
 
     # Handle specific date format like "Fr, 28.11., 09:33" or "05.11.2025, 14:40"
     else:
+        matched, result = _parse_slash_dash_date(date_str, lang, tz)
+        if matched:
+            return result
+
         # Match pattern: optional day name, day.month.[year][.,] time
         # Tries to match dd.mm.yyyy, HH:MM or dd.mm., HH:MM
         date_match = re.search(
