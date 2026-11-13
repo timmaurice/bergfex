@@ -1,2 +1,3 @@
 .auth.json
 .storage-state.json
+docker-compose.override.yml

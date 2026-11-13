@@ -1,10 +1,10 @@
 # Local AI context files, personal to whoever is working here
 CLAUDE.md
 
-# Docker test environment
-docker-compose.yml
-docker-compose.override.yml
-config/
+# Hand-kept playground (anchored: test/e2e/ has its own tracked compose file)
+/docker-compose.yml
+/docker-compose.override.yml
+/config/
 *.pem
 
 # Python

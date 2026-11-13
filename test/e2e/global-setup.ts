@@ -1,5 +1,14 @@
 import { chromium } from '@playwright/test';
-import { BASE_URL, PASSWORD, USERNAME, ensureRunning, saveTokens, waitForFrontend } from './helpers/homeassistant';
+import {
+  BASE_URL,
+  PASSWORD,
+  USERNAME,
+  ensureOnboarded,
+  ensureResortConfigured,
+  ensureRunning,
+  saveTokens,
+  waitForFrontend,
+} from './helpers/homeassistant';
 
 /**
  * Signs in once and keeps the tokens, so the specs can talk to the websocket
@@ -10,6 +19,7 @@ import { BASE_URL, PASSWORD, USERNAME, ensureRunning, saveTokens, waitForFronten
 export default async function globalSetup(): Promise<void> {
   ensureRunning();
   await waitForFrontend();
+  await ensureOnboarded();
 
   const browser = await chromium.launch();
   const page = await browser.newPage();
@@ -34,6 +44,7 @@ export default async function globalSetup(): Promise<void> {
     );
     saveTokens(await tokens.jsonValue());
     await page.context().storageState({ path: 'test/e2e/.storage-state.json' });
+    await ensureResortConfigured();
   } finally {
     await browser.close();
   }

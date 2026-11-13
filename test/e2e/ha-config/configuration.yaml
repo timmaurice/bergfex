@@ -1,0 +1,8 @@
+# Tracked on purpose: a fresh clone has no Home Assistant configuration, and the
+# e2e suite must not depend on a folder that exists only on one machine.
+default_config:
+
+logger:
+  default: info
+  logs:
+    custom_components.bergfex: debug
