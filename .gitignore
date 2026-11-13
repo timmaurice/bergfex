@@ -3,6 +3,7 @@ CLAUDE.md
 
 # Docker test environment
 docker-compose.yml
+docker-compose.override.yml
 config/
 *.pem
 
