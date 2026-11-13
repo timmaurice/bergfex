@@ -370,6 +370,22 @@ def test_parse_overview_data_robust():
     assert results["/resort2/"]["status"] == "Closed"
 
 
+def test_overview_last_update_reads_an_iso_data_value():
+    """The overview cell carries an ISO timestamp in data-value; it must not be dropped."""
+    html = """
+    <table class="snow">
+        <tr><th>Resort</th><th>Valley</th><th>Mountain</th><th>New</th><th>Lifts</th><th>Update</th></tr>
+        <tr>
+            <td><a href="/resort1/">Resort 1</a></td>
+            <td>10 cm</td><td>50 cm</td><td>5 cm</td><td>5/10</td>
+            <td data-value="2025-11-28T09:33:00+01:00">Fr, 28.11., 09:33</td>
+        </tr>
+    </table>
+    """
+    last_update = parse_overview_data(html)["/resort1/"]["last_update"]
+    assert last_update.isoformat() == "2025-11-28T09:33:00+01:00"
+
+
 def test_resort_name_without_the_tailwind_class_prefix():
     """bergfex dropped the `tw-` prefix from its CSS classes.
 

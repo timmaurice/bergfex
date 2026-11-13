@@ -245,7 +245,12 @@ def parse_overview_data(html: str, lang: str = "at") -> dict[str, dict[str, Any]
 
         # Convert to datetime
         if last_update_text:
-            last_update_dt = parse_bergfex_datetime(last_update_text, lang)
+            # data-value is an ISO timestamp on the current markup; the
+            # dotted "Fr, 28.11., 09:33" form is only the text fallback.
+            try:
+                last_update_dt = datetime.fromisoformat(last_update_text.strip())
+            except ValueError:
+                last_update_dt = parse_bergfex_datetime(last_update_text, lang)
             if last_update_dt:
                 area_data["last_update"] = last_update_dt
 
