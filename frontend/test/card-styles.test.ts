@@ -71,13 +71,17 @@ const rules = (css: string): [string, string][] => {
     else body += ch;
   }
 
-  const nested = out.find(([s]) => s.startsWith('@'));
+  // `@container` blocks only hold the overrides for a card narrower than 220px, and
+  // the cards here are laid out at 400px, so none of them applies. They are dropped
+  // by name, and the 'narrow card' case at the end of this file reads them directly.
+  const applicable = out.filter(([s]) => !s.startsWith('@container'));
+  const nested = applicable.find(([s]) => s.startsWith('@'));
   // At-rules nest, and both the flattening and the no-silent-drop check below
   // only look one level deep. Refusing here is the point: a `@media` block
   // added later must not slip past this file unchecked.
   expect(nested?.[0], 'this harness does not descend into at-rules yet').toBeUndefined();
 
-  return out;
+  return applicable;
 };
 
 /**
@@ -312,5 +316,22 @@ describe('the harness itself', () => {
     expect(overridden('.detail-item-label').maxWidth).toBe('42px');
     expect(overridden('.card-content').overflowWrap).toBe('break-word');
     expect(overridden('.resort-name').minWidth).toBe('40px');
+  });
+});
+
+describe('the narrow-card overrides', () => {
+  const compiled = sass.compile(SCSS).css;
+
+  it('make the card a size container, so the rules answer to its width', () => {
+    expect(compiled).toMatch(/\.card-content\s*{[^}]*container:\s*bergfex-card\s*\/\s*inline-size/);
+  });
+
+  it('drops the figures to two columns, then one, as the card gets narrower', () => {
+    const two = compiled.match(/@container bergfex-card \(max-width: 220px\)\s*{([\s\S]*?)\n}/)?.[1];
+    const one = compiled.match(/@container bergfex-card \(max-width: 140px\)\s*{([\s\S]*?)\n}\s*$/)?.[1];
+
+    expect(two).toMatch(/\.details\s*{\s*grid-template-columns:\s*repeat\(2,/);
+    expect(one).toMatch(/grid-template-columns:\s*minmax\(0,\s*1fr\)/);
+    expect(one).toMatch(/\.resort-header\s*{[^}]*flex-wrap:\s*wrap/);
   });
 });
