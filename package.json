@@ -23,6 +23,7 @@
     "typecheck": "tsc --noEmit",
     "test": "NODE_ENV=production vitest run",
     "watch": "rollup -c -w",
+    "pretest:e2e": "node scripts/ensure-deps.mjs",
     "test:e2e": "playwright test"
   },
   "devDependencies": {
