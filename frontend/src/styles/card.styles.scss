@@ -467,4 +467,42 @@
   .accordion-content.details {
     grid-template-columns: minmax(0, 1fr);
   }
+
+  // At 4 grid columns (about 85-110px) the card and resort padding together ate
+  // ~60px, leaving a label next to its 24px icon only a few letters, so
+  // "Mountain" broke after every second character. Tighter padding, the icon on
+  // its own line above the text and `break-word` (break only a word longer than
+  // the line) keep whole words together; the footer may wrap at its spaces.
+  .card-content {
+    padding: 6px;
+  }
+
+  .resort {
+    padding: 8px 6px;
+  }
+
+  .detail-item {
+    flex-wrap: wrap;
+    gap: 2px;
+  }
+
+  .detail-item-label,
+  .last-updated {
+    overflow-wrap: break-word;
+  }
+
+  .detail-item-label {
+    font-size: 0.75em;
+  }
+
+  .resort-footer {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .last-updated {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    text-align: left;
+  }
 }

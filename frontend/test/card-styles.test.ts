@@ -334,4 +334,16 @@ describe('the narrow-card overrides', () => {
     expect(one).toMatch(/grid-template-columns:\s*minmax\(0,\s*1fr\)/);
     expect(one).toMatch(/\.resort-header\s*{[^}]*flex-wrap:\s*wrap/);
   });
+
+  it('keeps whole words together at the narrowest width (labels, footer)', () => {
+    const one = compiled.match(/@container bergfex-card \(max-width: 140px\)\s*{([\s\S]*?)\n}\s*$/)?.[1] ?? '';
+    const block = (sel: string) => one.match(new RegExp(`${sel}\\s*{([^}]*)}`))?.[1] ?? '';
+
+    // `anywhere` on the card would break "Mountain" after two letters; the
+    // narrow labels and the footer fall back to breaking only overlong words.
+    expect(block('\\.detail-item-label,\\s*\\.last-updated')).toMatch(/overflow-wrap:\s*break-word/);
+    expect(block('\\.detail-item')).toMatch(/flex-wrap:\s*wrap/);
+    expect(block('\\.resort-footer')).toMatch(/flex-wrap:\s*wrap/);
+    expect(block('\\.card-content')).toMatch(/padding:\s*6px/);
+  });
 });
