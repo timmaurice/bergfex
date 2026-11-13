@@ -111,51 +111,51 @@ missing, rather than turning verification off in the integration. Neither
 `verify_ssl=False` nor a pinned certificate belongs in shipped code: users are
 not behind your proxy, and a pin expires.
 
-Build the bundle from the public roots plus the certificates your environment
-needs, and mount it:
+Do not hand-build a bundle per repository. Keep one shared bundle on the host,
+`$HOME/Projekte/.ca/ca-bundle.pem`, holding the public roots plus the root and
+intermediates of your inspecting proxy, and mount it into every test container.
+A hand-made per-repo bundle silently rots: the proxy certificates it carries
+expire and nobody notices until verification starts failing.
 
-```bash
-# 1. Start from the public roots - certifi's bundle, or your system's.
-./venv/bin/python -c "import certifi, shutil; shutil.copy(certifi.where(), 'config/custom_cert.pem')"
-
-# 2. Append what is missing. For the bergfex CDN, take the intermediates out of
-#    the chain the server does serve - everything after the first certificate.
-#    `openssl x509` would read only that first one, which is the leaf: appending
-#    the server certificate supplies no issuer and expires in about 90 days.
-openssl s_client -showcerts -connect vcdn.bergfex.at:443 -servername vcdn.bergfex.at </dev/null 2>/dev/null \
-  | awk '/-----BEGIN CERTIFICATE-----/{n++; inc=(n>1)} inc; /-----END CERTIFICATE-----/{inc=0}' \
-  >> config/custom_cert.pem
-
-# Check what you appended before trusting it - the subject must be a CA, not
-# CN=*.bergfex.at:
-openssl storeutl -noout -text -certs config/custom_cert.pem | grep 'Subject:' | tail -2
-
-# 3. Behind an inspecting proxy, append that proxy's root as well, exported from
-#    the system keychain or supplied by IT.
-cat zscaler-root.pem >> config/custom_cert.pem
-```
-
-Behind such a proxy step 2 hands you the proxy's own intermediates rather than
-bergfex's, because the proxy is what terminated the connection - that is the same
-certificate set step 3 is about, and step 2 has nothing to add. Run step 2 from a
-network that is not intercepted, or skip it.
-
-Then point the container at it, under the `homeassistant` service in
-`docker-compose.yml`:
+Put the mount in `docker-compose.override.yml` next to `docker-compose.yml`
+(gitignored, so it stays on your machine):
 
 ```yaml
-environment:
-  - SSL_CERT_FILE=/config/custom_cert.pem
-  - REQUESTS_CA_BUNDLE=/config/custom_cert.pem
+services:
+  homeassistant:
+    volumes:
+      - $HOME/Projekte/.ca/ca-bundle.pem:/config/ca-bundle.pem:ro
+    environment:
+      - SSL_CERT_FILE=/config/ca-bundle.pem
+      - REQUESTS_CA_BUNDLE=/config/ca-bundle.pem
 ```
 
-Append to the public roots - never replace them. A bundle holding only a
-corporate root breaks every connection that proxy does not intercept, which is
-the common trap here: bergfex starts working and everything else stops.
+`docker compose up -d` merges the override automatically. The bundle goes under
+`/config`, not `/etc/ssl/certs`, so the mount also works if your compose file
+mounts the host's certificate directory read-only. Setting the variables in
+compose rather than injecting them into a running container means a recreate -
+a new image, for instance - does not lose them.
 
-`config/` and `*.pem` are both gitignored, so the bundle stays local. The same
-appended-bundle approach fixes `pip`, `npm` and `git` on the host behind such a
-proxy; only the environment variable names differ.
+To refresh the shared bundle, rebuild it from the public roots (certifi's
+bundle, or your system's) and append the proxy certificates exported from the
+system keychain or supplied by IT. Append to the public roots - never replace
+them. A bundle holding only a corporate root breaks every connection that proxy
+does not intercept, which is the common trap here: bergfex starts working and
+everything else stops. To check what a bundle holds and when it expires:
+
+```bash
+openssl storeutl -noout -text -certs "$HOME/Projekte/.ca/ca-bundle.pem" \
+  | grep -E 'Subject:|Not After'
+```
+
+If `vcdn.bergfex.at` omits its intermediate while you are on a network that is
+not intercepted, append the intermediates of the chain it does serve (everything
+after the first certificate - the first is the leaf, which carries no issuer and
+expires in about 90 days) to the shared bundle.
+
+No certificate is ever committed: `*.pem` and `config/` are gitignored. The same
+shared bundle fixes `pip`, `npm` and `git` on the host behind such a proxy; only
+the environment variable names differ.
 
 The card is cached by the browser under a URL carrying the manifest version, so a
 plain reload will not pick up a rebuild during development. Force one:
