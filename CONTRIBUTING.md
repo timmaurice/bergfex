@@ -86,8 +86,10 @@ npm run test:e2e
 starts from the tracked `test/e2e/ha-config/configuration.yaml`. Global setup
 starts it, creates the user and finishes onboarding through the API, signs in
 once, and adds one bergfex config entry through the integration's own config
-flow. The only thing it needs from outside is the bergfex website. Everything
-Home Assistant writes into `test/e2e/ha-config` is gitignored; delete
+flow. bergfex itself is never contacted: `test/e2e/stub/sitecustomize.py` makes
+the container answer bergfex hosts from `tests/fixtures` (bergfex refuses the
+shared addresses CI runs on, and a run should not hit the site anyway). Other
+hosts are fetched for real. Everything Home Assistant writes into `test/e2e/ha-config` is gitignored; delete
 `test/e2e/ha-config/.storage` to start from a blank instance.
 
 Behind a TLS-inspecting proxy, put the CA mount from the section below into a

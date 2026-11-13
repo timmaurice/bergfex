@@ -14,5 +14,11 @@ services:
       # The integration serves its own card from this folder, so mounting it
       # brings the built bundle along: no /local resource to register.
       - ../../custom_components/bergfex:/config/custom_components/bergfex
+      # bergfex answers from the repository's HTML fixtures (see stub/sitecustomize.py):
+      # it refuses the shared addresses CI runs on, and the suite needs a resort entry.
+      - ./stub:/stub:ro
+      - ../../tests/fixtures:/stub-fixtures:ro
+    environment:
+      - PYTHONPATH=/stub
     ports:
       - '8135:8123'

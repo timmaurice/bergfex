@@ -30,8 +30,8 @@ export const BASE_URL = `http://127.0.0.1:${PORT}`;
 export const USERNAME = process.env.HA_E2E_USER ?? 'admin';
 export const PASSWORD = process.env.HA_E2E_PASSWORD ?? 'password';
 
-/** The resort the suite configures. Any resort would do; the card specs take whichever the instance has. */
-const RESORT = { language: 'at', type: 'alpine', country: 'Österreich', path: 'achensee' };
+/** The resort the suite configures: the first one on the (fixture) Austrian overview. */
+const RESORT = { language: 'at', type: 'alpine', country: 'Österreich', path: '/annaberg-lammertal/schneebericht/' };
 
 /** Brings the e2e compose environment up if it is not running. */
 export function ensureRunning(): void {
@@ -154,8 +154,8 @@ export async function ensureOnboarded(timeoutMs = 120_000): Promise<void> {
  * Adds a bergfex config entry unless the instance already has one, and waits
  * until it has registered its sensors. The card resolves a resort through the
  * entity registry, so every spec that draws a resort needs this entry, and the
- * only honest way to get one is the integration's own config flow. It needs the
- * bergfex website, as the playground always did.
+ * only honest way to get one is the integration's own config flow. bergfex itself
+ * is answered from fixtures inside the container (see stub/sitecustomize.py).
  */
 export async function ensureResortConfigured(timeoutMs = 180_000): Promise<void> {
   const token = readTokens().access_token;
@@ -179,14 +179,14 @@ export async function ensureResortConfigured(timeoutMs = 180_000): Promise<void>
       user: { language: RESORT.language },
       type: { type: RESORT.type },
       country: { country: RESORT.country },
-      ski_area_list_alpine: { manual_path: RESORT.path },
+      ski_area_list_alpine: { ski_area: RESORT.path },
     };
     for (let guard = 0; flow.type === 'form' && guard < 8; guard++) {
       const answer = answers[flow.step_id ?? ''];
       if (!answer) throw new Error(`config flow asked for an unknown step: ${flow.step_id}`);
       if (flow.errors && Object.keys(flow.errors).length > 0) {
         throw new Error(
-          `config flow step ${flow.step_id} reported ${JSON.stringify(flow.errors)} - is bergfex reachable from here?`,
+          `config flow step ${flow.step_id} reported ${JSON.stringify(flow.errors)} - did the container's bergfex stub load (PYTHONPATH=/stub)?`,
         );
       }
       flow = (await postJson<Flow>(`/api/config/config_entries/flow/${flow.flow_id}`, answer, token)).body;
