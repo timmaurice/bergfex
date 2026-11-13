@@ -71,6 +71,32 @@ separate lists and drifted apart, so the editor showed toggles as off for option
 the card was rendering. A test walks every default and asserts the editor reports
 it.
 
+## End-to-end tests
+
+The Playwright suite in `test/e2e` runs against its own Home Assistant, so a
+fresh clone needs only Docker and Node:
+
+```bash
+npm ci
+npm run build          # the suite serves the built custom_components/bergfex/bergfex-card.js
+npm run test:e2e
+```
+
+`test/e2e/docker-compose.yml` (Home Assistant pinned to one release, port 8135)
+starts from the tracked `test/e2e/ha-config/configuration.yaml`. Global setup
+starts it, creates the user and finishes onboarding through the API, signs in
+once, and adds one bergfex config entry through the integration's own config
+flow. bergfex itself is never contacted: `test/e2e/stub/sitecustomize.py` makes
+the container answer bergfex hosts from `tests/fixtures` (bergfex refuses the
+shared addresses CI runs on, and a run should not hit the site anyway). Other
+hosts are fetched for real. Everything Home Assistant writes into `test/e2e/ha-config` is gitignored; delete
+`test/e2e/ha-config/.storage` to start from a blank instance.
+
+Behind a TLS-inspecting proxy, put the CA mount from the section below into a
+gitignored `test/e2e/docker-compose.override.yml`; the suite adds it when it is
+there. CI (`.github/workflows/e2e.yml`) runs the same command on every pull
+request and has no override.
+
 ## Trying it in Home Assistant
 
 `docker-compose.yml` is not tracked (it mounts local paths). A working one:

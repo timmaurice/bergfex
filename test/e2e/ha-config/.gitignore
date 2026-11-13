@@ -1,0 +1,5 @@
+# Everything Home Assistant writes at runtime (.storage, the database, logs,
+# the mounted integration folder). Only the configuration is tracked.
+*
+!.gitignore
+!configuration.yaml
