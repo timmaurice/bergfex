@@ -326,12 +326,30 @@ describe('the narrow-card overrides', () => {
     expect(compiled).toMatch(/\.card-content\s*{[^}]*container:\s*bergfex-card\s*\/\s*inline-size/);
   });
 
-  it('drops the figures to two columns, then one, as the card gets narrower', () => {
-    const two = compiled.match(/@container bergfex-card \(max-width: 220px\)\s*{([\s\S]*?)\n}/)?.[1];
-    const one = compiled.match(/@container bergfex-card \(max-width: 140px\)\s*{([\s\S]*?)\n}\s*$/)?.[1];
+  const query = (width: number): string =>
+    compiled.match(new RegExp(`@container bergfex-card \\(max-width: ${width}px\\)\\s*{([\\s\\S]*?)\\n}`))?.[1] ?? '';
+  const block = (css: string, sel: string): string =>
+    css.match(new RegExp(`(?:^|\\n)\\s*${sel}\\s*{([^}]*)}`))?.[1] ?? '';
 
-    expect(two).toMatch(/\.details\s*{\s*grid-template-columns:\s*repeat\(2,/);
-    expect(one).toMatch(/grid-template-columns:\s*minmax\(0,\s*1fr\)/);
-    expect(one).toMatch(/\.resort-header\s*{[^}]*flex-wrap:\s*wrap/);
+  it('drops the figures to two columns, then one, as the card gets narrower', () => {
+    expect(block(query(170), '\\.resort-header')).toMatch(/flex-wrap:\s*wrap/);
+    expect(block(query(220), '\\.details')).toMatch(/grid-template-columns:\s*repeat\(2,/);
+    expect(query(170)).toMatch(/grid-template-columns:\s*minmax\(0,\s*1fr\)/);
+  });
+
+  it('never breaks a word at a random character in the narrow stages', () => {
+    const two = query(220);
+    // `anywhere` on the card would break "Mountain" after two letters; labels and the
+    // footer break only an overlong word, with a real hyphen.
+    const label = block(two, '\\.detail-item-label,\\s*\\.last-updated');
+    expect(label).toMatch(/overflow-wrap:\s*break-word/);
+    expect(label).toMatch(/hyphens:\s*auto/);
+    expect(block(two, '\\.detail-item')).toMatch(/flex-wrap:\s*wrap/);
+    expect(block(two, '\\.resort-footer')).toMatch(/flex-wrap:\s*wrap/);
+    expect(block(two, '\\.card-content')).toMatch(/padding:\s*6px/);
+  });
+
+  it('keeps figures on one line', () => {
+    expect(block(query(220), '\\.value-row > span:first-child')).toMatch(/white-space:\s*nowrap/);
   });
 });
