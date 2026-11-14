@@ -439,40 +439,21 @@
 }
 
 // A card squeezed into a narrow sections slot (min_columns 4 is roughly 120px).
-// Wider than ~250px nothing here applies. Below it the three figures per row
+// Wider than ~250px nothing here applies. Below 220px the three figures per row
 // no longer have room for their labels, so they drop to two columns, and below
-// ~170px to one; the status badge moves under the resort name instead of
+// 170px to one; the status badge moves under the resort name instead of
 // squeezing it into a column a few letters wide.
+//
+// Narrow cards must never break a word at a random character. The card sets
+// `overflow-wrap: anywhere`, which lowers every item's minimum width and lets a
+// break fall anywhere; here labels fall back to `break-word` (only a word longer
+// than the line breaks) plus `hyphens: auto` (a proper hyphen, using the page
+// language), and figures stay on one line.
 @container bergfex-card (max-width: 220px) {
   .details {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-}
 
-@container bergfex-card (max-width: 140px) {
-  .resort-header {
-    align-items: flex-start;
-    flex-wrap: wrap;
-  }
-
-  .resort-name {
-    // `anywhere` on the card lowers every item's minimum width; the name only
-    // needs to break a word that is longer than the whole line.
-    flex: 1 1 100%;
-    overflow-wrap: break-word;
-  }
-
-  .details,
-  .details.cross-country-details,
-  .accordion-content.details {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  // At 4 grid columns (about 85-110px) the card and resort padding together ate
-  // ~60px, leaving a label next to its 24px icon only a few letters, so
-  // "Mountain" broke after every second character. Tighter padding, the icon on
-  // its own line above the text and `break-word` (break only a word longer than
-  // the line) keep whole words together; the footer may wrap at its spaces.
   .card-content {
     padding: 6px;
   }
@@ -481,6 +462,7 @@
     padding: 8px 6px;
   }
 
+  // Icon above the text: beside it a 60px cell kept a few letters for the label.
   .detail-item {
     flex-wrap: wrap;
     gap: 2px;
@@ -488,11 +470,24 @@
 
   .detail-item-label,
   .last-updated {
+    hyphens: auto;
     overflow-wrap: break-word;
   }
 
   .detail-item-label {
     font-size: 0.75em;
+  }
+
+  // "156/214 km" or "12/30" must not be split; a trend icon may drop below it.
+  .value-row {
+    flex-wrap: wrap;
+    gap: 0 4px;
+    justify-content: flex-start;
+  }
+
+  .value-row > span:first-child {
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
   }
 
   .resort-footer {
@@ -504,5 +499,25 @@
     flex-wrap: wrap;
     justify-content: flex-start;
     text-align: left;
+  }
+}
+
+@container bergfex-card (max-width: 170px) {
+  .details,
+  .details.cross-country-details,
+  .accordion-content.details {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@container bergfex-card (max-width: 140px) {
+  .resort-header {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .resort-name {
+    flex: 1 1 100%;
+    overflow-wrap: break-word;
   }
 }
