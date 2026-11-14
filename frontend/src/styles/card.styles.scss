@@ -211,6 +211,11 @@
   opacity: 0.5;
 }
 
+.value-row > span:first-child {
+  // Break at the space ("156/214" | "km"), never inside the number.
+  overflow-wrap: break-word;
+}
+
 .value-row {
   align-items: center;
   display: flex;
@@ -441,7 +446,7 @@
 // A card squeezed into a narrow sections slot (min_columns 6 is roughly 170px on a phone).
 // Wider than ~250px nothing here applies. Below 220px the three figures per row
 // no longer have room for their labels, so they drop to two columns, and below
-// 170px to one.
+// 170px to one with the badge under the name.
 //
 // Narrow cards must never break a word at a random character. The card sets
 // `overflow-wrap: anywhere`, which lowers every item's minimum width and lets a
@@ -502,6 +507,21 @@
 }
 
 @container bergfex-card (max-width: 170px) {
+  // 6 columns is about 130px on a desktop dashboard, so this stage is reachable.
+  // The status badge moves under the resort name instead of squeezing it into a
+  // column a few letters wide; a name longer than the line still has to break.
+  .resort-header {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .resort-name {
+    flex: 1 1 100%;
+    hyphens: auto;
+    min-width: 0;
+    overflow-wrap: break-word;
+  }
+
   .details,
   .details.cross-country-details,
   .accordion-content.details {
