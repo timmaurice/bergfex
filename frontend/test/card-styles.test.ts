@@ -334,7 +334,6 @@ describe('the narrow-card overrides', () => {
   it('drops the figures to two columns, then one, as the card gets narrower', () => {
     expect(block(query(220), '\\.details')).toMatch(/grid-template-columns:\s*repeat\(2,/);
     expect(query(170)).toMatch(/grid-template-columns:\s*minmax\(0,\s*1fr\)/);
-    expect(block(query(140), '\\.resort-header')).toMatch(/flex-wrap:\s*wrap/);
   });
 
   it('never breaks a word at a random character in the narrow stages', () => {

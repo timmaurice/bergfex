@@ -166,7 +166,7 @@ describe('BergfexCard card picker preview', () => {
 
       expect(element.getGridOptions()).toEqual({
         columns: 'full',
-        min_columns: 4,
+        min_columns: 6,
         rows: 'auto',
         min_rows: 2,
       });

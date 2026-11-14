@@ -262,7 +262,7 @@ export class BergfexCard extends LitElement implements LovelaceCard {
    * remains for masonry, which has no auto.
    */
   public getGridOptions(): LovelaceGridOptions {
-    return { columns: 'full', min_columns: 4, rows: 'auto', min_rows: 2 };
+    return { columns: 'full', min_columns: 6, rows: 'auto', min_rows: 2 };
   }
 
   private _getResorts(hass: HomeAssistant, config: BergfexCardConfig): Record<string, Resort> {

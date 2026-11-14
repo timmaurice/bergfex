@@ -438,11 +438,10 @@
   font-weight: 500;
 }
 
-// A card squeezed into a narrow sections slot (min_columns 4 is roughly 120px).
+// A card squeezed into a narrow sections slot (min_columns 6 is roughly 170px on a phone).
 // Wider than ~250px nothing here applies. Below 220px the three figures per row
 // no longer have room for their labels, so they drop to two columns, and below
-// 170px to one; the status badge moves under the resort name instead of
-// squeezing it into a column a few letters wide.
+// 170px to one.
 //
 // Narrow cards must never break a word at a random character. The card sets
 // `overflow-wrap: anywhere`, which lowers every item's minimum width and lets a
@@ -507,17 +506,5 @@
   .details.cross-country-details,
   .accordion-content.details {
     grid-template-columns: minmax(0, 1fr);
-  }
-}
-
-@container bergfex-card (max-width: 140px) {
-  .resort-header {
-    align-items: flex-start;
-    flex-wrap: wrap;
-  }
-
-  .resort-name {
-    flex: 1 1 100%;
-    overflow-wrap: break-word;
   }
 }
