@@ -460,11 +460,12 @@ class BergfexCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any]]]):
                         context="region snow report",
                     )
                     if overview_data is not None:
-                        # The keys in overview_data are full paths e.g. /skimountaineering/tirol/hintertux/
-                        # area_path is e.g. /hintertux/
-                        # We need to find the matching entry
+                        # Keys are the resort hrefs, the same form area_path is
+                        # stored in, e.g. /hintertux/schneebericht/. Equality, not
+                        # `in`: /ehrwald/schneebericht/ is also inside
+                        # /wettersteinbahnen-ehrwald/schneebericht/.
                         for key, data in overview_data.items():
-                            if area_path.strip("/") in key:
+                            if key.strip("/") == area_path.strip("/"):
                                 if "new_snow" in data:
                                     parsed_data["new_snow"] = data["new_snow"]
                                     _LOGGER.debug(
