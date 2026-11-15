@@ -120,9 +120,11 @@ def _empty_forecast_cache():
     """The cache is module state, so a test must not inherit another's entries."""
     bergfex_coordinator._FORECAST_CACHE.clear()
     bergfex_coordinator._REGION_PAGE_CACHE.clear()
+    bergfex_coordinator._SEASON_PANEL_CACHE.clear()
     yield
     bergfex_coordinator._FORECAST_CACHE.clear()
     bergfex_coordinator._REGION_PAGE_CACHE.clear()
+    bergfex_coordinator._SEASON_PANEL_CACHE.clear()
 
 
 @pytest.mark.asyncio
@@ -373,3 +375,45 @@ async def test_a_forecast_page_read_an_hour_ago_is_not_fetched_again(
     assert [u for u in session.urls if "schneevorhersage" in u] == [
         "https://www.bergfex.at/tirol/wetter/schneevorhersage/5/"
     ], "only the page older than the TTL should be asked for again"
+
+
+class PricedSession(RecordingSession):
+    """The resort's main page carries the price; its snow report does not."""
+
+    def get(self, url, *args, **kwargs):
+        if url == "https://www.bergfex.at/ischgl/":
+            self.urls.append(url)
+            return MockResponse("<div><div>Tageskarte</div> € 75,00</div>")
+        return super().get(url, *args, **kwargs)
+
+
+@pytest.mark.asyncio
+async def test_a_resorts_main_page_is_fetched_once_a_day(
+    hass: HomeAssistant, enable_custom_integrations
+):
+    """The price and season panel live on the main page and change at most daily.
+
+    Only the panel was cached, and the price never arrives on the snow report a
+    config entry points at, so every poll fetched the main page again.
+    """
+    main = "https://www.bergfex.at/ischgl/"
+    path = "/ischgl/schneebericht/"
+    session = PricedSession()
+    entry = _entry(name="Ischgl", path=path, entry_id="main")
+    await _setup(hass, entry, session)
+    coordinator = entry.runtime_data
+
+    with patch(
+        "custom_components.bergfex.coordinator.async_get_clientsession",
+        return_value=session,
+    ):
+        await coordinator.async_refresh()
+        await coordinator.async_refresh()
+        assert session.urls.count(main) == 1
+        assert coordinator.data[path]["price"] == "€ 75,00"
+
+        stamp, panel = bergfex_coordinator._SEASON_PANEL_CACHE[path]
+        bergfex_coordinator._SEASON_PANEL_CACHE[path] = (stamp - 25 * 60 * 60, panel)
+        await coordinator.async_refresh()
+
+    assert session.urls.count(main) == 2, "a day-old price was not asked for again"
