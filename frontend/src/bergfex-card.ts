@@ -578,7 +578,7 @@ export class BergfexCard extends LitElement implements LovelaceCard {
   private _handleCarouselChange(resortId: string, direction: 'prev' | 'next', length: number, e: Event): void {
     e.stopPropagation();
     const currentState = this._forecastState[resortId] || { tab: 'daily', index: 0 };
-    let newIndex = currentState.index + (direction === 'next' ? 1 : -1);
+    let newIndex = Math.min(currentState.index, length - 1) + (direction === 'next' ? 1 : -1);
 
     if (newIndex < 0) newIndex = length - 1;
     if (newIndex >= length) newIndex = 0;
@@ -1410,9 +1410,13 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                                   ${(() => {
                                     const images =
                                       activeTab === 'daily' ? resort.forecast_days : resort.forecast_summaries;
-                                    const currentIndex = this._forecastState[resortId]?.index || 0;
-
                                     if (!images || images.length === 0) return html``;
+
+                                    // The list can shrink under the stored index (a reload, images gone).
+                                    const currentIndex = Math.min(
+                                      this._forecastState[resortId]?.index || 0,
+                                      images.length - 1,
+                                    );
 
                                     const currentImageEntityId = images[currentIndex];
                                     const currentImageEntity = this.hass.states[currentImageEntityId];
