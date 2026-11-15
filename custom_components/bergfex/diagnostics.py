@@ -220,11 +220,12 @@ async def async_get_config_entry_diagnostics(
             areas[area_path] = {
                 **_area_summary(area_data, resort_type),
                 "cache": {
-                    # Kept per area, even when empty, and only for an area
-                    # configured on a subpage - the main page is the source.
+                    # What the main page gave, kept per area for a day (even
+                    # when empty), and only for an area configured on a
+                    # subpage - the main page is the source.
                     "season_panel": {
                         "cached": panel is not None,
-                        "keys": sorted(panel) if panel is not None else [],
+                        "keys": sorted(panel[1]) if panel is not None else [],
                     },
                     # Shared by every area of the region; None without a region.
                     "forecast": _forecast_cache_info(

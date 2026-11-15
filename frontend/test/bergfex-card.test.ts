@@ -1005,6 +1005,35 @@ describe('BergfexCard', () => {
       const image = element.shadowRoot?.querySelector('.forecast-image');
       expect(image?.getAttribute('src')).toBe('/local/images/day_1.png');
     });
+
+    it('keeps rendering when the image list shrinks below the current slide', async () => {
+      // On day 5, a reload leaves three images: images[5] was undefined and every
+      // later render threw until the page was reloaded.
+      const resort = createMockResort('ischgl', 'Ischgl', { status: 'Open', forecast_days: true });
+      await setupCard({ show_forecast: true }, resort);
+
+      const accordionHeaders = Array.from(element.shadowRoot?.querySelectorAll('.accordion-header') || []);
+      const forecastHeader = accordionHeaders.find((h) => h.textContent?.includes('Forecast')) as HTMLElement;
+      forecastHeader?.click();
+      await element.updateComplete;
+
+      (element.shadowRoot?.querySelector('.carousel-btn') as HTMLElement).click();
+      await element.updateComplete;
+      expect(element.shadowRoot?.querySelector('.forecast-image')?.getAttribute('src')).toBe('/local/images/day_5.png');
+
+      const states = { ...hass.states };
+      const entities = { ...hass.entities };
+      for (const day of [3, 4, 5]) {
+        delete states[`image.ischgl_snow_forecast_day_${day}`];
+        delete entities[`image.ischgl_snow_forecast_day_${day}`];
+      }
+      // A watched sensor changes too, so the update is not skipped.
+      states['sensor.ischgl_status'] = { ...states['sensor.ischgl_status'] };
+      element.hass = { ...hass, states, entities };
+      await element.updateComplete;
+
+      expect(element.shadowRoot?.querySelector('.forecast-image')?.getAttribute('src')).toBe('/local/images/day_2.png');
+    });
   });
 
   describe('Interactions', () => {

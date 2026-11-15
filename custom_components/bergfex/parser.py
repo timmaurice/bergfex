@@ -6,6 +6,7 @@ import logging
 import re
 from datetime import datetime, timedelta
 from typing import Any
+from zoneinfo import ZoneInfo
 
 from bs4 import BeautifulSoup
 
@@ -575,7 +576,8 @@ def evaluate_status(area_data: dict[str, Any]) -> str:
     depths = [_snow_depth(area_data, key) for key in ("snow_mountain", "snow_valley")]
     has_snow = any(depth is not None and depth > 0 for depth in depths)
 
-    now = datetime.now()
+    # Every bergfex resort keeps CET; the HA host may not (Docker runs on UTC).
+    now = datetime.now(ZoneInfo("Europe/Vienna"))
     start, end = _operating_hours(area_data, now.date())
     within_hours = True
     if start and end:

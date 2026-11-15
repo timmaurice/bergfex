@@ -52,10 +52,12 @@ _LOGGER = logging.getLogger(__package__)
 # area path: {area_path: parsed_data}.
 type BergfexConfigEntry = ConfigEntry[BergfexCoordinator]
 
-# Winter and summer operating periods live only on a resort's main page, and they
-# change at most once a season. Caching them keeps this from costing an extra
-# request on every poll - bergfex rate-limits, and the subpage is fetched anyway.
-_SEASON_PANEL_CACHE: dict[str, dict[str, Any]] = {}
+# The price, opening hours and season panel live only on a resort's main page,
+# and they change at most daily. Caching them per area for a day keeps this from
+# costing an extra request on every poll - bergfex rate-limits, and the subpage
+# is fetched anyway. {area_path: (monotonic stamp, values read off the main page)}
+_SEASON_PANEL_CACHE: dict[str, tuple[float, dict[str, Any]]] = {}
+_SEASON_PANEL_CACHE_TTL = 24 * 60 * 60
 
 _SEASON_PANEL_KEYS = (
     "winter_season_start",
@@ -66,6 +68,15 @@ _SEASON_PANEL_KEYS = (
     "summer_season_end",
     "summer_operating_hours_start",
     "summer_operating_hours_end",
+)
+
+# What a subpage entry takes from the resort's main page when its own page lacks it.
+_MAIN_PAGE_KEYS = (
+    "price",
+    "operating_hours_start",
+    "operating_hours_end",
+    "operation_status",
+    *_SEASON_PANEL_KEYS,
 )
 
 
@@ -367,12 +378,13 @@ class BergfexCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any]]]):
                 parse_resort_page, html, area_path, lang
             )
 
-            # Fetch main resort page if price or season is missing and we are on a known subpage
+            # Fetch main resort page at most once a day when we are on a known subpage
             # e.g. /meribel/schneebericht/ -> /meribel/
-            if area_path in _SEASON_PANEL_CACHE:
-                parsed_data.update(_SEASON_PANEL_CACHE[area_path])
-
-            if "price" not in parsed_data or area_path not in _SEASON_PANEL_CACHE:
+            cached = _SEASON_PANEL_CACHE.get(area_path)
+            if (
+                cached is None
+                or time.monotonic() - cached[0] >= _SEASON_PANEL_CACHE_TTL
+            ):
                 parts = area_path.strip("/").split("/")
                 # List of typical subpages that usually don't have the primary price block
                 subpages = [
@@ -388,7 +400,7 @@ class BergfexCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any]]]):
                     if main_path != area_path:
                         main_url = urljoin(domain, main_path)
                         _LOGGER.debug(
-                            "Price missing on subpage, trying to fetch from main page: %s",
+                            "Fetching price and season from main page: %s",
                             main_url,
                         )
                         try:
@@ -404,35 +416,30 @@ class BergfexCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any]]]):
                                     main_path,
                                     lang,
                                 )
-                                for key in [
-                                    "price",
-                                    "operating_hours_start",
-                                    "operating_hours_end",
-                                    "operation_status",
-                                    *_SEASON_PANEL_KEYS,
-                                ]:
-                                    if key in main_data and key not in parsed_data:
-                                        parsed_data[key] = main_data[key]
-                                        _LOGGER.debug(
-                                            "Found %s on main page: %s",
-                                            key,
-                                            parsed_data[key],
-                                        )
-
-                                panel = {
-                                    k: main_data[k]
-                                    for k in _SEASON_PANEL_KEYS
-                                    if k in main_data
-                                }
                                 # Store even when empty: a resort that
-                                # publishes no panel must not be re-fetched
-                                # on every single poll.
-                                _SEASON_PANEL_CACHE[area_path] = panel
+                                # publishes none of these must not be
+                                # re-fetched on every single poll. A failed
+                                # fetch keeps the old values and asks again.
+                                cached = (
+                                    time.monotonic(),
+                                    {
+                                        k: main_data[k]
+                                        for k in _MAIN_PAGE_KEYS
+                                        if k in main_data
+                                    },
+                                )
+                                _SEASON_PANEL_CACHE[area_path] = cached
 
                         except Exception as err:
                             _LOGGER.debug(
                                 "Could not fetch main page for price: %s", err
                             )
+
+            if cached is not None:
+                for key, value in cached[1].items():
+                    if key not in parsed_data:
+                        parsed_data[key] = value
+                        _LOGGER.debug("Found %s on main page: %s", key, value)
 
             # Season and opening hours only arrive here and can flip the verdict, so
             # judge again on the merged data - outside the fallback branch, which a
@@ -460,11 +467,12 @@ class BergfexCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any]]]):
                         context="region snow report",
                     )
                     if overview_data is not None:
-                        # The keys in overview_data are full paths e.g. /skimountaineering/tirol/hintertux/
-                        # area_path is e.g. /hintertux/
-                        # We need to find the matching entry
+                        # Keys are the resort hrefs, the same form area_path is
+                        # stored in, e.g. /hintertux/schneebericht/. Equality, not
+                        # `in`: /ehrwald/schneebericht/ is also inside
+                        # /wettersteinbahnen-ehrwald/schneebericht/.
                         for key, data in overview_data.items():
-                            if area_path.strip("/") in key:
+                            if key.strip("/") == area_path.strip("/"):
                                 if "new_snow" in data:
                                     parsed_data["new_snow"] = data["new_snow"]
                                     _LOGGER.debug(

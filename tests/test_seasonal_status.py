@@ -322,3 +322,33 @@ def test_reported_pistes_still_outrank_both_periods():
 
     assert data["slopes_open_count"] == 3
     assert data["status"] == "Open"
+
+
+def test_operating_hours_are_read_on_vienna_time_not_the_host_clock():
+    """A host on UTC (a plain Docker install) is an hour behind Vienna in winter.
+
+    At 08:00 UTC it is 09:00 at the resort, inside 08:30-16:00; reading the
+    host's naive clock called that Closed.
+    """
+    import datetime
+    from unittest.mock import patch
+
+    from custom_components.bergfex.parser import evaluate_status
+
+    instant = datetime.datetime(2026, 1, 15, 8, 0, tzinfo=datetime.timezone.utc)
+
+    class UtcHostClock(datetime.datetime):
+        @classmethod
+        def now(cls, tz=None):
+            # Without a zone, now() is the host's wall clock: UTC here.
+            return instant.astimezone(tz) if tz else instant.replace(tzinfo=None)
+
+    data = {
+        "lifts_open_count": 5,
+        "snow_mountain": "80",
+        "slopes_open_count": 10,
+        "operating_hours_start": "08:30",
+        "operating_hours_end": "16:00",
+    }
+    with patch("custom_components.bergfex.parser.datetime", UtcHostClock):
+        assert evaluate_status(data) == "Open"
