@@ -1,7 +1,7 @@
 # Bergfex Snow Report Integration for Home Assistant
 
 > [!WARNING]
-> **bergfex currently blocks Home Assistant.** Since 17 November 2026, Cloudflare in front of bergfex answers requests from Home Assistant with `403 Forbidden` on all bergfex domains (`.at`, `.com`, `.de` and the language subdomains). On many connections, existing entries stop updating and new resorts cannot be added (in 3.2.2 the setup dialog shows this as "no ski areas found"). Nothing in your setup causes this, and switching the language no longer helps. The integration will not try to get around the block. Status and details: [#57](https://github.com/timmaurice/bergfex/issues/57).
+> **bergfex currently blocks Home Assistant.** Since 17 November 2026, Cloudflare in front of bergfex answers requests from Home Assistant with `403 Forbidden` on all bergfex domains (`.at`, `.com`, `.de` and the language subdomains). On many connections, existing entries stop updating and new resorts cannot be added. Nothing in your setup causes this, and switching the language no longer helps. The integration will not try to get around the block. Status and details: [#57](https://github.com/timmaurice/bergfex/issues/57).
 >
 > **Alternative:** [SnowSure](https://github.com/timmaurice/snowsure) uses SnowSure.ai's official API and is in the default catalog. It covers 614 resorts, 40 of them in Austria and 6 in Germany. It is a separate integration with its own entities, not a drop-in replacement.
 
