@@ -13,6 +13,7 @@ from custom_components.bergfex.config_flow import (
     normalize_ski_area_path,
     ski_area_name_from_path,
 )
+from custom_components.bergfex.fetch import BergfexRefused
 from custom_components.bergfex.const import (
     CONF_COUNTRY,
     CONF_DOMAIN,
@@ -545,3 +546,41 @@ async def test_a_path_picked_from_the_list_is_not_fetched_again(
 
     assert result["type"] == FlowResultType.CREATE_ENTRY
     _typed_paths_exist.assert_not_awaited()
+
+
+@pytest.mark.parametrize(
+    ("status", "error"), [(403, "refused"), (404, "no_areas_found")]
+)
+@pytest.mark.asyncio
+async def test_a_refused_resort_list_says_so_on_the_form(
+    hass: HomeAssistant, enable_custom_integrations, status: int, error: str
+):
+    """A refused country list used to read "no ski areas found" (#57).
+
+    That sent people looking for missing snow reports while Cloudflare was
+    turning their address away. Only a refusal says so; a 404 stays "none".
+    """
+    url = "https://www.bergfex.at/oesterreich/schneebericht/"
+    with (
+        patch("custom_components.bergfex.config_flow.async_get_clientsession"),
+        patch(
+            "custom_components.bergfex.config_flow.async_fetch_text",
+            side_effect=BergfexRefused(status=status, requested_url=url, final_url=url),
+        ),
+    ):
+        result = await hass.config_entries.flow.async_init(
+            DOMAIN, context={"source": "user"}
+        )
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"], {CONF_LANGUAGE: "at"}
+        )
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"], {CONF_TYPE: TYPE_ALPINE}
+        )
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"], {CONF_COUNTRY: "Österreich"}
+        )
+
+    assert result["type"] == FlowResultType.FORM
+    assert result["step_id"] == "ski_area_list_alpine"
+    assert result["errors"] == {"base": error}

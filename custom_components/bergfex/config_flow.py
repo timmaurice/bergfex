@@ -233,6 +233,13 @@ async def get_ski_areas(
                 if name and url_path:
                     ski_areas[url_path] = name
         return ski_areas
+    except BergfexRefused as err:
+        # A refused list is not an empty one: the flow has to say "turned away",
+        # not "no snow reports".
+        if err.is_refusal:
+            raise
+        _LOGGER.error("Error fetching ski areas: %s", err)
+        return {}
     except Exception as exc:
         _LOGGER.error("Error fetching ski areas: %s", exc)
         return {}
@@ -451,7 +458,13 @@ class BergfexConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             else COUNTRIES[country_name]
         )
         domain = self._data[CONF_DOMAIN]
-        ski_areas = await get_ski_areas(self.hass, country_path, domain)
+        refused = False
+        try:
+            ski_areas = await get_ski_areas(self.hass, country_path, domain)
+        except BergfexRefused as err:
+            _LOGGER.warning("Bergfex refused the resort list: %s", err)
+            ski_areas = {}
+            refused = True
 
         if user_input is not None:
             ski_area_path = user_input.get(CONF_SKI_AREA)
@@ -526,7 +539,7 @@ class BergfexConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 )
 
         if not ski_areas:
-            errors["base"] = "no_areas_found"
+            errors["base"] = "refused" if refused else "no_areas_found"
             return self.async_show_form(
                 step_id=step_id,
                 errors=errors,
